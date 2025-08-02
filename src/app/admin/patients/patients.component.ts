@@ -1,9 +1,10 @@
-import { Component, Input, OnChanges, SimpleChanges, OnInit, DoCheck,Inject } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, OnInit, DoCheck, Inject, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { AdminService } from '../../service/admin/admin.service';
 import { ActivatedRoute } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { PopupService } from '../../service/popup/popup-service';
+import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 
 type DropdownType = 'allergy' | 'medication' | 'condition' | 'complaint' | 'smokingstatus' | 
                    'alcoholstatus' | 'beveragestatus' | 'drugusagestatus' | 'bloodgroup' | 
@@ -18,16 +19,23 @@ type ComplaintOption = string;
   styleUrls: ['./patients.component.scss'],
   standalone: false
 })
-export class PatientsComponent implements OnInit, OnChanges, DoCheck {
+export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy {
   originalAssessmentData: any = null;
   isDirty: boolean = false;
   modifiedFields: Set<string> = new Set();
+  private destroy$ = new Subject<void>();
+  private saveInProgress = false;
+  private autoSaveEnabled = true;
+  private lastSaveTime = 0;
+  private readonly SAVE_DEBOUNCE_TIME = 2000; // 2 seconds
+  private readonly MIN_SAVE_INTERVAL = 5000; // 5 seconds minimum between saves
 
   constructor(
     private adminservice: AdminService,
     private activate: ActivatedRoute,
     private _toastr: ToastrService,
-    private _loader: PopupService
+    private _loader: PopupService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   @Input() assessmentData: any;
@@ -297,6 +305,7 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck {
 
   ngOnInit(): void {
     this.initializeSocialHabits();
+    this.setupAutoSave();
     this.activate.params.subscribe(params => {
       this.patId = params['id'];
       this.patientData.patientId = this.patId;
@@ -312,6 +321,66 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck {
       }
     });
     this.loadDropdowns();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private setupAutoSave(): void {
+    // Auto-save when form becomes dirty after user stops typing
+    this.destroy$.pipe(
+      debounceTime(this.SAVE_DEBOUNCE_TIME),
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      if (this.isDirty && this.autoSaveEnabled && !this.saveInProgress) {
+        const now = Date.now();
+        if (now - this.lastSaveTime >= this.MIN_SAVE_INTERVAL) {
+          this.autoSaveAssessment();
+        }
+      }
+    });
+  }
+
+  private autoSaveAssessment(): void {
+    if (this.saveInProgress) return;
+    
+    this.saveInProgress = true;
+    this.lastSaveTime = Date.now();
+    
+    // Show subtle auto-save indicator
+    this._toastr.info('Auto-saving assessment...', '', {
+      timeOut: 1000,
+      progressBar: false
+    });
+
+    this.adminservice.savePatientAssessment(this.patientData).subscribe({
+      next: (res) => {
+        this.saveInProgress = false;
+        this.originalAssessmentData = JSON.parse(JSON.stringify(this.patientData));
+        this.isDirty = false;
+        this.modifiedFields.clear();
+        
+        // Show success indicator briefly
+        this._toastr.success('Assessment auto-saved', '', {
+          timeOut: 1500,
+          progressBar: false
+        });
+        
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.saveInProgress = false;
+        console.error('Auto-save failed:', err);
+        // Don't show error toast for auto-save failures to avoid interrupting user
+      }
+    });
+  }
+
+  private triggerAutoSave(): void {
+    this.destroy$.next();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -371,19 +440,46 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck {
 
   private loadDropdowns(): void {
     // First load all static dropdowns
-    this.adminservice.getMedicationdata().subscribe(res => this.medicationOptions = res || []);
-    this.adminservice.getDropdowndata('ChronicCondition').subscribe(res => this.chronicConditionOptions = res || []);
-    this.adminservice.getDropdowndata('SmokingStatus').subscribe(res => this.smokingOptions = res || []);
-    this.adminservice.getDropdowndata('AlcoholStatus').subscribe(res => this.alcoholOptions = res || []);
-    this.adminservice.getDropdowndata('BeverageStatus').subscribe(res => this.beverageOptions = res || []);
-    this.adminservice.getDropdowndata('DrugusageStatus').subscribe(res => this.drugUsageOptions = res || []);
-    this.adminservice.getDropdowndata('BloodGroup').subscribe(res => this.bloodGroupOptions = res || []);
-    this.adminservice.getDropdowndata('AllergySeverity').subscribe(res => this.severityOptions = res || []);
-    this.adminservice.getDropdowndata('AlcoholFrequency').subscribe(res => this.frequencyOptions = res || []);
-    this.adminservice.getDropdowndata('SurgeryType').subscribe(res => this.surgeryTypeOptions = res || []);
-    this.adminservice.getDropdowndata('MedicalCondition').subscribe(res => this.medicalConditionOptions = res || []);
-    this.adminservice.getDropdowndata('AllergyCategory').subscribe(res => {
-      this.allergyCategoryOptions = res || [];    
+    // Load dropdowns in parallel for better performance
+    const dropdownRequests = [
+      this.adminservice.getMedicationdata(),
+      this.adminservice.getDropdowndata('ChronicCondition'),
+      this.adminservice.getDropdowndata('SmokingStatus'),
+      this.adminservice.getDropdowndata('AlcoholStatus'),
+      this.adminservice.getDropdowndata('BeverageStatus'),
+      this.adminservice.getDropdowndata('DrugusageStatus'),
+      this.adminservice.getDropdowndata('BloodGroup'),
+      this.adminservice.getDropdowndata('AllergySeverity'),
+      this.adminservice.getDropdowndata('AlcoholFrequency'),
+      this.adminservice.getDropdowndata('SurgeryType'),
+      this.adminservice.getDropdowndata('MedicalCondition'),
+      this.adminservice.getDropdowndata('AllergyCategory')
+    ];
+
+    // Use forkJoin for parallel loading
+    import('rxjs').then(({ forkJoin }) => {
+      forkJoin(dropdownRequests).subscribe({
+        next: ([medications, conditions, smoking, alcohol, beverage, drug, bloodGroup, severity, frequency, surgery, medical, allergyCategory]) => {
+          this.medicationOptions = medications || [];
+          this.chronicConditionOptions = conditions || [];
+          this.smokingOptions = smoking || [];
+          this.alcoholOptions = alcohol || [];
+          this.beverageOptions = beverage || [];
+          this.drugUsageOptions = drug || [];
+          this.bloodGroupOptions = bloodGroup || [];
+          this.severityOptions = severity || [];
+          this.frequencyOptions = frequency || [];
+          this.surgeryTypeOptions = surgery || [];
+          this.medicalConditionOptions = medical || [];
+          this.allergyCategoryOptions = allergyCategory || [];
+          
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Error loading dropdowns:', err);
+          this._toastr.error('Failed to load form options');
+        }
+      });
     });
   }
 
@@ -703,6 +799,9 @@ onAllergyFocus(): void {
       firstObserved: null,
       lastObserved: null
     };
+    
+    this.markFieldChanged('allergySeverities');
+    this.triggerAutoSave();
   }
 }
 
@@ -727,6 +826,9 @@ onAllergyFocus(): void {
       endDate: null,
       reason: ''
     };
+    
+    this.markFieldChanged('medications');
+    this.triggerAutoSave();
   }
 }
 
@@ -751,6 +853,7 @@ onAllergyFocus(): void {
     
     this.searchInputs.condition = '';
     this.markFieldChanged('chronicConditions');
+    this.triggerAutoSave();
   }
 }
 
@@ -775,6 +878,7 @@ onAllergyFocus(): void {
     
     this.searchInputs.medicalcondition = '';
     this.markFieldChanged('familyHistoryConditions');
+    this.triggerAutoSave();
   }
 }
 
@@ -790,6 +894,9 @@ onAllergyFocus(): void {
         hadComplications: false,
         complicationDetails: ''
       };
+      
+      this.markFieldChanged('surgicalHistory');
+      this.triggerAutoSave();
     }
   }
 
@@ -798,6 +905,9 @@ onAllergyFocus(): void {
     if (type === 'medications') this.selectedMedicationNames.splice(index, 1);
     if (type === 'allergySeverities') this.selectedAllergyNames.splice(index, 1);
     if (type === 'chronicConditions') this.selectedConditionNames.splice(index, 1);
+    
+    this.markFieldChanged(type);
+    this.triggerAutoSave();
   }
 
   onBpInputChange(): void {
@@ -806,6 +916,9 @@ onAllergyFocus(): void {
     this.isDiastolicEnabled = !!systolic;
     this.showBpWarning = !!diastolic && !!systolic && diastolic > systolic;
     if (this.showBpWarning) this.patientData.diastolic = null;
+    
+    this.markFieldChanged('vitals');
+    this.triggerAutoSave();
   }
 
   getBpClass(field: 'systolic' | 'diastolic'): string {
@@ -834,6 +947,9 @@ onAllergyFocus(): void {
     const weight = this.patientData.weight;
     const height = this.patientData.height;
     this.patientData.bmi = weight && height ? (weight / ((height / 100) ** 2)).toFixed(1) : '';
+    
+    this.markFieldChanged('vitals');
+    this.triggerAutoSave();
   }
 
   getTooltip(field: string): string {
@@ -955,6 +1071,11 @@ isMedicalConditionSelected(option: DropdownOption): boolean {
 }
 
   onSubmit(): void {
+    if (this.saveInProgress) {
+      this._toastr.warning('Save already in progress, please wait...');
+      return;
+    }
+
     // Clean up empty social habits if no values are set
     if (this.patientData.socialHabits.length > 0) {
       const hasValues = Object.values(this.patientData.socialHabits[0]).some(
@@ -971,16 +1092,25 @@ isMedicalConditionSelected(option: DropdownOption): boolean {
       return;
     }
 
+    this.saveInProgress = true;
+    this.autoSaveEnabled = false; // Disable auto-save during manual save
     this._loader.show();
+    
     this.adminservice.savePatientAssessment(this.patientData).subscribe({
       next: (res) => {
+        this.saveInProgress = false;
+        this.autoSaveEnabled = true;
         this._loader.hide();
         this._toastr.success('Assessment saved successfully');
         this.originalAssessmentData = JSON.parse(JSON.stringify(this.patientData));
         this.isDirty = false;
+        this.modifiedFields.clear();
         this.initializeSocialHabits();
+        this.cdr.detectChanges();
       },
       error: (err) => {
+        this.saveInProgress = false;
+        this.autoSaveEnabled = true;
         this._loader.hide();
         this._toastr.error(`Error saving assessment: ${err.message}`);
       }
@@ -1045,6 +1175,7 @@ isMedicalConditionSelected(option: DropdownOption): boolean {
   this.patientData.chiefComplaints[index].painScale = value;
   this.painScaleErrors[index] = false;
   this.markFieldChanged('chiefComplaints');
+  this.triggerAutoSave();
 }
 
 preventInvalidInput(event: KeyboardEvent) {
@@ -1196,6 +1327,7 @@ onSmokingStatusChange(): void {
     this.patientData.socialHabits[0].smokingQuitDate = null;
   }
   this.markFieldChanged('socialHabits');
+  this.triggerAutoSave();
 }
 
 onAlcoholStatusChange(): void {
@@ -1205,6 +1337,7 @@ onAlcoholStatusChange(): void {
     this.patientData.socialHabits[0].yearsDrinking = null;
   }
   this.markFieldChanged('socialHabits');
+  this.triggerAutoSave();
 }
 
 onBeverageStatusChange(): void {
@@ -1213,6 +1346,7 @@ onBeverageStatusChange(): void {
     this.patientData.socialHabits[0].cupsPerDay = null;
   }
   this.markFieldChanged('socialHabits');
+  this.triggerAutoSave();
 }
 
 onDrugUsageStatusChange(): void {
@@ -1221,6 +1355,7 @@ onDrugUsageStatusChange(): void {
     this.patientData.socialHabits[0].drugDetails = null;
   }
   this.markFieldChanged('socialHabits');
+  this.triggerAutoSave();
 }
 
 
@@ -1236,10 +1371,33 @@ onDrugUsageStatusChange(): void {
       'socialHabits', 'fileUrl', 'isFileUpload'
     ];
 
+    const wasDirty = this.isDirty;
     this.isDirty = fieldsToCheck.some(field => {
       const current = JSON.stringify(this.patientData[field]);
       const original = JSON.stringify(this.originalAssessmentData[field]);
       return current !== original;
     });
+    
+    // Only trigger auto-save check if dirty state changed from clean to dirty
+    if (!wasDirty && this.isDirty) {
+      this.triggerAutoSave();
+    }
+  }
+
+  // Utility methods for better UX
+  getSaveButtonText(): string {
+    if (this.saveInProgress) return 'Saving...';
+    if (this.isDirty) return 'Save Changes';
+    return 'Save Assessment';
+  }
+
+  isSaveDisabled(): boolean {
+    return this.saveInProgress || this.showBpWarning;
+  }
+
+  getAutoSaveStatus(): string {
+    if (this.saveInProgress) return 'Saving...';
+    if (this.isDirty) return 'Unsaved changes';
+    return 'All changes saved';
   }
 }
