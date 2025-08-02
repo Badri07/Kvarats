@@ -24,7 +24,7 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
   isDirty: boolean = false;
   modifiedFields: Set<string> = new Set();
   private destroy$ = new Subject<void>();
-  private saveInProgress = false;
+  public saveInProgress = false;
   private autoSaveEnabled = true;
   private lastSaveTime = 0;
   private readonly SAVE_DEBOUNCE_TIME = 2000; // 2 seconds
@@ -379,7 +379,7 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
     });
   }
 
-  private triggerAutoSave(): void {
+  public triggerAutoSave(): void {
     this.destroy$.next();
   }
 
