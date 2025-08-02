@@ -1,3 +1,22 @@
+<!-- Auto-save status indicator -->
+<div class="fixed top-20 right-4 z-50 bg-white shadow-lg rounded-lg p-3 border-l-4" 
+     [ngClass]="{
+       'border-green-500': !isDirty && !saveInProgress,
+       'border-yellow-500': isDirty && !saveInProgress,
+       'border-blue-500': saveInProgress
+     }"
+     *ngIf="isDirty || saveInProgress">
+  <div class="flex items-center gap-2 text-sm">
+    <i class="fas" 
+       [ngClass]="{
+         'fa-check-circle text-green-500': !isDirty && !saveInProgress,
+         'fa-exclamation-circle text-yellow-500': isDirty && !saveInProgress,
+         'fa-spinner fa-spin text-blue-500': saveInProgress
+       }"></i>
+    <span class="font-medium">{{ getAutoSaveStatus() }}</span>
+  </div>
+</div>
+
 <div class="container mt-4">
   <form #form="ngForm" (ngSubmit)="onSubmit()" class="space-y-4">
 
@@ -63,7 +82,7 @@
 
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">BMI <span class="text-red-500">*</span></label>
-          <input type="text" required readonly class="form-control" [value]="patientData.bmi" [ngClass]="getVitalClass('bmi')" name="bmi" />
+          <input type="text" required readonly class="form-control" [value]="patientData.bmi" [ngClass]="getVitalClass('bmi')" name="bmi" (ngModelChange)="markFieldChanged('vitals')" />
         </div>
 
         <!-- Blood Group Dropdown - Fixed Version -->
@@ -76,7 +95,8 @@
           (focus)="openDropdown()"
           (blur)="closeDropdown('bloodgroup')" 
           autocomplete="off"
-          [value]="patientData.bloodGroupId ? getOptionLabel('bloodgroup', patientData.bloodGroupId) : ''" />
+          [value]="patientData.bloodGroupId ? getOptionLabel('bloodgroup', patientData.bloodGroupId) : ''"
+          (ngModelChange)="markFieldChanged('bloodGroupId'); triggerAutoSave()" />
     
     <!-- Updated Dropdown -->
     <div class="bloodgroup-dropdown bg-white shadow-lg rounded-md border border-gray-300"
@@ -113,7 +133,8 @@
               [(ngModel)]="searchInputs.complaint" name="chiefComplaintSearch"
               (input)="filterOptions('complaint', searchInputs.complaint); markFieldChanged('chiefComplaints')"
               (focus)="filterOptions('complaint', searchInputs.complaint)"
-              (blur)="closeDropdown('complaint')" autocomplete="off" required />
+              (blur)="closeDropdown('complaint')" autocomplete="off" required
+              (ngModelChange)="markFieldChanged('chiefComplaints')" />
             <button class="btn btn-outline-secondary" type="button"
               (click)="addNewItem('complaint'); markFieldChanged('chiefComplaints')"
               *ngIf="showAddButtons.complaint">
@@ -149,7 +170,8 @@
                   <input type="number" class="form-control" min="0" max="10"
                         [(ngModel)]="item.painScale" [name]="'painScale' + i"
                         (input)="validatePainScale($event, i); markFieldChanged('chiefComplaints')"
-                        (keydown)="preventInvalidInput($event)" />
+                        (keydown)="preventInvalidInput($event)"
+                        (ngModelChange)="markFieldChanged('chiefComplaints'); triggerAutoSave()" />
                   <div *ngIf="painScaleErrors[i]" class="text-danger small mt-1">
                     Pain scale must be between 0 and 10
                   </div>
@@ -158,13 +180,15 @@
                 <label class="form-label">Onset Date</label>
                 <input type="date" class="form-control"
                       [(ngModel)]="item.onsetDate" [name]="'onsetDate' + i"
-                      (input)="markFieldChanged('chiefComplaints')" />
+                      (input)="markFieldChanged('chiefComplaints')"
+                      (ngModelChange)="markFieldChanged('chiefComplaints'); triggerAutoSave()" />
               </div>
               <div class="col-md-9">
                 <label class="form-label">Notes</label>
                 <textarea class="form-control" rows="2"
                           [(ngModel)]="item.notes" [name]="'notes' + i"
-                          (input)="markFieldChanged('chiefComplaints')"></textarea>
+                          (input)="markFieldChanged('chiefComplaints')"
+                          (ngModelChange)="markFieldChanged('chiefComplaints'); triggerAutoSave()"></textarea>
               </div>
             </div>
           </div>
@@ -200,7 +224,8 @@
                           [(ngModel)]="searchInputs.allergycategory" name="allergyCategorySearch"
                           (input)="filterOptions('allergycategory', searchInputs.allergycategory)"
                           (focus)="filterOptions('allergycategory', searchInputs.allergycategory)"
-                          (blur)="closeDropdown('allergycategory')" autocomplete="off" />
+                          (blur)="closeDropdown('allergycategory')" autocomplete="off"
+                          (ngModelChange)="markFieldChanged('allergySeverities')" />
                     <button class="btn btn-outline-secondary" type="button"
                       (click)="addNewItem('allergycategory')"
                       *ngIf="showAddButtons.allergycategory">
@@ -235,7 +260,8 @@
            (focus)="onAllergyFocus()"
            (blur)="closeDropdown('allergy')" 
            autocomplete="off"
-           [disabled]="!newAllergy.allergyCategoryId" />
+           [disabled]="!newAllergy.allergyCategoryId"
+           (ngModelChange)="markFieldChanged('allergySeverities')" />
     <button class="btn btn-outline-secondary ml-1" type="button"
             (click)="addNewItem('allergy')"
             *ngIf="showAddButtons.allergy"
@@ -266,7 +292,8 @@
                           [(ngModel)]="searchInputs.severity" name="severitySearch"
                           (input)="filterOptions('severity', searchInputs.severity)"
                           (focus)="filterOptions('severity', searchInputs.severity)"
-                          (blur)="closeDropdown('severity')" autocomplete="off" />
+                          (blur)="closeDropdown('severity')" autocomplete="off"
+                          (ngModelChange)="markFieldChanged('allergySeverities')" />
                     <button class="btn btn-outline-secondary" type="button"
                       (click)="addNewItem('severity')"
                       *ngIf="showAddButtons.severity">
@@ -293,21 +320,24 @@
                   <label class="block text-xs font-medium text-gray-500 mb-1">Reaction Details</label>
                   <textarea class="form-control text-sm w-full" rows="2" placeholder="Details of allergic reaction"
                             [(ngModel)]="newAllergy.reactionDetails" name="reactionDetails" 
-                            maxlength="500"></textarea>
+                            maxlength="500"
+                            (ngModelChange)="markFieldChanged('allergySeverities')"></textarea>
                 </div>
 
                 <!-- First Observed Date -->
                 <div>
                   <label class="block text-xs font-medium text-gray-500 mb-1">First Observed</label>
                   <input type="date" class="form-control text-sm py-1 h-9 w-full" 
-                         [(ngModel)]="newAllergy.firstObserved" name="firstObserved" />
+                         [(ngModel)]="newAllergy.firstObserved" name="firstObserved"
+                         (ngModelChange)="markFieldChanged('allergySeverities')" />
                 </div>
 
                 <!-- Last Observed Date -->
                 <div>
                   <label class="block text-xs font-medium text-gray-500 mb-1">Last Observed</label>
                   <input type="date" class="form-control text-sm py-1 h-9 w-full" 
-                         [(ngModel)]="newAllergy.lastObserved" name="lastObserved" />
+                         [(ngModel)]="newAllergy.lastObserved" name="lastObserved"
+                         (ngModelChange)="markFieldChanged('allergySeverities')" />
                 </div>
               </div>
 
@@ -969,18 +999,19 @@
     <!-- ACTION BUTTONS -->
     <div class="flex justify-end gap-3">
       <button type="submit"
-            class="px-4 py-2 bg-primary-border-color text-white rounded transition-colors">
-        Save Assessment
+            class="px-4 py-2 bg-primary-border-color text-white rounded transition-colors"
+            [disabled]="isSaveDisabled()"
+            [ngClass]="{'opacity-50 cursor-not-allowed': isSaveDisabled()}">
+        <i class="fas fa-save mr-2"></i>
+        {{ getSaveButtonText() }}
       </button>
 
       <button type="button" (click)="resetForm(form)"
             [disabled]="!form.dirty"
             class="px-4 py-2 bg-primary-border-color text-white rounded transition-colors disabled:opacity-50">
-        Reset
+        <i class="fas fa-undo mr-2"></i>
+        Reset Changes
       </button>
     </div>
   </form>
 </div>
-
-
-
