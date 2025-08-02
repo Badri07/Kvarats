@@ -1,0 +1,56 @@
+.processing-queue {
+  width: 400px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.05);
+  padding: 16px;
+  font-family: sans-serif;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.icon {
+  font-size: 24px;
+  color: #2563eb;
+}
+
+.queue-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f9fafb;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.item-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.doc-icon {
+  font-size: 20px;
+  color: #6b7280;
+}
+
+.cancel-btn {
+  background: none;
+  border: 1px solid #2563eb;
+  color: #2563eb;
+  border-radius: 6px;
+  padding: 4px 12px;
+  cursor: pointer;
+  font-size: 14px;
+}
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}

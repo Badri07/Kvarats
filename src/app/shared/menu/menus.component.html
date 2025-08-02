@@ -1,0 +1,43 @@
+<div class="menu-wrapper" [class.dark-mode]="isDarkMode">
+<ng-container *ngFor="let menu of menus">
+  <ng-container *ngIf="menu.submenus?.length; else singleMenu">
+    <div class="nav-item" (click)="toggleAccordion(menu.name)">
+      <div class="nav-link-content">
+        <i [class]="menu.icon"></i>
+        <span>{{ menu.name }}</span>
+      </div>
+      <i class="fas fa-chevron-down arrow"
+         [class.rotate]="isAccordionOpen(menu.name)"
+         *ngIf="!isSidebarCollapsed">
+      </i>
+    </div>
+
+    <div class="accordion" [class.show]="isAccordionOpen(menu.name)" *ngIf="!isSidebarCollapsed">
+ <a *ngFor="let sub of menu.submenus"
+   [routerLink]="['/' + sub.url]"
+   routerLinkActive="active"
+   class="nav-item submenu-item">
+  <div class="nav-link-content">
+    <i [class]="sub.icon"></i>
+    <span>{{ sub.name }}</span>
+  </div>
+</a>
+
+</div>
+
+  </ng-container>
+
+  <ng-template #singleMenu>
+    <a [routerLink]="menu.url"
+       routerLinkActive="active"
+       class="nav-item"
+       [routerLinkActiveOptions]="{ exact: true }">
+      <div class="nav-link-content">
+        <i [class]="menu.icon"></i>
+        <span>{{ menu.name }}</span>
+      </div>
+    </a>
+  </ng-template>
+</ng-container>
+
+</div>

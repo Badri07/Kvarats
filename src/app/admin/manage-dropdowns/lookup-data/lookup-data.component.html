@@ -1,0 +1,189 @@
+<div class="space-y-6">
+  <!-- Header -->
+  <div class="flex justify-between items-center">
+    <div>
+      <!-- <h2 class="text-2xl font-semibold text-gray-900">Lookup Data</h2> -->
+      <p class="text-gray-600 mt-1">Manage lookup values for various categories like allergies, conditions, and status types.</p>
+    </div>
+    <button
+      (click)="showAddForm()"
+      class="customBtn-secondary"
+    >
+      <!-- <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+      </svg> -->
+      Add Lookup Value
+    </button>
+  </div>
+
+  <!-- Form -->
+  <div *ngIf="showForm" class="card p-6">
+    <h3 class="text-lg font-medium text-gray-900 mb-4">
+      {{ isEditing ? 'Edit Lookup Value' : 'Add New Lookup Value' }}
+    </h3>
+    
+    <form [formGroup]="lookupForm" (ngSubmit)="onSubmit()">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+  <div>
+
+     <label class="block text-sm font-medium text-gray-700 mb-2">Parent Name</label>
+
+      <select formControlName="parentId" class="form-control">
+      <option value="">Select a parent name</option>
+      <option *ngFor="let _paratentlist of paratentlist" [value]="_paratentlist.id">{{ _paratentlist.category }}</option>
+    </select>
+    <div *ngIf="lookupForm.get('parentId')?.invalid && lookupForm.get('parentId')?.touched" class="text-red-500 text-sm mt-1">
+      Parent Name is required.
+    </div>
+
+    
+  </div>
+
+  <!-- Value -->
+  <div>
+    <label class="block text-sm font-medium text-gray-700 mb-2">Value</label>
+    <input
+      type="text"
+      formControlName="value"
+      class="form-control"
+      placeholder="Enter lookup value"
+    >
+    <div *ngIf="lookupForm.get('value')?.invalid && lookupForm.get('value')?.touched" class="text-red-500 text-sm mt-1">
+      Value is required 
+    </div>
+  </div>
+
+  <div class="md:col-span-2">
+   
+    <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+     <input
+      type="text"
+      formControlName="category"
+      class="form-control"
+      placeholder="Enter category value"
+    >
+    <div *ngIf="lookupForm.get('category')?.invalid && lookupForm.get('category')?.touched" class="text-red-500 text-sm mt-1">
+      Category is required.
+    </div>   
+  </div>
+
+  <div class="md:col-span-2">
+    <label class="inline-flex items-center">
+      <input
+        type="checkbox"
+        formControlName="active"
+        class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+      >
+      <span class="ml-2 text-sm text-gray-700">Active</span>
+    </label>
+  </div>
+</div>
+
+
+      <div class="flex justify-end space-x-3 mt-6 pt-6 border-t border-gray-200">
+        <button
+          type="button"
+          (click)="cancelForm()"
+          class="btn-secondary"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          [disabled]="lookupForm.invalid"
+          class="customBtn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {{ isEditing ? 'Update' : 'Create' }} Lookup Value
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Lookup Data by Category -->
+  <div *ngIf="isshowTable">
+     <ag-grid-angular
+  class="ag-theme-alpine"
+  [rowData]="rowData"
+  [columnDefs]="columnDefs"
+  [defaultColDef]="defaultColDef"
+  [paginationPageSize]="paginationPageSize"
+  style="width: 100%; height: 500px;"
+  (cellClicked)="onCellClicked($event)">
+</ag-grid-angular>
+<div class="bg-white rounded-b-xl border-t-0 border border-gray-200 shadow-sm">
+
+  <!-- Table here -->
+  <table class="min-w-full text-sm text-left">
+    <!-- Your table headers and rows -->
+  </table>
+
+  <!-- Pagination Footer -->
+  <div class="flex flex-col md:flex-row justify-between items-center gap-4 px-4 py-3 border-t border-gray-200 text-sm text-gray-700">
+    
+    <!-- Left: Page Size + Info -->
+    <div class="flex flex-col md:flex-row items-center gap-4">
+      <!-- Page Size Selector -->
+      <div class="flex items-center gap-2">
+        <label for="pageSize" class="font-medium">Page Size:</label>
+        <select id="pageSize"
+                [(ngModel)]="paginationPageSize"
+                (change)="onPageSizeChange()"
+                class="border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-orange-500">
+          <option *ngFor="let size of paginationPageSizeSelector" [value]="size">{{ size }}</option>
+        </select>
+      </div>
+
+      <!-- Page Info -->
+      <div>
+        Showing <span class="font-semibold">{{ pageStart }}</span> to
+        <span class="font-semibold">{{ pageEnd }}</span> of
+        <span class="font-semibold">{{ totalCount }}</span> records
+      </div>
+    </div>
+
+    <!-- Right: Pagination Controls -->
+    <div class="flex items-center gap-2 ml-auto">
+      <button (click)="goToPreviousPage()"
+              [disabled]="currentPage === 1"
+              class="px-4 py-1.5 rounded bg-orange-500 text-white disabled:bg-gray-300 disabled:cursor-not-allowed">
+        Previous
+      </button>
+
+      <span>
+        Page <span class="font-semibold">{{ currentPage }}</span> of
+        <span class="font-semibold">{{ totalPages }}</span>
+      </span>
+
+      <button (click)="goToNextPage()"
+              [disabled]="currentPage === totalPages"
+              class="px-4 py-1.5 rounded bg-orange-500 text-white disabled:bg-gray-300 disabled:cursor-not-allowed">
+        Next
+      </button>
+    </div>
+
+  </div>
+</div>
+    <!-- <div *ngIf="lookupData.length === 0" class="card p-8 text-center">
+      <div class="text-gray-500">
+        <svg class="w-12 h-12 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+        </svg>
+        <p class="text-lg">No lookup data found</p>
+        <p class="text-sm mt-1">Add your first lookup value to get started.</p>
+      </div>
+    </div> -->
+ 
+ 
+  </div>
+</div>
+
+<!-- Delete Confirmation Dialog -->
+<app-confirm-dialog
+  *ngIf="showDeleteConfirm"
+  title="Delete Lookup Value"
+  message="Are you sure you want to delete this lookup value? This action cannot be undone."
+  confirmText="Delete"
+  cancelText="Cancel"
+  (confirm)="deleteLookup()"
+  (cancel)="cancelDelete()"
+></app-confirm-dialog>

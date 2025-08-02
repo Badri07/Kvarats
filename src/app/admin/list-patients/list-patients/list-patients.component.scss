@@ -1,0 +1,54 @@
+.animated-tabs .slider{
+  width: 50%;
+}
+::ng-deep .ag-theme-custom {
+  border-radius: 12px;
+
+  .ag-header {
+    background-color: #f3f4f6;
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  .ag-row {
+    font-size: 14px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .ag-cell {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+  }
+
+  img {
+    object-fit: cover;
+  }
+}
+
+
+::ng-deep .ag-theme-alpine :where(.ag-checkbox-input-wrapper.ag-checked) {
+  background-color: #FFA157 !important;
+  border-color: #FFA157 !important;
+}
+
+/* Make sure these styles are in your component's CSS or global CSS */
+.assessment-btn {
+  transition: all 0.2s ease;
+}
+
+.assessment-btn:hover {
+  transform: scale(1.1);
+  opacity: 0.9;
+}
+
+/* If you want to keep class-based approach */
+.assessment-green {
+  border: 2px solid green !important;
+}
+
+.assessment-red {
+  border: 2px solid red !important;
+}
+
+

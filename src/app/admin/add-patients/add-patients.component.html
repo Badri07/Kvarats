@@ -1,0 +1,213 @@
+<form [formGroup]="clientForm" (ngSubmit)="saveForm()">
+  <div class="dashboard-container">
+    <div class="modal-body">
+      <div class="animated-tabs">
+        <div class="slider"></div>
+        <div class="tab" [class.active]="selectedTab === 'patient-info'" (click)="setTab('patient-info')">
+          <span>Patient Info</span>
+        </div>
+        <div class="tab" [class.active]="selectedTab === 'insurance'" (click)="setTab('insurance')">
+          <span>Insurance Provider</span>
+        </div>
+        <div class="tab" [class.active]="selectedTab === 'notification'" (click)="setTab('notification')">
+          <span>Notification</span>
+        </div>
+      </div>
+
+      <!-- Patient Info Tab -->
+      <div *ngIf="selectedTab === 'patient-info'">
+        <div class="row mt-3">
+          <div class="col-md-4 col-12">
+            <label class="mb-2">First Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" formControlName="firstName" [ngClass]="{'is-invalid': clientFormSubmitted && clientFormUser['firstName'].invalid}" />
+          </div>
+          <div class="col-md-4 col-12">
+            <label class="mb-2">Last Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" formControlName="lastName" [ngClass]="{'is-invalid': clientFormSubmitted && clientFormUser['lastName'].invalid}" />
+          </div>
+          <div class="col-md-4 col-12">
+            <label class="mb-2">Date of Birth <span class="text-danger">*</span></label>
+            <input type="date" class="form-control" formControlName="dateOfBirth" [ngClass]="{'is-invalid': clientFormSubmitted && clientFormUser['dateOfBirth'].invalid}" />
+          </div>
+        </div>
+
+        <div class="row mt-3">
+          <div class="col-md-4 col-12">
+            <label class="mb-2">Gender <span class="text-danger">*</span></label>
+            <select class="form-select" formControlName="gender" [ngClass]="{'is-invalid': clientFormSubmitted && clientFormUser['gender'].invalid}">
+              <option value="">Select Gender</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="col-md-4 col-12">
+            <label class="mb-2">Social Security Number</label>
+            <input type="text" class="form-control" formControlName="socialSecurityNumber" />
+          </div>
+          <div class="col-md-4 col-12">
+            <label class="mb-2">Address <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" formControlName="address" [ngClass]="{'is-invalid': clientFormSubmitted && clientFormUser['address'].invalid}" />
+          </div>
+        </div>
+
+        <!-- Primary Address Section -->
+        <div class="row mt-3">
+          <div class="col-md-4 col-12">
+            <label class="mb-2">Country <span class="text-danger">*</span></label>
+            <select class="form-select" formControlName="country" (change)="onAddressCountryChange()" [ngClass]="{'is-invalid': clientFormSubmitted && clientFormUser['country'].invalid}">
+              <option [ngValue]="null" disabled>Select Country</option>
+              <option *ngFor="let country of countries" [ngValue]="country">{{ country.country }}</option>
+            </select>
+          </div>
+          <div class="col-md-4 col-12">
+            <label class="mb-2">State <span class="text-danger">*</span></label>
+            <select class="form-select" formControlName="state" (change)="onAddressStateChange()" [ngClass]="{'is-invalid': clientFormSubmitted && clientFormUser['state'].invalid}">
+              <option [ngValue]="null" disabled>Select State</option>
+              <option *ngFor="let state of states" [ngValue]="state.stateCode">{{ state.stateName }}</option>
+            </select>
+          </div>
+          <div class="col-md-4 col-12">
+            <label class="mb-2">City <span class="text-danger">*</span></label>
+            <select class="form-select" formControlName="city" (change)="onAddressCityChange()" [ngClass]="{'is-invalid': clientFormSubmitted && clientFormUser['city'].invalid}">
+              <option [ngValue]="null">Select City</option>
+              <option *ngFor="let city of cities" [ngValue]="city.cityName">{{ city.cityName }}</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Added Postal Code row -->
+        <div class="row mt-3">
+          <div class="col-md-4 col-12">
+            <label class="mb-2">Postal Code <span class="text-danger">*</span></label>
+            <select class="form-select" formControlName="postalCode" [ngClass]="{'is-invalid': clientFormSubmitted && clientFormUser['postalCode'].invalid}">
+              <option [ngValue]="null">Select Postal Code</option>
+              <option *ngFor="let zip of zipCodes" [ngValue]="zip.zipCode">{{ zip.zipCode }}</option>
+            </select>
+          </div>
+          <div class="col-md-4 col-12">
+            <label class="mb-2">Phone Number <span class="text-danger">*</span></label>
+            <input type="tel" class="form-control" formControlName="phoneNumber" [ngClass]="{'is-invalid': clientFormSubmitted && clientFormUser['phoneNumber'].invalid}" />
+          </div>
+          <div class="col-md-4 col-12">
+            <label class="mb-2">Email</label>
+            <input type="email" class="form-control" formControlName="email" [ngClass]="{'is-invalid': clientFormSubmitted && clientFormUser['email'].invalid}" />
+          </div>
+        </div>
+
+        <div class="form-check form-switch mt-4">
+          <input class="form-check-input" type="checkbox" id="sameAsCurrent" formControlName="billingSameAsCurrent" (change)="onBillingSameToggle()" />
+          <label class="form-check-label" for="sameAsCurrent">Billing address same as Current Address</label>
+        </div>
+
+        <!-- Billing Address Section -->
+        <div class="row mt-3">
+          <div class="col-md-4">
+            <label class="mb-2">Billing Address Line</label>
+            <input type="text" class="form-control" formControlName="billingAddress" [disabled]="clientForm.get('billingSameAsCurrent')?.value"/>
+          </div>
+          <div class="col-md-4">
+            <label class="mb-2">Billing Country</label>
+            <select class="form-select" formControlName="billingCountry" [disabled]="clientForm.get('billingSameAsCurrent')?.value" (change)="onBillingCountryChange()">
+              <option selected disabled>Select Country</option>
+              <option *ngFor="let country of countries" [ngValue]="country">{{ country.country }}</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="mb-2">Billing State</label>
+            <select class="form-select" formControlName="billingState" [disabled]="clientForm.get('billingSameAsCurrent')?.value" (change)="onBillingStateChange()">
+              <option [ngValue]="null" disabled>Select State</option>
+              <option *ngFor="let state of billingStates" [ngValue]="state.stateCode">{{ state.stateName }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row mt-3">
+          <div class="col-md-4">
+            <label class="mb-2">Billing City</label>
+            <select class="form-select" formControlName="billingCity" [disabled]="clientForm.get('billingSameAsCurrent')?.value" (change)="onBillingCityChange()">
+              <option [ngValue]="null">Select City</option>
+              <option *ngFor="let city of billingCities" [ngValue]="city.cityName">{{ city.cityName }}</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="mb-2">Billing Postal Code</label>
+            <select class="form-select" formControlName="billingPostalCode" [disabled]="clientForm.get('billingSameAsCurrent')?.value">
+              <option [ngValue]="null">Select Postal Code</option>
+              <option *ngFor="let zip of billingZipCodes" [ngValue]="zip.zipCode">{{ zip.zipCode }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Insurance Tab -->
+      <div *ngIf="selectedTab === 'insurance'">
+        <div formArrayName="insurances">
+          <div *ngFor="let cc of insurances?.controls; let i = index" [formGroupName]="i">
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Name of Insurance Carrier</label>
+                <select class="form-select" formControlName="insuranceCarrierId">
+                  <option selected disabled>Select Insurance Carrier</option>
+                  <option [value]="insurance.id" *ngFor="let insurance of insuranceCarriers">{{insurance.name}}</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Name of Policy Holder</label>
+                <input type="text" class="form-control" formControlName="policyHolderName"/>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Relationship</label>
+                <input type="text" class="form-control" formControlName="relationship"/>
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Date of Birth (Policy Holder)</label>
+                <input type="date" class="form-control" formControlName="policyHolderDob"/>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Member ID Number</label>
+                <input type="text" class="form-control" formControlName="memberId"/>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Group Number</label>
+                <input type="text" class="form-control" formControlName="groupNumber"/>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notification Tab -->
+      <div *ngIf="selectedTab ==='notification'">
+        <div class="mt-3">
+          <div class="d-flex align-items-center gap-3 p-2 rounded">
+            <div class="pe-3 border-end">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="emailNotification" formControlName="emailNotification" 
+                      [ngClass]="{'is-invalid': clientFormSubmitted && clientFormUser['emailNotification'].invalid}">
+                <label class="form-check-label" for="emailNotification">Email Notification</label>
+              </div>
+            </div>
+            <div>
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="textNotification" formControlName="textNotification" 
+                      [ngClass]="{'is-invalid': clientFormSubmitted && clientFormUser['textNotification'].invalid}">
+                <label class="form-check-label" for="textNotification">Text Notification</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-end">
+      <button type="button" class="customBtn-secondary me-2" *ngIf="tabs.indexOf(selectedTab) > 0" (click)="onBack()">Back</button>
+      <button [type]="selectedTab === 'notification' ? 'submit' : 'button'" class="customBtn" (click)="onNext()">
+        {{ selectedTab === 'notification' ? 'Save' : 'Next' }}
+      </button>
+    </div>
+  </div>
+</form>

@@ -1,0 +1,36 @@
+.animated-tabs .slider{
+  width: 55%;
+}
+
+::ng-deep .custom-grid-theme .ag-header {
+  background-color: #3863A7 !important;
+  color: white;
+}
+
+::ng-deep .custom-grid-theme .ag-header-cell-label {
+  color: white;
+}
+
+::ng-deep .custom-grid-theme .ag-cell {
+  color: black;
+;
+}
+
+.assessment-btn {
+  transition: all 0.2s ease;
+}
+
+.assessment-btn:hover {
+  transform: scale(1.1);
+  opacity: 0.9;
+}
+
+.assessment-green {
+  border: 2px solid green !important;
+}
+
+.assessment-red {
+  border: 2px solid red !important;
+}
+
+

@@ -1,0 +1,354 @@
+
+<!-- Calendar -->
+
+
+<!-- Dashboard container with popup panel -->
+<div class="dashboard-container">
+  <div
+    class="popup-panel"
+    *ngIf="isPanelOpen"
+    [ngStyle]="{ top: panelTop + 'px', left: panelLeft + 'px' }"
+    (click)="$event.stopPropagation()"
+  >
+    <form [formGroup]="form" class="outlook-light-popup">
+      <div class="popup-header">
+        <div class="left-header">
+          <i class="fa-regular fa-calendar"></i>
+          <span>Calendar</span>
+        </div>
+        <div class="right-header">
+          <button class="btn-save" type="button" (click)="saveAppointment()">
+            <i class="fa-solid fa-floppy-disk me-1"></i> Save
+          </button>
+          <button class="btn-discard" type="button" (click)="closePanel()">
+            <i class="fa-solid fa-trash-can me-1"></i> Discard
+          </button>
+        </div>
+      </div>
+
+      <input
+        type="text"
+        class="input-title"
+        placeholder="Add a title"
+        formControlName="title"
+      />
+
+      <!-- Date/Time -->
+      <div class="datetime-row">
+        <div class="date-group">
+          <i class="fa-regular fa-calendar icon"></i>
+          <input type="date" class="form-control" formControlName="date" />
+        </div>
+        <div class="time-group">
+          <i class="fa-regular fa-clock icon"></i>
+          <input type="time" class="form-control" formControlName="startTime" />
+        </div>
+        <label class="all-day-toggle">
+          <input type="checkbox" /> All day
+        </label>
+      </div>
+
+      <!-- End Date/Time -->
+      <div class="datetime-row">
+        <div class="date-group">
+          <i class="fa-regular fa-calendar icon"></i>
+          <input type="date" class="form-control" formControlName="enddate" />
+        </div>
+        <div class="time-group">
+          <i class="fa-regular fa-clock icon"></i>
+          <input type="time" class="form-control" formControlName="endTime" />
+        </div>
+      </div>
+
+      <!-- Location -->
+      <div class="location-row">
+        <i class="fa-solid fa-location-dot icon"></i>
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Add a room or location"
+          formControlName="location"
+        />
+      </div>
+
+      <!-- Description -->
+      <div class="desc-row">
+        <i class="fa-solid fa-bars icon"></i>
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Add a description"
+          formControlName="description"
+        />
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<div class="dashboard-container">
+
+
+  <div class="modal show fade d-block" tabindex="-1" *ngIf="isShowPopup">
+    <div class="modal-dialog modal-lg">
+      <div class=" mt-5">
+
+        <div class="modal-header">
+          <h5 class="modal-title">Add Patient</h5>
+         <div>
+<div>
+    <!-- Show Next if on schedule tab -->
+    <button *ngIf="selectedTab === 'schedule'"
+            type="button" class="btn customBtn m-2"
+            (click)="goToTransaction()">
+      <i class="fa-solid fa-arrow-right me-1"></i>Next
+    </button>
+    <!-- Show Save if on transactions tab -->
+    <button *ngIf="selectedTab === 'transactions'"
+            type="button" class="btn customBtn m-2"
+            (click)="onsubmit()">
+      <i class="fa-solid fa-floppy-disk me-1"></i>Save
+    </button>
+
+    <!-- Close stays -->
+    <button type="button" class="btn customBtn m-2" (click)="closeModal()">Close</button>
+  </div>
+         </div>
+        </div>
+
+        <div class="modal-body">
+          <div class="animated-tabs">
+            <div class="slider" style="
+    width: 50%;
+"></div>
+
+            <div class="tab" [class.active]="selectedTab === 'schedule'" (click)="setTab('schedule')">
+              <span>schedule</span>
+            </div>
+            <div class="tab" [class.active]="selectedTab === 'transactions'" (click)="setTab('transactions')">
+              <span>transactions</span>
+            </div>
+
+          </div>
+
+           <div *ngIf="selectedTab === 'schedule'">
+
+  <div class="p-3">
+    <div class="form-check form-check-inline">
+      <input class="form-check-input" type="radio" name="appointmentType" id="clientAppointment" checked>
+      <label class="form-check-label" for="clientAppointment">Client Appointment</label>
+    </div>
+    <div class="form-check form-check-inline">
+      <input class="form-check-input" type="radio" name="appointmentType" id="otherAppointment">
+      <label class="form-check-label" for="otherAppointment">Other</label>
+    </div>
+  </div>
+ <form [formGroup]="appointmentForm">
+  <div class="row p-3">
+    <!-- Therapist -->
+    <div class="col-md-4 col-sm-6">
+      <label class="fw-medium">Therapist *</label>
+      <select class="form-select" formControlName="therapistInput">
+        <option value=""  selected>Select</option>
+        <option *ngFor="let list of therapistList" [value]="list.userId">
+    {{ list.firstName }}
+  </option>
+      </select>
+    </div>
+
+    <!-- Appointment Type -->
+    <div class="col-md-4 col-sm-6">
+      <label>Appointment Type *</label>
+      <select class="form-select" formControlName="appointmentTypeInput">
+        <option value="" disabled selected>Select</option>
+                <option value="">Testing</option>
+
+      </select>
+    </div>
+
+    <div class="col-md-4 col-sm-6">
+      <label class="fw-medium">Patient ID *</label>
+      <input class="form-control" type="text" formControlName="patientId" placeholder="Enter Patient ID" />
+    </div>
+  </div>
+
+  <div class="row p-3">
+    <!-- Date -->
+    <div class="col-md-4 col-sm-6">
+      <label class="fw-medium">Date *</label>
+      <input type="date" class="form-control" formControlName="date">
+    </div>
+
+    <!-- Time -->
+    <div class="col-md-4 col-sm-6">
+      <label class="fw-medium">Time *</label>
+      <div class="d-flex gap-2">
+        <input type="time" name="startTime" id="" formControlName="startTime">
+        <span class="align-self-center">-</span>
+          <input type="time" name="endTime" id="" formControlName="endTime">
+      </div>
+    </div>
+
+      <div class="col-md-4 col-sm-6">
+      <label class="fw-medium">Location *</label>
+      <select class="form-select" formControlName="location">
+        <option value="" disabled selected>Select</option>
+        <option value="">Testing</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="row p-3">
+    <!-- Spaces -->
+
+
+  </div>
+
+  <!-- Repeat Options -->
+  <div class="mt-4 p-3 border rounded bg-light">
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" id="repeat" formControlName="repeat">
+      <label class="form-check-label" for="repeat">Repeat</label>
+    </div>
+    <div class="row g-3 mt-2">
+      <div class="col-md-3 col-sm-6 d-flex align-items-center">
+        <span class="me-2">Every</span>
+        <input type="number" class="form-control" style="width:80px;" formControlName="repeatEvery" min="1">
+        <select class="form-select ms-2" formControlName="repeatPeriod" style="width:100px;">
+          <option>Week</option>
+          <option>Day</option>
+          <option>Month</option>
+        </select>
+      </div>
+      <div class="col-md-6 col-sm-12 d-flex flex-wrap gap-2 align-items-center">
+        <button type="button" class="btn btn-outline-primary btn-sm">S</button>
+        <button type="button" class="btn btn-outline-primary btn-sm">M</button>
+        <button type="button" class="btn btn-outline-primary btn-sm">T</button>
+        <button type="button" class="btn btn-outline-primary btn-sm">W</button>
+        <button type="button" class="btn btn-outline-primary btn-sm">T</button>
+        <button type="button" class="btn btn-outline-primary btn-sm">F</button>
+        <button type="button" class="btn btn-outline-primary btn-sm">S</button>
+      </div>
+      <div class="col-md-3 col-sm-6">
+        <label>End date</label>
+        <input type="date" class="form-control" formControlName="endDate">
+      </div>
+    </div>
+  </div>
+
+  <!-- Notes -->
+  <div class="mt-3 p-3">
+    <label>Appointment Notes</label>
+    <textarea class="form-control" rows="3" formControlName="notes"></textarea>
+  </div>
+</form>
+</div>
+
+          <div *ngIf="selectedTab === 'transactions'">
+  <div class="p-3" id="transactions">
+
+    <!-- Patient Transaction -->
+    <div class="transaction-box mb-4" [formGroup]="transactionForm">
+      <h6 class="transaction-title">Patient Transaction</h6>
+      <div class="row transaction-header fw-medium border-bottom py-2">
+        <div class="col-md-4">Service Type</div>
+        <div class="col-md-4">Commission Code</div>
+        <div class="col-md-4 text-end">Amount</div>
+      </div>
+      <div class="row transaction-row py-2 align-items-center border-bottom">
+        <!-- Service Type -->
+        <div class="col-md-4">
+          <select class="form-select" formControlName="serviceTypeInput">
+            <option value="" disabled selected>Select</option>
+            <!-- Populate options dynamically -->                <option value="">Testing</option>
+
+          </select>
+        </div>
+        <!-- Commission Code -->
+        <div class="col-md-4">
+          <select class="form-select" formControlName="commissionCodeInput">
+            <option value="" disabled selected>Select</option>                <option value="">Testing</option>
+
+            <!-- Populate options dynamically -->
+          </select>
+        </div>
+        <!-- Amount -->
+        <div class="col-md-4 text-end">
+          <input class="form-control" placeholder="$" type="number" formControlName="amount" />
+        </div>
+      </div>
+      <div class="text-end mt-2 fw-bold">Total $0.00</div>
+      <div class="text-end mt-2">
+        <button class="btn btn-info btn-sm">Create Sales Receipt</button>
+        <button class="btn btn-info btn-sm">Create Invoice</button>
+      </div>
+    </div>
+
+    <!-- Insurance Transaction -->
+    <div class="transaction-box mb-4" [formGroup]="transactionForm">
+      <h6 class="transaction-title">Insurance Transaction</h6>
+      <div class="row transaction-header fw-medium border-bottom py-2">
+        <div class="col-md-4">Service Type</div>
+        <div class="col-md-4">Commission Code</div>
+        <div class="col-md-4 text-end">Amount</div>
+      </div>
+      <div class="row transaction-row py-2 align-items-center border-bottom">
+        <div class="col-md-4">
+          <select class="form-select" formControlName="serviceTypeInput">
+            <option value="" disabled selected>Select</option>                <option value="">Testing</option>
+
+          </select>
+        </div>
+        <div class="col-md-4">
+          <select class="form-select" formControlName="commissionCodeInput">
+            <option value="" disabled selected>Select</option>                <option value="">Testing</option>
+
+          </select>
+        </div>
+        <div class="col-md-4 text-end">
+          <input class="form-control" placeholder="$" type="number" formControlName="amount" />
+        </div>
+      </div>
+      <div class="text-end mt-2 fw-bold">Total $0.00</div>
+      <div class="text-end mt-2"><button class="btn btn-info btn-sm">Create Invoice</button></div>
+    </div>
+
+    <!-- Headway Transaction -->
+    <div class="transaction-box mb-4" [formGroup]="transactionForm">
+      <h6 class="transaction-title">Headway Transaction</h6>
+      <div class="row transaction-header fw-medium border-bottom py-2">
+        <div class="col-md-4">Service Type</div>
+        <div class="col-md-4">Commission Code</div>
+        <div class="col-md-4 text-end">Amount</div>
+      </div>
+      <div class="row transaction-row py-2 align-items-center border-bottom">
+        <div class="col-md-4">
+          <select class="form-select" formControlName="serviceTypeInput">
+            <option value="" disabled selected>Select</option>                <option value="">Testing</option>
+
+          </select>
+        </div>
+        <div class="col-md-4">
+          <select class="form-select" formControlName="commissionCodeInput">
+            <option value="" disabled selected>Select</option>                <option value="">Testing</option>
+
+          </select>
+        </div>
+        <div class="col-md-4 text-end">
+          <input class="form-control" placeholder="$" type="number" formControlName="amount" />
+        </div>
+      </div>
+      <div class="text-end mt-2 fw-bold">Total $0.00</div>
+      <div class="text-end mt-2"><button class="btn btn-info btn-sm">Create Invoice</button></div>
+    </div>
+
+  </div>
+</div>
+
+
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>

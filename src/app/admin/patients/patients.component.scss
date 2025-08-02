@@ -1,0 +1,102 @@
+/* 🔹 Rounded input elements */
+input,
+textarea,
+select,
+button {
+  border-radius: 8px;
+  padding: 0.45rem 0.75rem;
+}
+
+/* 🔹 Save Button Style */
+.custom-save-btn {
+  color: white;
+  border: none;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+  }
+}
+
+/* 🔹 Card header styling */
+.card-header {
+  z-index: 1;
+  position: relative;
+  color: #fff;
+  font-weight: 500;
+  font-size: 1.1rem;
+}
+
+/* 🔹 Optional: Card design enhancement */
+.card {
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  overflow: visible !important;
+}
+
+/* 🔹 Border colors for BP field feedback */
+input.border-success {
+  border: 2px solid #28a745 !important;
+}
+
+input.border-warning {
+  border: 2px solid #ffc107 !important;
+}
+
+input.border-danger {
+  border: 2px solid #dc3545 !important;
+}
+
+input.border-secondary {
+  border: 1px solid #ced4da !important;
+}
+
+/* 🔹 Input focus override */
+input:focus,
+textarea:focus,
+select:focus {
+  box-shadow: none;
+  border-color: var(--common-toggle-color);
+}
+
+/* 🔹 Form responsiveness: full width on small screens */
+@media (max-width: 576px) {
+  .form-control {
+    width: 100%;
+  }
+}
+
+input.border-success {
+  border: 2px solid #28a745 !important;
+}
+
+input.border-warning {
+  border: 2px solid #ffc107 !important;
+}
+
+input.border-danger {
+  border: 2px solid #dc3545 !important;
+}
+
+input.border-secondary {
+  border: 1px solid #ced4da !important;
+}
+
+.dropdown .list-group-item.active {
+  background-color: var(--common-toggle-color) !important;
+  color: white;
+}
+
+.dropdown-container {
+  position: relative;
+  z-index: 50;
+}
+
+/* Dropdown styling */
+.bloodgroup-dropdown {
+  position: absolute;
+  z-index: 100;
+  width: 100%;
+  margin-top: 0.25rem;
+  max-height: 15rem;
+  overflow-y: auto;
+}

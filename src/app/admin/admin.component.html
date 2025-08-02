@@ -1,0 +1,94 @@
+<div class="d-flex" [class.dark-mode]="isDarkMode">
+  <div class="sidebar shadow-sm" [class.collapsed]="isSidebarCollapsed" [class.dark-mode]="isDarkMode">
+   <div class="flex justify-between items-center px-4 mt-5 mb-4">
+  <div *ngIf="!isSidebarCollapsed" class="flex justify-center items-center gap-2">
+    <img [src]="logo" alt="CareSlot Logo" class="w-40">
+  </div>
+<div class="menu-icon cursor-pointer" (click)="toggleSidebar()">
+  <img *ngIf="!isSidebarCollapsed" [src]="toggleOpen" alt="Open Sidebar" class=" w-8 h-8">
+  <img *ngIf="isSidebarCollapsed" [src]="toggleClose" alt="Close Sidebar" class=" w-6 h-6">
+</div>
+</div>
+
+<!-- <div class="flex justify-center">
+ <img src="{{titleImg}}" alt="" class="w-75">
+</div> -->
+
+<div class="nav-links sidebar-scroll">
+<app-menus></app-menus>
+</div>
+
+<!-- <ng-container *ngFor="let menu of menus">
+        <ng-container *ngIf="menu.submenus?.length; else singleMenu">
+          <div class="nav-item" (click)="toggleAccordion(menu.name)">
+            <div class="d-flex align-items-center gap-2">
+              <i class="{{ menu.icon }}"></i>
+              <span>{{ menu.name }}</span>
+            </div>
+            <i class="fas fa-chevron-down arrow" [class.rotate]="isAccordionOpen(menu.name)" *ngIf="!isSidebarCollapsed"></i>
+          </div>
+          <div class="accordion" [class.show]="isAccordionOpen(menu.name)" *ngIf="!isSidebarCollapsed">
+            <a *ngFor="let sub of menu.submenus" [routerLink]="sub.url" routerLinkActive="active" class="nav-item submenu-item">
+              <i class="{{ sub.icon }}"></i>
+              <span>{{ sub.name }}</span>
+            </a>
+          </div>
+        </ng-container>
+        <ng-template #singleMenu>
+          <a [routerLink]="menu.url" routerLinkActive="active" class="nav-item" [routerLinkActiveOptions]="{ exact: true }">
+            <i class="{{ menu.icon }}"></i>
+            <span>{{ menu.name }}</span>
+          </a>
+        </ng-template>
+      </ng-container> -->
+
+    <div class="bottom-links">
+      <a routerLink="/admin/profile" routerLinkActive="active" class="nav-item">
+        <i class="fas fa-user-circle"></i> <span *ngIf="!isSidebarCollapsed">Profile</span>
+      </a>
+      <a class="nav-item" (click)="logout()">
+        <i class="fas fa-sign-out-alt"></i> <span *ngIf="!isSidebarCollapsed">Logout</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <header  [ngStyle]="{ left: isSidebarCollapsed ? '70px' : '280px' }" class="top-header d-flex align-items-center justify-content-between px-4 py-3">
+    <div class="top-header">
+
+  <div class="search-container">
+  </div>
+  <div class="right-section ">
+        <span class="flex items-center gap-4 bg-white p-2 rounded-xl">
+
+     <button
+        (click)="toggleDarkMode()"
+        class="p-2 rounded-full transition"
+        [title]="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
+        <i class="fas" [ngClass]="isDarkMode ? 'fa-sun text-yellow-400' : 'fa-moon text-gray-800'"></i>
+      </button>
+
+  
+  <i class="fas fa-bell text-xl text-gray-600"></i>
+  <div class="profile flex items-center gap-2">
+    <div class="bg-primary-border-color px-[9px] py-[8px] rounded-lg">
+      <img src="{{userImg}}" alt="Avatar">
+    </div>
+    <div class="profile-info">
+      <div class="name font-medium">{{ username }}</div>
+      <div class="role text-sm text-gray-500">{{ userRole }}</div>
+    </div>
+  </div>
+</span>
+
+
+  </div>
+</div>
+    </header>
+    <div class="main-content p-1" [ngStyle]="{ 'margin-top': '120px', 'margin-left': isSidebarCollapsed ? '0%' : '5%' }">
+      <app-breadcrumb></app-breadcrumb>
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>
+

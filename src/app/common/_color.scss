@@ -1,0 +1,23 @@
+$border-radius:18px;
+$color-palette:(
+  "primary-border-color":#F97316,
+  "primary-grey-50":rgba(44, 44, 44, 0.86),
+  "secondary-grey-100":#2C2C2C,
+  "primary-orange":#F97316,
+  "primary-white":#ffff,
+  "primary-table":#f5f5f5,
+  "secondary-table":#eee,
+  "primary-green":#008E42,
+  "primary-red":#B10003,
+  "primary-grey-placeholder":rgba(68, 68, 68, 0.6)
+);
+
+@function get-color($key:"primary"){
+  @return map-get($color-palette,$key);
+}
+
+
+// @function get-opaque-color($key:"primary",$opacity:"1"){
+//   $result: map-get($color-palette,$key);
+//   @return rgba($result,$opacity);
+// }

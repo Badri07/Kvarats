@@ -1,0 +1,37 @@
+<div *ngIf="isLoader" class="fixed inset-0 z-50 flex items-center justify-center bg-white/60">
+  <svg role="img" aria-label="Smiley Loader" class="w-32 h-32 smiley" viewBox="0 0 128 128">
+    <defs>
+      <clipPath id="smiley-eyes">
+        <circle class="smiley__eye1" cx="64" cy="64" r="8" transform="rotate(-40,64,64) translate(0,-56)" />
+        <circle class="smiley__eye2" cx="64" cy="64" r="8" transform="rotate(40,64,64) translate(0,-56)" />
+      </clipPath>
+      
+      <!-- Orange Gradient -->
+      <linearGradient id="smiley-grad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#f97316" />
+        <stop offset="100%" stop-color="#fb923c" />
+      </linearGradient>
+
+      <mask id="smiley-mask">
+        <rect x="0" y="0" width="128" height="128" fill="url(#smiley-grad)" />
+      </mask>
+    </defs>
+
+    <g stroke-linecap="round" stroke-width="12" stroke-dasharray="175.93 351.86">
+      <g>
+        <rect fill="url(#smiley-grad)" width="128" height="64" clip-path="url(#smiley-eyes)" />
+        <g fill="none" stroke="url(#smiley-grad)">
+          <circle class="smiley__mouth1" cx="64" cy="64" r="56" transform="rotate(180,64,64)" />
+          <circle class="smiley__mouth2" cx="64" cy="64" r="56" transform="rotate(0,64,64)" />
+        </g>
+      </g>
+      <g mask="url(#smiley-mask)">
+        <rect fill="url(#smiley-grad)" width="128" height="64" clip-path="url(#smiley-eyes)" />
+        <g fill="none" stroke="url(#smiley-grad)">
+          <circle class="smiley__mouth1" cx="64" cy="64" r="56" transform="rotate(180,64,64)" />
+          <circle class="smiley__mouth2" cx="64" cy="64" r="56" transform="rotate(0,64,64)" />
+        </g>
+      </g>
+    </g>
+  </svg>
+</div>

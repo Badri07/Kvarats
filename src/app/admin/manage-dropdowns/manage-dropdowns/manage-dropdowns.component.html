@@ -1,0 +1,35 @@
+<div>
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900">Manage Dropdowns</h1>
+    <!-- <p class="text-gray-600">
+      Manage your application's dropdown data including countries, lookup values, and medications.
+    </p> -->
+  </div>
+
+  <div class="animated-tabs mb-1" #tabContainer>
+    <div
+      class="slider"
+      [ngStyle]="{
+        width: sliderWidth,
+        left: sliderLeft
+      }"
+    ></div>
+
+    <div
+      class="tab"
+      *ngFor="let tab of tabs; let i = index"
+      [class.active]="activeTab === tab.id"
+      (click)="setActiveTab(tab.id, i)"
+      #tabItem
+    >
+      <i [class]="tab.icon"></i>
+      <span>{{ tab.label }}</span>
+    </div>
+  </div>
+
+  <div class="tab-content">
+    <app-countries-data *ngIf="activeTab === 'countries'"></app-countries-data>
+    <app-lookup-data *ngIf="activeTab === 'lookup'"></app-lookup-data>
+    <app-medication *ngIf="activeTab === 'medication'"></app-medication>
+  </div>
+</div>

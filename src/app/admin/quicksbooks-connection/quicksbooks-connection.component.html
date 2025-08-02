@@ -1,0 +1,49 @@
+<!-- <div class="dashboard-container">
+  <div class="d-flex justify-content-between align-items-center">
+
+    <div>
+      <h2>QuickBooks Connections</h2>
+    </div>
+
+    <div>
+      <h6 class="mb-2" [ngClass]="statusConnected ? 'connected' : 'disconnected'">
+        <span class="status">Status:</span> {{ statusConnected ? 'Connected' : 'Disconnected' }}
+      </h6>
+
+      <button class="customBtn" (click)="connectQuickBooks()">
+        {{ statusConnected ? 'Disconnect' : 'Connect to QuickBooks' }}
+      </button>
+    </div>
+
+  </div>
+</div> -->
+
+
+<div class="bg-white shadow-sm rounded-md p-4 flex items-center justify-between w-full mt-4">
+  <div class="flex justify-between w-1/2">
+    <div class="flex items-center">
+      <img src="{{logoImg}}" alt="Calendarly" class="w-[300px] object-contain" />
+
+    </div>
+    <div class="flex items-center">
+  <i *ngIf="statusConnected" class="fas fa-check-circle text-green-500 text-[24px]"></i>
+  <i *ngIf="!statusConnected" class="fas fa-times-circle text-red-500 text-[24px]"></i>
+</div>
+
+    <div class="flex items-center">
+      <img src="{{subLogoImg}}" alt="QuickBooks" class="w-[180px]  object-contain" />
+    </div>
+  </div>
+<div class="w-px h-24 border border-primary-border-color"></div>
+  <div class="flex flex-col space-y-2">
+    <div class="text-sm">
+      <span class="font-semibold text-black" [ngClass]="statusConnected ? 'connected' : 'disconnected'">Status : </span>
+      <span class="font-semibold" [ngClass]="statusConnected ? 'text-green-600' : 'text-red-600'"> {{ statusConnected ? 'Connected' : 'Disconnected' }}</span>
+    </div>
+    <button class="bg-green-600 text-white text-sm px-4 py-1 rounded hover:bg-green-700 transition" (click)="connectQuickBooks()">
+   <i class="fa-solid fa-plug"></i>     {{ statusConnected ? 'Disconnect' : 'Connect to QuickBooks' }}
+    </button>
+  </div>
+</div>
+
+

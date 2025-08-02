@@ -1,0 +1,172 @@
+
+<div class="dashboard-container">
+<div class="container mx-auto p-1">
+<h4 class="text-2xl font-semibold text-primary-border-color">Transactions List</h4>
+
+  <!-- Search Box -->
+<div class=" mt-1">
+   <div class="mt-4 rounded-xl bg-white">
+     <div class="flex gap-2 justify-between mb-3">
+      <div class="relative flex items-center">
+      <input
+        type="text"
+        id="searchInput"
+        class="w-full px-4 m-2 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-primary-border-color focus:border-transparent"
+        [(ngModel)]="searchValue"
+        (input)="onQuickFilterChanged()"
+        placeholder="Search patients...">
+      <button
+        class="px-4 py-2 bg-gray-100 text-gray-600 border border-l-0 border-gray-300 rounded-r-lg hover:bg-primary-border-color hover:text-white transition-colors"
+        *ngIf="searchValue"
+        (click)="searchValue=''; onQuickFilterChanged()">
+        Clear
+      </button>
+    </div>
+    
+ <button 
+  class="flex items-center gap-2 px-2.5 py-1 border border-green-600 text-green-600 rounded-md text-sm hover:bg-green-600 hover:text-white transition"
+  (click)="onExportClick()"
+>
+  <i class="fas fa-file-excel text-sm"></i>
+  <span>Export Excel</span>
+</button>
+
+</div>
+
+  
+
+<ag-grid-angular
+  class="ag-theme-alpine ag-theme-custom"
+  [gridOptions]="gridOptions"
+  [rowData]="rowData"
+  [columnDefs]="columnDefs"
+  [defaultColDef]="defaultColDef"
+  [pagination]="true"
+  [paginationPageSize]="paginationPageSize"
+  [paginationPageSizeSelector]="paginationPageSizeSelector"
+  style="width: 100%; height: 500px;">
+</ag-grid-angular>
+
+
+</div>
+
+  </div>
+</div>
+
+</div>
+
+
+
+
+<div *ngIf="showTransactionPopup" class="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4 overflow-y-auto">
+  <div class="bg-white rounded-lg shadow-xl w-full max-w-3xl relative p-6" id="transactionPdfContent">
+
+    <!-- Header with logo + download -->
+    <div class="flex justify-between items-center mb-6 no-print">
+      <div class="flex items-center gap-2">
+       
+      </div>
+
+      <button
+        (click)="downloadPDF()"
+        class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 text-sm rounded flex items-center"
+      >
+        <i class="fas fa-file-pdf mr-2"></i> Download PDF
+      </button>
+    </div>
+          <hr class="hr-line mb-3 rounded-xl shadow-sm no-print" />
+
+    <div id="pdf-content">
+    <div class="text-center mb-6">
+<div class="flex justify-center">
+        <img src="{{image}}" alt="CareSlot Logo" class="h-16 mx-auto mb-2" />
+
+</div>
+      <h2 class="text-2xl font-bold text-gray-800 mb-3">Transaction Details</h2>
+          <hr class="hr-line mb-2 mt-1 rounded-xl shadow-sm no-print" />
+    </div>
+
+    <!-- BEGIN DETAILS -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
+
+      <!-- Patient Info -->
+      <div>
+        <div class="mb-1"><strong>Patient:</strong> {{ selectedTransaction?.patientName }}</div>
+        <div class="mb-1"><strong>Patient ID:</strong> {{ selectedTransaction?.patientId }}</div>
+      </div>
+      <div>
+        <div class="mb-1"><strong>Therapist:</strong> {{ selectedTransaction?.therapist || '—' }}</div>
+        <div class="mb-1"><strong>Appt Date:</strong> {{ selectedTransaction?.appointmentDate | date: 'mediumDate' }}</div>
+        <div class="mb-1"><strong>Appt ID:</strong> {{ selectedTransaction?.appointmentId }}</div>
+      </div>
+
+      <!-- Transaction Info -->
+      <div>
+        <div class="mb-1"><strong>Transaction Date:</strong> {{ selectedTransaction?.transactionDate | date: 'mediumDate' }}</div>
+        <div class="mb-1"><strong>Method:</strong> {{ selectedTransaction?.transactionMethod || '—' }}</div>
+      </div>
+      <div>
+  <div class="mb-1"><strong>Total Amount:</strong> {{ selectedTransaction?.totalAmount | currency: 'USD':'symbol':'1.2-2' }}</div>
+  <div class="mb-1"><strong>Status:</strong> {{ selectedTransaction?.status }}</div>
+</div>
+<div>
+  <div class="mb-1"><strong>Copay:</strong> {{ selectedTransaction?.copayAmount | currency: 'USD':'symbol':'1.2-2' }}</div>
+  <div class="mb-1"><strong>Insurance Claim:</strong> {{ selectedTransaction?.insuranceClaimAmount | currency: 'USD':'symbol':'1.2-2' }}</div>
+</div>
+
+      <div>
+        <div class="mb-1"><strong>Patient Paid:</strong>{{ selectedTransaction?.fullPatientPaymentAmount |  currency: 'USD':'symbol':'1.2-2' }}</div>
+      </div>
+
+      <!-- Invoice & Notes -->
+      <div>
+        <div class="mb-1"><strong>Invoice #:</strong> {{ selectedTransaction?.invoiceNumber || '—' }}</div>
+        <div class="mb-1"><strong>Reference:</strong> {{ selectedTransaction?.paymentReference || '—' }}</div>
+      </div>
+      <div class="md:col-span-2">
+        <div><strong>Notes:</strong></div>
+        <div class="bg-gray-50 border p-2 rounded mt-1 min-h-[60px]">
+          {{ selectedTransaction?.notes || 'No notes provided.' }}
+        </div>
+      </div>
+
+      <!-- Insurance Info -->
+      <div *ngIf="selectedTransaction?.insurance">
+        <div><strong>Insurance:</strong></div>
+        <ul class="ml-2 list-disc">
+          <li><strong>Payer:</strong> {{ selectedTransaction.insurance.payerName }}</li>
+          <li><strong>Policy Holder:</strong> {{ selectedTransaction.insurance.policyHolderName || '—' }}</li>
+          <li><strong>DOB:</strong> {{ selectedTransaction.insurance.policyHolderDob | date: 'mediumDate' }}</li>
+          <li><strong>Member ID:</strong> {{ selectedTransaction.insurance.memberId || '—' }}</li>
+          <li><strong>Group #:</strong> {{ selectedTransaction.insurance.groupNumber || '—' }}</li>
+          <li><strong>Copay:</strong> {{ selectedTransaction.insurance.coPay | currency: 'USD':'symbol':'1.2-2' }}</li>
+        </ul>
+      </div>
+
+      <!-- Sliding Scale Info -->
+      <div *ngIf="selectedTransaction?.slidingScaleApplied" class="md:col-span-2">
+        <div><strong>Sliding Scale Applied:</strong> Yes</div>
+        <div class="ml-2 mt-1">
+          <p><strong>Discount %:</strong> {{ selectedTransaction.slidingScaleDiscountPercentage }}%</p>
+<p><strong>Discount Amount:</strong> {{ selectedTransaction.slidingScaleAmount | currency: 'USD':'symbol':'1.2-2' }}</p>
+        </div>
+      </div>
+
+    </div>
+</div>
+    <!-- Footer Close -->
+    <div class="mt-6 flex justify-end no-print">
+      <button class="px-4 py-2 bg-primary-border-color text-white rounded " (click)="closeTransactionModal()">
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+

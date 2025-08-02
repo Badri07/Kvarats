@@ -1,0 +1,599 @@
+<!-- <div class="d-flex">
+  <button class="customBtn ms-auto mb-3" data-bs-toggle="modal" data-bs-target="#addUserModal">Add User</button>
+</div> -->
+<!--
+<div class="dashboard-container">
+  <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8 w-full">
+
+    <ng-container matColumnDef="position" class="text-center">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-start">SI.No</th>
+      <td mat-cell *matCellDef="let row; let i = index" class="text-start">{{ i + 1 }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="username">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-start">Name</th>
+      <td mat-cell *matCellDef="let row" class="text-start">{{ row.username }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="email">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header >Email</th>
+      <td mat-cell *matCellDef="let row">{{ row.email }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="roleName">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Role</th>
+      <td mat-cell *matCellDef="let row">{{ row.roles }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef class="text-end">Action</th>
+      <td mat-cell *matCellDef="let row" class="text-end">
+<button mat-icon-button color="primary" matTooltip="Edit" (click)="editUser(row.id)">
+<span><i style="color: #3863A7; font-size: 1.1rem;" class="fas fa-edit m-2"></i></span>
+            </button>
+        <button mat-icon-button color="warn" (click)="onDelete(row.id)" matTooltip="Delete">
+<span><i style="color: #3863A7; font-size: 1.1rem;" class="fas fa-trash"></i></span>            </button>
+      </td>
+    </ng-container>
+<button mat-icon-button color="primary" matTooltip="Edit">
+    <mat-icon>edit</mat-icon>
+  </button>
+  <button mat-icon-button color="warn" matTooltip="Delete">
+    <mat-icon>delete</mat-icon>
+  </button>
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  </table>
+
+  <mat-paginator [pageSizeOptions]="[5, 10, 25, 50]" showFirstLastButtons></mat-paginator>
+
+</div>
+
+ -->
+
+<!-- <div *ngIf="addUserForm" class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true" data-bs-backdrop="static">
+ <div class="modal-dialog">
+  <div class="modal-content">
+    <form [formGroup]="addUserForm" (ngSubmit)="onSubmit()">
+      <div class="modal-header">
+<h5 class="modal-title" id="addUserModalLabel">{{ isEditMode ? 'Edit User' : 'Add User' }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">First Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control"  placeholder="Enter First Name"
+                   style="border: 1px solid get-color('primary-orange');"
+                   formControlName="firstName"  [ngClass]="{
+      'is-invalid': UserSubmitted && User['firstName'].invalid,
+      'is-valid': UserSubmitted && User['firstName'].valid
+    }"/> <div *ngIf="
+                    UserSubmitted && User['firstName']['errors']
+                  "
+                  class="invalid-feedback"
+                >
+                  <div *ngIf="User['firstName']['errors']['required']">
+                   FirstName is required
+                  </div>
+ </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Last Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control"  placeholder="Enter Last Name"
+                   style="border: 1px solid get-color('primary-orange');"
+                   formControlName="lastName" [ngClass]="{
+      'is-invalid': UserSubmitted && User['lastName'].invalid,
+      'is-valid': UserSubmitted && User['lastName'].valid
+    }" />  <div *ngIf="
+                    UserSubmitted && User['lastName']['errors']
+                  "
+                  class="invalid-feedback"
+                >
+                  <div *ngIf="User['lastName']['errors']['required']">
+                   LastName is required
+                  </div>
+ </div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Email <span class="text-danger">*</span></label>
+          <input type="email" class="form-control"   placeholder="Enter Email"
+                 style="border: 1px solid get-color('primary-orange');"
+                 formControlName="email" [ngClass]="{
+      'is-invalid': UserSubmitted && User['email'].invalid,
+      'is-valid': UserSubmitted && User['email'].valid
+    }" />
+     <div *ngIf="
+                    UserSubmitted && User['email']['errors']
+                  "
+                  class="invalid-feedback"
+                >
+                  <div *ngIf="User['email']['errors']['required']">
+                   Email is required
+                  </div>
+ </div>
+        </div>
+         <div class="mb-3">
+          <label class="form-label">Username<span class="text-danger">*</span></label>
+          <input type="text" class="form-control"   placeholder="Enter Username"
+                 style="border: 1px solid get-color('primary-orange');"
+                 formControlName="Username" [ngClass]="{
+      'is-invalid': UserSubmitted && User['Username'].invalid,
+      'is-valid': UserSubmitted && User['Username'].valid
+    }" />
+     <div *ngIf="UserSubmitted && User['Username']['errors']"
+                  class="invalid-feedback"
+                >
+                  <div *ngIf="User['Username']['errors']['required']">
+                   Username is required
+                  </div>
+ </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Phone <span class="text-danger">*</span></label>
+          <input type="number" class="form-control"  placeholder="Enter Phone number"
+                 style="border: 1px solid get-color('primary-orange');"
+                 formControlName="contactNumber" [ngClass]="{
+      'is-invalid': UserSubmitted && User['contactNumber'].invalid,
+      'is-valid': UserSubmitted && User['contactNumber'].valid
+    }"/>
+    <div *ngIf="
+                    UserSubmitted && User['contactNumber']['errors']
+                  "
+                  class="invalid-feedback"
+                >
+                  <div *ngIf="User['contactNumber']['errors']['required']">
+                   Phone is required
+                  </div>
+ </div>
+        </div>
+
+         <div class="mb-3">
+  <label class="form-label">Address <span class="text-danger">*</span></label>
+  <textarea name="address" formControlName="address" class="form-control"   placeholder="Enter Address" id="">Address</textarea>
+   <div *ngIf="
+                    UserSubmitted && User['address']['errors']
+                  "
+                  class="invalid-feedback"
+                >
+                  <div *ngIf="User['address']['errors']['required']">
+                   Address is required
+                  </div>
+ </div>
+</div>
+
+        <div class="mb-3">
+  <label class="form-label">Role <span class="text-danger">*</span></label>
+  <select class="form-select" (change)="onRoleChange($event)"  placeholder="Enter Role"  formControlName="roleId" name="roleId" style="border: 1px solid var(--primary-orange);"[ngClass]="{
+      'is-invalid': UserSubmitted && User['roleId'].invalid,
+      'is-valid': UserSubmitted && User['roleId'].valid
+    }">
+    <option value="">Select Role</option>
+<option *ngFor="let role of userRole" [value]="role.id">{{ role.name }}</option>
+  </select >
+   <div *ngIf="
+                    UserSubmitted && User['roleId']['errors']
+                  "
+                  class="invalid-feedback"
+                >
+                  <div *ngIf="User['roleId']['errors']['required']">
+                   Role is required
+                  </div>
+ </div>
+</div>
+
+<div *ngIf="isshowtherapist">
+   <div class="mb-3">
+  <label class="form-label">Department <span class="text-danger">*</span></label>
+  <select class="form-select" placeholder="Enter Department" formControlName="department" (change)="getUserDepartmentId()">
+    <option value="" disabled>Select Role</option>
+    <option *ngFor="let userdepartment of userDepartment" [ngValue]="userdepartment">{{userdepartment.value}}</option>
+  </select >
+
+</div>
+ <div class="mb-3">
+  <label class="form-label">Specialization <span class="text-danger">*</span></label>
+  <select class="form-select" placeholder="Enter Specialization" formControlName="specialization">
+    <option value="" disabled>Select Role</option>
+    <option value="" *ngFor="let _userSpecializations of userSpecializations" [ngValue]="_userSpecializations.id">{{_userSpecializations.value}}</option>
+  </select >
+
+</div>
+ <div class="mb-3">
+  <label class="form-label">Qualifications <span class="text-danger">*</span></label>
+ <input type="text" class="form-control" placeholder="Enter qualification" formControlName="qualification">
+
+</div>
+
+</div>
+
+</div>
+      <div class="modal-footer">
+        <button type="button" class="btn customBtn-secondary" data-bs-dismiss="modal">Close</button>
+<button type="submit" class="btn customBtn">{{ isEditMode ? 'Update' : 'Save' }}</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+</div> -->
+
+
+
+
+
+<div class="dashboard-container container">
+<div class="animated-tabs">
+  <div class="slider"></div>
+
+  <div class="tab" [class.active]="selectedTab === 'ListUser'" (click)="setTab('ListUser')">
+    <i class="fas fa-calendar-days"></i>
+    <span>List User</span>
+  </div>
+
+   <div class="tab" [class.active]="selectedTab === 'AddUser'" (click)="setTab('AddUser')">
+    <i class="fas fa-home"></i>
+    <span>Add User</span>
+  </div>
+</div>
+
+
+<div *ngIf="selectedTab === 'AddUser'">
+ <form [formGroup]="addUserForm" (ngSubmit)="onSubmit()">
+
+      <div class="modal-body">
+        <div class="row mt-3">
+          <div class="col-12 col-md-4">
+            <label class="form-label">First Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control"  placeholder="Enter First Name"
+                   style="border: 1px solid get-color('primary-orange');"
+                   formControlName="firstName"  [ngClass]="{
+      'is-invalid': UserSubmitted && User['firstName'].invalid,
+      'is-valid': UserSubmitted && User['firstName'].valid
+    }"/> <div *ngIf="
+                    UserSubmitted && User['firstName']['errors']
+                  "
+                  class="invalid-feedback"
+                >
+                  <div *ngIf="User['firstName']['errors']['required']">
+                   FirstName is required
+                  </div>
+ </div>
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="form-label">Last Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control"  placeholder="Enter Last Name"
+                 
+                   formControlName="lastName" [ngClass]="{
+      'is-invalid': UserSubmitted && User['lastName'].invalid,
+      'is-valid': UserSubmitted && User['lastName'].valid
+    }" />  <div *ngIf="
+                    UserSubmitted && User['lastName']['errors']
+                  "
+                  class="invalid-feedback"
+                >
+                  <div *ngIf="User['lastName']['errors']['required']">
+                   LastName is required
+                  </div>
+ </div>
+          </div>
+          <div class="col-12 col-md-4">
+         
+          <label class="form-label">Email <span class="text-danger">*</span></label>
+          <input type="email" class="form-control"   placeholder="Enter Email"
+                 style="border: 1px solid get-color('primary-orange');"
+                 formControlName="email" [ngClass]="{
+      'is-invalid': UserSubmitted && User['email'].invalid,
+      'is-valid': UserSubmitted && User['email'].valid
+    }" />
+     <div *ngIf="
+                    UserSubmitted && User['email']['errors']
+                  "
+                  class="invalid-feedback"
+                >
+                  <div *ngIf="User['email']['errors']['required']">
+                   Email is required
+                  </div>
+ </div>
+      
+        </div>
+        </div>
+       <div class="row mt-3">
+       <div class="col-12 col-md-4">     
+          <label class="form-label">Username<span class="text-danger">*</span></label>
+          <input type="text" class="form-control"   placeholder="Enter Username"
+                 style="border: 1px solid get-color('primary-orange');"
+                 formControlName="Username" [ngClass]="{
+      'is-invalid': UserSubmitted && User['Username'].invalid,
+      'is-valid': UserSubmitted && User['Username'].valid
+    }" />
+     <div *ngIf="UserSubmitted && User['Username']['errors']"
+                  class="invalid-feedback"
+                >
+                  <div *ngIf="User['Username']['errors']['required']">
+                   Username is required
+                  </div>
+ </div>
+        
+       </div>
+<div class="col-12 col-md-4">
+  
+          <label class="form-label">Phone <span class="text-danger">*</span></label>
+          <input type="number" class="form-control"  placeholder="Enter Phone number"
+                 style="border: 1px solid get-color('primary-orange');"
+                 formControlName="contactNumber" [ngClass]="{
+      'is-invalid': UserSubmitted && User['contactNumber'].invalid,
+      'is-valid': UserSubmitted && User['contactNumber'].valid
+    }"/>
+    <div *ngIf="
+                    UserSubmitted && User['contactNumber']['errors']
+                  "
+                  class="invalid-feedback"
+                >
+                  <div *ngIf="User['contactNumber']['errors']['required']">
+                   Phone is required
+                  </div>
+ </div>
+      
+</div>
+
+ <div class="col-md-4 col-12">
+  <label class="form-label">Role <span class="text-danger">*</span></label>
+  <select class="form-select" formControlName="roleIds"
+        [compareWith]="compareRoles" (change)="onRoleChange($event)"
+        [ngClass]="{
+          'is-invalid': UserSubmitted && User['roleIds'].invalid,
+          'is-valid': UserSubmitted && User['roleIds'].valid
+        }">
+  <option [ngValue]="null" disabled>Select Role</option>
+  <option *ngFor="let role of userRole" [ngValue]="role">{{ role.roleName }}</option>
+</select>
+
+   <div *ngIf="
+                    UserSubmitted && User['roleIds']['errors']
+                  "
+                  class="invalid-feedback"
+                >
+                  <div *ngIf="User['roleIds']['errors']['required']">
+                   Role is required
+                  </div>
+ </div>
+</div>
+       </div>
+     
+     
+       <div class="row mt-3" *ngIf="isshowtherapist">
+        <div class="col-12 col-md-4">
+          <div *ngIf="isshowtherapist">
+  <label class="form-label">Department <span class="text-danger">*</span></label>
+  <select class="form-select" placeholder="Enter Department" formControlName="department" (change)="getUserDepartmentId()" [ngClass]="{
+          'is-invalid': UserSubmitted && User['department'].invalid,
+          'is-valid': UserSubmitted && User['department'].valid
+        }">
+    <option [ngValue]="null" disabled selected>Select Role</option>
+    <option value="" *ngFor="let userdepartment of userDepartment" [ngValue]="userdepartment">{{userdepartment.value}}</option>
+  </select >
+ <div *ngIf="
+                    UserSubmitted && User['department']['errors']
+                  "
+                  class="invalid-feedback"
+                >
+                  <div *ngIf="User['department']['errors']['required']">
+                   department is required
+                  </div>
+ </div>
+        </div>
+
+</div>
+<div class="col-12 col-md-4">
+  <label class="form-label">Specialization <span class="text-danger">*</span></label>
+  <select class="form-select" placeholder="Enter Specialization" formControlName="specialization" [ngClass]="{
+          'is-invalid': UserSubmitted && User['specialization'].invalid,
+          'is-valid': UserSubmitted && User['specialization'].valid
+        }">
+    <option value="" disabled>Select Role</option>
+    <option value="" *ngFor="let _userSpecializations of userSpecializations" [ngValue]="_userSpecializations.id">{{_userSpecializations.value}}</option>
+  </select>
+ <div *ngIf="
+                    UserSubmitted && User['specialization']['errors']
+                  "
+                  class="invalid-feedback"
+                >
+                  <div *ngIf="User['specialization']['errors']['required']">
+                   specialization is required
+                  </div>
+ </div>
+  </div>
+  <div class="col-12 col-md-4">
+  <label class="form-label">Qualifications <span class="text-danger">*</span></label>
+ <input type="text" class="form-control" placeholder="Enter qualification" formControlName="qualification" [ngClass]="{
+          'is-invalid': UserSubmitted && User['qualification'].invalid,
+          'is-valid': UserSubmitted && User['qualification'].valid
+        }">
+ <div *ngIf="
+                    UserSubmitted && User['qualification']['errors']
+                  "
+                  class="invalid-feedback"
+                >
+                  <div *ngIf="User['qualification']['errors']['required']">
+                   qualification is required
+                  </div>
+ </div>
+</div>
+  
+
+ </div>
+     
+       <div class="row mt-3">
+        <div class="col-12 col-md-6">
+       
+        <label class="form-label">Address <span class="text-danger">*</span></label>
+        <input name="address" formControlName="address" class="form-control"   placeholder="Enter Address" [ngClass]="{
+          'is-invalid': UserSubmitted && User['address'].invalid,
+          'is-valid': UserSubmitted && User['address'].valid
+        }">
+        <div *ngIf="
+                          UserSubmitted && User['address']['errors']
+                        "
+                        class="invalid-feedback"
+                      >
+                        <div *ngIf="User['address']['errors']['required']">
+                        Address is required
+                        </div>
+      </div>
+      
+      </div>
+      
+<div class="col-md-6 col-12">
+<label class="mb-2">Country <span class="text-danger">*</span></label>
+<select class="form-select" formControlName="country" (change)="onAddressCountryChange()"
+     [ngClass]="{
+          'is-invalid': UserSubmitted && User['country'].invalid,
+          'is-valid': UserSubmitted && User['country'].valid
+        }">
+<option [ngValue]="null" disabled selected>Select Country</option>
+<option *ngFor="let country of countries" [ngValue]="country">{{ country.country }}</option>
+</select>
+  
+</div><div *ngIf="
+                          UserSubmitted && User['country']['errors']
+                        "
+                        class="invalid-feedback"
+                      >
+                        <div *ngIf="User['country']['errors']['required']">
+                        country is required
+                        </div>
+      </div>
+      </div>
+
+       
+        <div class="row mt-3">
+    <div class="col-md-4">
+  <label class="mb-2">State <span class="text-danger">*</span></label>
+  <!-- State Dropdown -->
+<select class="form-select" formControlName="state" (change)="onAddressStateChange()"
+        [ngClass]="{
+          'is-invalid': UserSubmitted && User['state'].invalid,
+          'is-valid': UserSubmitted && User['state'].valid
+        }">
+  <option [ngValue]="null" disabled>Select State</option>
+  <option *ngFor="let state of states" [ngValue]="state">{{ state.stateName }}</option>
+</select>
+<div *ngIf="
+                          UserSubmitted && User['state']['errors']
+                        "
+                        class="invalid-feedback"
+                      >
+                        <div *ngIf="User['state']['errors']['required']">
+                        state is required
+                        </div>
+      </div>
+  </div>
+
+    <div class="col-md-4">
+  <label class="mb-2">City <span class="text-danger">*</span></label>
+<select class="form-select" formControlName="city" (change)="onAddressCityChange()"
+       [ngClass]="{
+          'is-invalid': UserSubmitted && User['city'].invalid,
+          'is-valid': UserSubmitted && User['city'].valid
+        }">
+  <option [ngValue]="null" disabled>Select City</option>
+  <option *ngFor="let city of cities" [ngValue]="city">{{ city.cityName }}</option>
+</select>
+<div *ngIf="
+                          UserSubmitted && User['city']['errors']
+                        "
+                        class="invalid-feedback"
+                      >
+                        <div *ngIf="User['city']['errors']['required']">
+                        city is required
+                        </div>
+      </div>
+  </div>
+  <div class="col-md-4">
+  <label class="mb-2">Postal Code <span class="text-danger">*</span></label>
+<select class="form-select" formControlName="countryDataId"
+     [ngClass]="{
+          'is-invalid': UserSubmitted && User['countryDataId'].invalid,
+          'is-valid': UserSubmitted && User['countryDataId'].valid
+        }">
+<option [ngValue]="null" disabled selected>Select Postal Code</option>
+<option *ngFor="let zip of zipCodes" [value]="zip.id">{{ zip.zipCode }}</option>
+</select>
+<div *ngIf="
+                          UserSubmitted && User['countryDataId']['errors']
+                        "
+                        class="invalid-feedback"
+                      >
+                        <div *ngIf="User['countryDataId']['errors']['required']">
+                        Postal Code is required
+                        </div>
+      </div>
+  </div>
+  </div>
+  
+      </div>
+
+
+      <div class="modal-footer">
+        
+
+<button type="submit" class="customBtn"><i class="fas fa-save"></i> {{ isEditMode ? 'Update' : 'Save' }}</button>
+      </div>
+    </form>
+</div>
+
+<div *ngIf="selectedTab === 'ListUser'">
+<div class=" mt-1">
+   <div class="mt-4 rounded-xl bg-white">
+     <div class="flex gap-2 justify-between mb-3">
+      <div class="relative flex items-center">
+      <input
+        type="text"
+        id="searchInput"
+        class="w-full px-4 m-2 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-primary-border-color focus:border-transparent"
+        [(ngModel)]="searchValue"
+        (input)="onQuickFilterChanged()"
+        placeholder="Search patients...">
+      <button
+        class="px-4 py-2 bg-gray-100 text-gray-600 border border-l-0 border-gray-300 rounded-r-lg hover:bg-primary-border-color hover:text-white transition-colors"
+        *ngIf="searchValue"
+        (click)="searchValue=''; onQuickFilterChanged()">
+        Clear
+      </button>
+    </div>
+    
+ <button 
+  class="flex items-center gap-2 px-2.5 py-1 border border-green-600 text-green-600 rounded-md text-sm hover:bg-green-600 hover:text-white transition"
+  (click)="onExportClick()"
+>
+  <i class="fas fa-file-excel text-sm"></i>
+  <span>Export Excel</span>
+</button>
+
+</div>
+
+  
+
+<ag-grid-angular
+  class="ag-theme-alpine ag-theme-custom"
+  [gridOptions]="gridOptions"
+  [rowData]="rowData"
+  [columnDefs]="columnDefs"
+  [defaultColDef]="defaultColDef"
+  [pagination]="true"
+  [paginationPageSize]="paginationPageSize"
+  (cellClicked)="onCellClicked($event)"
+  style="width: 100%; height: 500px;">
+</ag-grid-angular>
+
+
+</div>
+
+  </div>
+</div>
+</div>

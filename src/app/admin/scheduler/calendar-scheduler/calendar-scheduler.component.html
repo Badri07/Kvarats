@@ -1,0 +1,12 @@
+<div class="app-container">
+  <app-time-slot-row 
+    (slotClicked)="onSlotClicked($event)">
+  </app-time-slot-row>
+  
+  <app-scheduler-header
+    [show]="showModal"
+    [schedulerEvent]="schedulerEvent"
+    (close)="onModalClose()"
+    (submit)="onAppointmentSubmit($event)">
+  </app-scheduler-header>
+</div>

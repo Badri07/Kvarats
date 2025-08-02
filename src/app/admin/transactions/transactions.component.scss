@@ -1,0 +1,39 @@
+.animated-tabs .slider{
+  width: 50%;
+}
+
+::ng-deep .custom-grid-theme .ag-header {
+  background-color: #f2f6fc !important;
+  color: rgb(5, 5, 5);
+}
+
+::ng-deep .custom-grid-theme .ag-header-cell-label {
+  color: rgb(5, 5, 5);
+}
+
+::ng-deep .custom-grid-theme .ag-cell {
+  color: black;
+;
+}
+.ag-theme-alpine .ag-cell {
+  padding: 4px 8px;
+}
+
+.assessment-btn {
+  transition: all 0.2s ease;
+}
+
+.assessment-btn:hover {
+  transform: scale(1.1);
+  opacity: 0.9;
+}
+
+.assessment-green {
+  border: 2px solid green !important;
+}
+
+.assessment-red {
+  border: 2px solid red !important;
+}
+
+

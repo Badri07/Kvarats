@@ -1,0 +1,566 @@
+<div style="">
+
+
+<div class="container mx-auto mt-1 p-4" *ngIf="patientDetails">
+  
+  <!-- Patient Details Card -->
+  <div class="bg-white shadow-sm rounded-2xl p-6 border border-gray-200 mb-6 flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6">
+    
+    <!-- Icon or Avatar -->
+    <div class="flex-shrink-0">
+      <div class="w-20 h-20 rounded-full bg-primary-border-color flex items-center justify-center text-white text-2xl font-bold">
+        {{ patientDetails.firstName.charAt(0) }}{{ patientDetails.lastName.charAt(0) }}
+      </div>
+    </div>
+
+    <!-- Patient Info -->
+    <div class="flex-grow">
+      <h2 class="text-2xl font-semibold text-primary-border-color mb-4">
+        {{ patientDetails.firstName }} {{ patientDetails.lastName }}
+      </h2>
+      
+      <div class="flex flex-wrap gap-x-6 gap-y-2">
+        
+        <div class="whitespace-nowrap">
+          <strong class="text-primary-border-color">Age : </strong>
+          <span class="text-gray-600">{{ patientDetails.age }}</span>
+        </div>
+
+        <div class="whitespace-nowrap">
+          <strong class="text-primary-border-color">Gender : </strong>
+          <span class="text-gray-600">{{ patientDetails.gender }}</span>
+        </div>
+
+        <div class="whitespace-nowrap">
+          <strong class="text-primary-border-color">Date of Birth : </strong>
+          <span class="text-gray-600">{{ patientDetails.dateOfBirth | date:'mediumDate' }}</span>
+        </div>
+
+        <div class="whitespace-nowrap">
+          <strong class="text-primary-border-color">Phone : </strong>
+          <span class="text-gray-600">{{ patientDetails.phoneNumber }}</span>
+        </div>
+
+        <div class="whitespace-nowrap">
+          <strong class="text-primary-border-color">Social Security Number : </strong>
+          <span class="text-gray-600">{{ patientDetails.socialSecurityNumber }}</span>
+        </div>
+
+      </div>
+    </div>
+    
+  </div>
+
+
+  <div class="animated-tabs">
+  <div class="slider " style="width: 33%;"></div>
+
+  <div class="tab" [class.active]="selectedTab === 'assessment'" (click)="setTab('assessment')">
+    <i class="fas fa-calendar-day"></i>
+    <span>Current Assessment</span>
+  </div>
+
+   <div class="tab" [class.active]="selectedTab === 'previous'" (click)="setTab('previous')">
+    <i class="fas fa-history"></i>
+    <span>Assessment History</span>
+  </div>
+
+    <div class="tab" [class.active]="selectedTab === 'Patientfiles'" (click)="setTab('Patientfiles')">
+    <i class="fas fa-file-upload"></i>
+    <span>Patient Uploaded Files</span>
+  </div>
+  
+</div>
+  <!-- Tabs -->
+  <!-- <div class="mb-4 border-b border-gray-300 flex space-x-4">
+    <button type="button"
+            class="px-4 py-2 font-medium text-sm"
+            [ngClass]="{ 'border-b-2 border-primary-border-color text-primary-border-color': activeTab === 'assessment', 'text-gray-500 hover:text-primary-border-color': activeTab !== 'assessment' }"
+            (click)="activeTab = 'assessment'">
+      Assessment
+    </button>
+
+    <button type="button"
+            class="px-4 py-2 font-medium text-sm"
+            [ngClass]="{ 'border-b-2 border-primary-border-color text-primary-border-color': activeTab === 'previous', 'text-gray-500 hover:text-primary-border-color': activeTab !== 'previous' }"
+            (click)="activeTab = 'previous'">
+      Version History
+    </button>
+  </div> -->
+
+  <!-- Tab Contents -->
+ <div *ngIf="selectedTab === 'assessment'">
+      <!-- <hr class="hr-line mb-3 rounded-xl shadow-sm no-print" /> -->
+
+    <div class="space-y-6 text-sm text-gray-800 font-sans mt-3">
+
+  <!-- Basic Info -->
+  <div class="bg-white rounded-xl shadow-sm p-4 border">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div><strong class="text-gray-500">Assessment ID:</strong> {{ assessmentData.assessmentId }}</div>
+      <div><strong class="text-gray-500">Patient ID:</strong> {{ assessmentData.patientId }}</div>
+      <div><strong class="text-gray-500">Date:</strong> {{ assessmentData.assessmentDate | date: 'longDate' }}</div>
+      <div><strong class="text-gray-500">Version:</strong> {{ assessmentData.version }}</div>
+    </div>
+  </div>
+
+  <!-- Chief Complaints -->
+  <div class="bg-white rounded-xl shadow-sm p-4 border">
+  <h2 class="text-lg font-semibold mb-2">
+    <i class="fas fa-notes-medical mr-2 text-blue-600"></i> Chief Complaints
+  </h2>
+  <ng-container *ngIf="assessmentData.details?.chiefComplaints?.length; else noChiefComplaints">
+    <ul class="list-disc list-inside">
+      <li *ngFor="let c of assessmentData.details.chiefComplaints">
+        <strong>{{ c.complaint }}</strong> (Pain Scale: {{ c.painScale }}) — {{ c.notes }}
+      </li>
+    </ul>
+  </ng-container>
+  <ng-template #noChiefComplaints>No records found.</ng-template>
+</div>
+
+
+  <!-- Vitals -->
+<div class="bg-white rounded-xl shadow-sm p-4 border">
+  <h2 class="text-lg font-semibold mb-2">
+    <i class="fas fa-chart-bar mr-2 text-purple-600"></i> Vitals & Measurements
+  </h2>
+  <ng-container *ngIf="assessmentData.details; else noVitals">
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+      <div><strong>BP:</strong> {{ assessmentData.details.systolic }} / {{ assessmentData.details.diastolic }} mmHg</div>
+      <div><strong>HR:</strong> {{ assessmentData.details.heartRate }} bpm</div>
+      <div><strong>Pulse:</strong> {{ assessmentData.details.pulse }}</div>
+      <div><strong>Resp Rate:</strong> {{ assessmentData.details.respiratoryRate }}</div>
+      <div><strong>Temp:</strong> {{ assessmentData.details.temperature }} °F</div>
+      <div><strong>Blood Sugar:</strong> {{ assessmentData.details.bloodSugar }} mg/dL</div>
+      <div><strong>SpO₂:</strong> {{ assessmentData.details.spO2 }}%</div>
+      <div><strong>Weight:</strong> {{ assessmentData.details.weight }} kg</div>
+      <div><strong>Height:</strong> {{ assessmentData.details.height }} cm</div>
+      <div><strong>BMI:</strong> {{ assessmentData.details.bmi }}</div>
+    </div>
+  </ng-container>
+  <ng-template #noVitals>No records found.</ng-template>
+</div>
+
+
+  <!-- Medications & Conditions -->
+<div class="bg-white rounded-xl shadow-sm p-4 border">
+  <h2 class="text-lg font-semibold mb-2">
+    <i class="fas fa-capsules mr-2 text-green-600"></i> Medications & Conditions
+  </h2>
+  <ng-container *ngIf="assessmentData.details; else noMedications">
+    <div class="space-y-2">
+      <div *ngIf="assessmentData.details.allergies?.length">
+        <span class="text-gray-500">Allergies:</span>
+        <ng-container *ngFor="let _assessmentdata of assessmentData.details.allergies">
+          <span class="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-medium mr-2"> {{ _assessmentdata }}</span>
+        </ng-container>
+      </div>
+      <div *ngIf="assessmentData.details.medications?.length">
+        <span class="text-gray-500">Medications:</span>
+        <ng-container *ngFor="let _assessmentdata of assessmentData.details.medications">
+          <span class="inline-block bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-medium mr-2"> {{ _assessmentdata }}</span>
+        </ng-container>
+      </div>
+      <div *ngIf="assessmentData.details.chronicConditions?.length">
+        <span class="text-gray-500">Chronic Conditions:</span>
+        <ng-container *ngFor="let _assessmentdata of assessmentData.details.chronicConditions">
+          <span class="inline-block bg-red-100 text-red-800 px-3 py-1 rounded-full text-xs font-medium mr-2"> {{ _assessmentdata }}</span>
+        </ng-container>
+      </div>
+    </div>
+  </ng-container>
+  <ng-template #noMedications>No records found.</ng-template>
+</div>
+
+
+  <!-- Surgical History -->
+<div class="bg-white rounded-xl shadow-sm p-4 border">
+  <h2 class="text-lg font-semibold mb-2">
+    <i class="fas fa-procedures mr-2 text-pink-600"></i> Surgical History
+  </h2>
+  <ng-container *ngIf="assessmentData.details?.surgicalHistory?.length; else noSurgical">
+    <div class="overflow-x-auto">
+      <table class="min-w-full text-sm border border-gray-200 text-left">
+        <thead class="bg-gray-100 text-gray-600 font-medium">
+          <tr>
+            <th class="px-4 py-2 border-b">Procedure</th>
+            <th class="px-4 py-2 border-b">Date</th>
+            <th class="px-4 py-2 border-b">Hospital</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let s of assessmentData.details.surgicalHistory" class="border-t">
+            <td class="px-4 py-2">{{ s.procedure }}</td>
+            <td class="px-4 py-2">{{ s.surgeryDate | date: 'mediumDate' }}</td>
+            <td class="px-4 py-2">{{ s.hospital }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </ng-container>
+  <ng-template #noSurgical>No records found.</ng-template>
+</div>
+
+
+  <!-- Family History -->
+ <div class="bg-white rounded-xl shadow-sm p-4 border">
+  <h2 class="text-lg font-semibold mb-2">
+    <i class="fas fa-users mr-2 text-yellow-600"></i> Family History
+  </h2>
+  <ng-container *ngIf="assessmentData.details?.familyHistoryConditions?.length; else noFamilyHistory">
+    <ul class="list-disc list-inside">
+      <li *ngFor="let fh of assessmentData.details.familyHistoryConditions">{{ fh }}</li>
+    </ul>
+  </ng-container>
+  <ng-template #noFamilyHistory>No records found.</ng-template>
+</div>
+
+
+  <!-- Social Habits -->
+ <div class="bg-white rounded-xl shadow-sm p-4 border">
+  <h2 class="text-lg font-semibold mb-2">
+    <i class="fas fa-dna mr-2 text-indigo-600"></i> Social & Lifestyle Habits
+  </h2>
+  <ng-container *ngIf="assessmentData.details?.socialHabits?.length; else noSocialHabits">
+    <div class="overflow-x-auto">
+      <table class="min-w-full text-sm border border-gray-200 text-left">
+        <thead class="bg-gray-100 text-gray-600 font-medium">
+          <tr>
+            <th class="px-4 py-2 border-b">Smoking</th>
+            <th class="px-4 py-2 border-b">Cigs/Day</th>
+            <th class="px-4 py-2 border-b">Alcohol</th>
+            <th class="px-4 py-2 border-b">Frequency</th>
+            <th class="px-4 py-2 border-b">Beverage</th>
+            <th class="px-4 py-2 border-b">Cups/Day</th>
+            <th class="px-4 py-2 border-b">Drug Use</th>
+            <th class="px-4 py-2 border-b">Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let habit of assessmentData.details.socialHabits" class="border-t">
+            <td class="px-4 py-2">{{ habit.smoking }}</td>
+            <td class="px-4 py-2">{{ habit.cigsPerDay }}</td>
+            <td class="px-4 py-2">{{ habit.alcohol }}</td>
+            <td class="px-4 py-2">{{ habit.frequency }}</td>
+            <td class="px-4 py-2">{{ habit.beverage }}</td>
+            <td class="px-4 py-2">{{ habit.cupsPerDay }}</td>
+            <td class="px-4 py-2">{{ habit.drugUse }}</td>
+            <td class="px-4 py-2">{{ habit.details }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </ng-container>
+  <ng-template #noSocialHabits>No records found.</ng-template>
+</div>
+
+
+</div>
+
+</div>
+
+
+  <div *ngIf="selectedTab === 'previous'" class="mt-4">
+<div class="w-1/3 bg-white p-4 rounded-lg shadow-sm">
+  <div class="flex font-semibold border-b pb-2 mb-2">
+    <span class="column image w-3/4">Version List</span>
+  </div>
+
+  <ng-container *ngIf="getAllVersionsList as versions">
+    <ng-container *ngIf="versions.length > 0; else noVersions">
+      <div
+        *ngFor="let assessment of versions"
+        class="flex items-center py-4 border-b cursor-pointer hover:bg-gray-100"
+        (click)="onAssessmentClick(assessment.id)"
+      >
+        <div class="column title w-1/2 text-gray-800 font-medium">
+          {{ assessment.assessmentName }}
+        </div>
+      </div>
+    </ng-container>
+  </ng-container>
+
+  <ng-template #noVersions>
+    <div class="text-center text-gray-500 py-6">No records found.</div>
+  </ng-template>
+</div>
+
+
+</div>
+
+
+<div *ngIf="selectedTab === 'Patientfiles'" >
+  <div *ngIf="uploadedFiles.length > 0; else noFile" class="space-y-4" class="mt-4">
+    <div *ngFor="let file of uploadedFiles" 
+         (click)="onSelectFile(file.assessmentId)"
+         class="flex items-center w-2/3 p-4 bg-white p-4 rounded-lg shadow-sm cursor-pointer transition duration-200"
+         >
+      
+<i class="fas fa-file-pdf text-red-600 text-xl mr-4"></i>
+
+      <div class="text-dark font-semibold hover:text-orange-400">
+        {{ decodeFileName(file.uploadedFileName) }}
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="iframeUrl" class="fixed inset-0 bg-gray-500 bg-opacity-75 z-50 flex justify-center items-center">
+    <div class="bg-white rounded-lg p-6 max-w-3xl w-full relative">
+      
+      <button (click)="iframeUrl = null" class="absolute top-2 right-2 text-lg text-gray-600 hover:text-gray-900">
+        &times;
+      </button>
+      <iframe
+        [src]="iframeUrl"
+        width="100%"
+        height="600px"
+        frameborder="0"
+        class="border rounded"
+      ></iframe>
+    </div>
+  </div>
+
+  <ng-template #noFile>
+    <div class="text-gray-500 text-center py-6">No file to display.</div>
+  </ng-template>
+</div>
+
+
+
+
+</div>
+
+<!-- <div *ngIf="activeTab === 'assessment'">
+  <div class="flex justify-center">
+  <iframe
+  *ngIf="iframeUrl"
+  [src]="iframeUrl"
+  width="80%"
+  height="800px"
+  frameborder="0">
+</iframe>
+</div>
+</div> -->
+
+<div role="dialog" aria-modal="true" aria-labelledby="dialog-title" class="relative z-10" *ngIf="showModal">
+  <!-- Overlay -->
+  <div aria-hidden="true" class="fixed inset-0 bg-gray-500/75 transition-opacity"></div>
+
+  <!-- Modal content -->
+  <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+    <div *ngIf="activeTab === 'previous'" class="flex justify-center items-center min-h-screen p-4 relative">
+
+      <!-- Close button -->
+      <button
+        type="button"
+        (click)="closeModal()"
+        class="absolute top-4 right-6 text-white bg-gray-700 hover:bg-gray-600 rounded-full p-2 focus:outline-none"
+        aria-label="Close modal">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+<!-- generate pdf -->
+
+
+<div *ngIf="isshowpdf" role="dialog" aria-modal="true" aria-labelledby="dialog-title" class="relative z-10">
+  <div aria-hidden="true" class="fixed inset-0 bg-gray-500/75 transition-opacity"></div>
+
+  <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+    <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+
+      <div class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-[210mm] sm:max-h-[297mm]">
+        <div class="bg-white p-6 overflow-y-auto max-h-[297mm]">
+
+          <div class="flex justify-end items-center mb-4 no-print">
+            <!-- <h1 class="text-3xl font-bold mb-2">Patient Assessment</h1> -->
+            <div class="flex gap-2 items-center">
+              <button
+                (click)="downloadPDF()"
+                class="text-sm bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded flex items-center"
+              >
+                <i class="fas fa-file-pdf mr-2"></i> Download PDF
+              </button>
+              <button
+                type="button"
+                class="text-2xl text-gray-500 hover:text-red-600"
+                (click)="closePdfModal()"
+              >
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          </div>
+
+          <hr class="hr-line mb-3 rounded-xl shadow-sm no-print" />
+          <div id="pdf-content" class="pdf-content">
+
+            <div class="text-center mb-6">
+              <img src="{{image}}" alt="Logo" class="h-16 mx-auto mb-2" />
+              <h2 class="text-2xl font-semibold">Patient Assessment Form</h2>
+              <hr class="hr-line my-4 border-t-2 border-gray-300 w-3/4 mx-auto" />
+            </div>
+
+            <div class="space-y-6 text-sm text-gray-800 font-sans">
+              <div class="bg-white rounded-xl shadow-sm p-4 border">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div><strong class="text-gray-500">Assessment ID:</strong> {{ assessmentDataList.assessmentId }}</div>
+                  <div><strong class="text-gray-500">Patient ID:</strong> {{ assessmentDataList.patientId }}</div>
+                  <div><strong class="text-gray-500">Date:</strong> {{ assessmentDataList.assessmentDate | date: 'longDate' }}</div>
+                  <div><strong class="text-gray-500">Version:</strong> {{ assessmentDataList.version }}</div>
+                </div>
+              </div>
+
+              <div *ngIf="assessmentDataList.chiefComplaints?.length" class="bg-white rounded-xl shadow-sm p-4 border">
+                <h2 class="text-lg font-semibold mb-2">
+                  <i class="fas fa-notes-medical mr-2 text-blue-600"></i> Chief Complaints
+                </h2>
+                <ul class="list-disc list-inside">
+                  <li *ngFor="let c of assessmentDataList.chiefComplaints">
+                    <strong>{{ c.complaint }}</strong> (Pain Scale: {{ c.painScale }}) — {{ c.notes }}
+                  </li>
+                </ul>
+              </div>
+
+              <div class="bg-white rounded-xl shadow-sm p-4 border">
+                <h2 class="text-lg font-semibold mb-2">
+                  <i class="fas fa-chart-bar mr-2 text-purple-600"></i> Vitals & Measurements
+                </h2>
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                  <div><strong>BP:</strong> {{ assessmentDataList.systolic }} / {{ assessmentDataList.diastolic }} mmHg</div>
+                  <div><strong>HR:</strong> {{ assessmentDataList.heartRate }} bpm</div>
+                  <div><strong>Pulse:</strong> {{ assessmentDataList.pulse }}</div>
+                  <div><strong>Resp Rate:</strong> {{ assessmentDataList.respiratoryRate }}</div>
+                  <div><strong>Temp:</strong> {{ assessmentDataList.temperature }} °F</div>
+                  <div><strong>Blood Sugar:</strong> {{ assessmentDataList.bloodSugar }} mg/dL</div>
+                  <div><strong>SpO₂:</strong> {{ assessmentDataList.spO2 }}%</div>
+                  <div><strong>Weight:</strong> {{ assessmentDataList.weight }} kg</div>
+                  <div><strong>Height:</strong> {{ assessmentDataList.height }} cm</div>
+                  <div><strong>BMI:</strong> {{ assessmentDataList.bmi }}</div>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-xl shadow-sm p-4 border">
+                <h2 class="text-lg font-semibold mb-2">
+                  <i class="fas fa-capsules mr-2 text-green-600"></i> Medications & Conditions
+                </h2>
+                <div class="space-y-2">
+  <!-- Allergies -->
+<div *ngIf="assessmentDataList.allergies?.length">
+<span class="text-gray-500">Allergies:</span>
+<ng-container *ngFor="let allergy of assessmentData.allergies">
+<span class="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-medium mr-2">
+        {{ allergy }}
+</span>
+</ng-container>
+</div>
+ 
+  <!-- Medications -->
+<div *ngIf="assessmentDataList.medications?.length">
+<span class="text-gray-500">Medications:</span>
+<ng-container *ngFor="let medication of assessmentData.medications">
+<span class="inline-block bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-medium mr-2">
+        {{ medication }}
+</span>
+</ng-container>
+</div>
+ 
+  <!-- Chronic Conditions -->
+<div *ngIf="assessmentDataList.chronicConditions?.length">
+<span class="text-gray-500">Chronic Conditions:</span>
+<ng-container *ngFor="let condition of assessmentData.chronicConditions">
+<span class="inline-block bg-red-100 text-red-800 px-3 py-1 rounded-full text-xs font-medium mr-2">
+        {{ condition }}
+</span>
+</ng-container>
+</div>
+</div>
+              </div>
+
+              <div *ngIf="assessmentDataList.surgicalHistory?.length" class="bg-white rounded-xl shadow-sm p-4 border">
+                <h2 class="text-lg font-semibold mb-2">
+                  <i class="fas fa-procedures mr-2 text-pink-600"></i> Surgical History
+                </h2>
+                <div class="overflow-x-auto">
+                  <table class="min-w-full text-sm border border-gray-200 text-left">
+                    <thead class="bg-gray-100 text-gray-600 font-medium">
+                      <tr>
+                        <th class="px-4 py-2 border-b">Procedure</th>
+                        <th class="px-4 py-2 border-b">Date</th>
+                        <th class="px-4 py-2 border-b">Hospital</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let s of assessmentDataList.surgicalHistory" class="border-t">
+                        <td class="px-4 py-2">{{ s.procedure }}</td>
+                        <td class="px-4 py-2">{{ s.surgeryDate | date: 'mediumDate' }}</td>
+                        <td class="px-4 py-2">{{ s.hospital }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div *ngIf="assessmentDataList.familyHistoryConditions?.length" class="bg-white rounded-xl shadow-sm p-4 border">
+                <h2 class="text-lg font-semibold mb-2">
+                  <i class="fas fa-users mr-2 text-yellow-600"></i> Family History
+                </h2>
+                <ul class="list-disc list-inside">
+                  <li *ngFor="let fh of assessmentDataList.familyHistoryConditions">{{ fh }}</li>
+                </ul>
+              </div>
+
+              <div *ngIf="assessmentDataList.socialHabits?.length" class="bg-white rounded-xl shadow-sm p-4 border">
+                <h2 class="text-lg font-semibold mb-2">
+                  <i class="fas fa-dna mr-2 text-indigo-600"></i> Social & Lifestyle Habits
+                </h2>
+                <div class="overflow-x-auto">
+                  <table class="min-w-full text-sm border border-gray-200 text-left">
+                    <thead class="bg-gray-100 text-gray-600 font-medium">
+                      <tr>
+                        <th class="px-4 py-2 border-b">Smoking</th>
+                        <th class="px-4 py-2 border-b">Cigs/Day</th>
+                        <th class="px-4 py-2 border-b">Alcohol</th>
+                        <th class="px-4 py-2 border-b">Frequency</th>
+                        <th class="px-4 py-2 border-b">Beverage</th>
+                        <th class="px-4 py-2 border-b">Cups/Day</th>
+                        <th class="px-4 py-2 border-b">Drug Use</th>
+                        <th class="px-4 py-2 border-b">Details</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let habit of assessmentDataList.socialHabits" class="border-t">
+                        <td class="px-4 py-2">{{ habit.smoking }}</td>
+                        <td class="px-4 py-2">{{ habit.cigsPerDay }}</td>
+                        <td class="px-4 py-2">{{ habit.alcohol }}</td>
+                        <td class="px-4 py-2">{{ habit.frequency }}</td>
+                        <td class="px-4 py-2">{{ habit.beverage }}</td>
+                        <td class="px-4 py-2">{{ habit.cupsPerDay }}</td>
+                        <td class="px-4 py-2">{{ habit.drugUse }}</td>
+                        <td class="px-4 py-2">{{ habit.details }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div> 
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+</div>

@@ -1,0 +1,30 @@
+.dashboard-container{
+  .save-btn{
+
+  }
+
+.modal-header{
+
+}
+.modal-dialog {
+  max-width: 100% !important;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+
+.modal-content {
+  width: 80%;
+  height: 100%;
+  border-radius: var(--common-border-radius);
+ border: 3px solid get-color('primary-border-color');
+}
+}
+.table-responsive{
+  border: 2px solid get-color('primary-border-color');
+}
+}
+
+
+

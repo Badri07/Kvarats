@@ -1,0 +1,92 @@
+.btn-primary {
+  color: white;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  transition: background-color 0.2s;
+}
+
+.btn-secondary {
+  background-color: #e5e7eb; /* gray-200 */
+  color: #1f2937; /* gray-800 */
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  transition: background-color 0.2s;
+}
+.btn-secondary:hover {
+  background-color: #d1d5db; /* gray-300 */
+}
+
+.btn-danger {
+  background-color: #dc2626; /* red-600 */
+  color: white;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  transition: background-color 0.2s;
+}
+.btn-danger:hover {
+  background-color: #b91c1c; /* red-700 */
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db; /* gray-300 */
+  border-radius: 0.5rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.form-input:focus {
+  outline: none;
+  border-color: #60a5fa; /* primary-500 */
+  box-shadow: 0 0 0 2px #93c5fd; /* primary-400 ring */
+}
+
+.card {
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb; /* gray-200 */
+}
+
+.table-container {
+  overflow-x: auto;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb; /* gray-200 */
+}
+
+.table {
+  min-width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+.table-header {
+  background-color: #f9fafb; /* gray-50 */
+}
+
+.table-header th {
+  padding: 0.75rem 1.5rem;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6b7280; /* gray-500 */
+}
+
+.table-body {
+  background-color: white;
+}
+
+.table-body tr {
+  border-top: 1px solid #e5e7eb; /* divide-y */
+}
+
+.table-body td {
+  padding: 1rem 1.5rem;
+  white-space: nowrap;
+  font-size: 0.875rem;
+  color: #111827; /* gray-900 */
+}

@@ -1,0 +1,169 @@
+<div class="min-h-screen flex items-center justify-center bg-orange-100 p-4">
+  <div class="flex flex-col md:flex-row bg-white shadow-lg rounded-2xl overflow-hidden w-full max-w-5xl">
+    <div class="w-full md:w-1/2 bg-orange-500 flex items-center justify-center p-6 sm:p-8">
+      <div class="relative w-full max-w-xs overflow-hidden rounded-lg">
+      <div class="slider flex transition-transform duration-1000 ease-in-out">
+          <div
+          #sliderRef
+          class="slider flex transition-transform duration-1000 ease-in-out"
+          [style.transform]="'translateX(-' + currentIndex * 100 + '%)'"
+          [style.transition]="isTransitionEnabled ? 'transform 1s ease-in-out' : 'none'"
+        >
+          <img
+            *ngFor="let img of imageList"
+            [src]="img"
+            alt="Doctor"
+            class="w-full h-auto object-contain flex-shrink-0"
+          />
+          <img
+            [src]="imageList[0]"
+            alt="Clone"
+            class="w-full h-auto object-contain flex-shrink-0"
+          />
+        </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="w-full md:w-1/2 p-6 sm:p-8">
+      <h2 class="text-1xl sm:text-2xl font-semibold text-orange-600 mb-1 mt-2 sm:mt-3 text-center">
+            Sign in to your account
+ 
+      </h2>
+
+      <form class="space-y-4"  [formGroup]="patientsLoginForm" (ngSubmit)="onloginSubmit()">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+          <input
+            type="email"
+            formControlName="usernameOrEmail"
+            placeholder="Enter your email"
+            name="email"
+            class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+              [ngClass]="{
+              'is-invalid': loginSubmitted && loginUser['usernameOrEmail'].invalid,
+              'is-valid': loginSubmitted && loginUser['usernameOrEmail'].valid
+            }"
+          />
+             <div *ngIf="loginSubmitted && loginUser['usernameOrEmail'].errors" class="text-sm text-red-500 mt-1">
+            <div *ngIf="loginUser['usernameOrEmail'].errors['required']">Email is required</div>
+            <div *ngIf="loginUser['usernameOrEmail'].errors['email']">Email is invalid</div>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+          <input
+            type="password"
+            placeholder="Enter your password"
+            formControlName="password"
+            name="password"
+            class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+             [ngClass]="{
+              'is-invalid': loginSubmitted && loginUser['password'].invalid,
+              'is-valid': loginSubmitted && loginUser['password'].valid
+            }"
+          />
+             <div *ngIf="loginSubmitted && loginUser['password'].errors" class="text-sm text-red-500 mt-1">
+            <div *ngIf="loginUser['password'].errors['required']">Password is required</div>
+          </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between text-sm text-gray-600 gap-2">
+          <label class="inline-flex items-center">
+            <input type="checkbox" class="form-checkbox text-orange-600" />
+            <span class="ml-2">Remember me for 30 days</span>
+          </label>
+          <a href="/forgot-password" class="text-orange-600 hover:text-orange-500 transition">
+            Forgot Password?
+          </a>
+        </div>
+        <button type="submit" class="w-full bg-orange-500 text-white py-2 rounded-md hover:bg-orange-600 transition">
+          Log In
+        </button>
+        <div class="text-center text-sm mt-4">
+          Don’t have an account?
+          <a href="/register" class="text-orange-600 hover:text-orange-500 transition">
+            Sign up
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+<div *ngIf="showInitialPopup" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+  <div class="bg-white rounded-xl shadow-xl p-8 w-full max-w-xl text-center animate-fadeIn">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">CHOOSE AN OPTION</h2>
+
+    <div class="flex flex-col md:flex-row gap-6 justify-center">
+      <div (click)="openPdfUpload('uploadPdf')"
+           class="card-customBtn cursor-pointer w-40 h-40 flex flex-col items-center justify-center rounded-xl bg-white border-orange-600 border-2 hover:border-primary-border-color  shadow-lg transition">
+        <i class="fas fa-file-upload text-4xl text-orange-600 mb-3"></i>
+        <p class="font-medium text-gray-700 hover:text-white">Upload PDF</p>
+      </div>
+
+      <div class="cursor-pointer w-40 h-40 flex flex-col items-center card-customBtn justify-center rounded-xl bg-white border-orange-600 border-2 hover:border-primary-border-color shadow-lg transition" (click)="openAssessmentForm('assessment')">
+        <i class="fas fa-clipboard-list text-4xl text-orange-500 mb-3"></i>
+        <p class="font-medium text-gray-700 hover:text-white">Assessment Form</p>
+      </div>
+    </div>
+    <div class="mt-6">
+      <button class="text-gray-500 hover:text-gray-800 customBtn-secondary" (click)="closeAll()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+
+
+
+<div *ngIf="isshowupload">
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  
+  <div class="bg-white rounded-xl shadow-lg max-w-4xl w-full mx-4 p-6 animate-fadeIn">
+    <h2 class="text-xl font-semibold mb-4 text-orange-600">Upload Files</h2>
+
+    <div class="flex flex-col md:flex-row gap-6">
+<div class="flex-1 border-2 border-dashed border-orange-300 rounded-lg flex flex-col items-center justify-center p-6 text-center text-gray-600 relative">
+  <i class="fas fa-file-upload text-4xl text-orange-600 mb-3"></i>
+  <p class="font-medium">Drag & Drop your files here</p>
+  <p class="text-sm mt-1">
+    or 
+    <span class="text-orange-500 underline cursor-pointer" (click)="fileInput.click()">Browse</span>
+  </p>
+  <p class="text-xs text-gray-500 mt-2">Only PDF, Excel, and .jpg formats allowed. Max size: 10 MB</p>
+  <input #fileInput type="file" multiple (change)="onFileSelected($event)" class="hidden" />
+</div>
+
+      <div class="flex-1">
+        <table class="w-full text-left text-sm">
+          <thead>
+            <tr class="text-gray-500 border-b">
+              <th class="py-2">File Name</th>
+              <th class="py-2">Status</th>
+            </tr>
+          </thead>
+         <tbody>
+  <tr *ngFor="let file of selectedFiles" class="border-b">
+    <td class="py-2">{{ file.name }}</td>
+    <td class="py-2" [ngClass]="file.status === 'Success' ? 'text-green-600' : 'text-red-500'">
+      {{ file.status }}
+    </td>
+  </tr>
+</tbody>
+
+        </table>
+      </div>
+    </div>
+    <div class="mt-6 flex justify-end">
+      <button class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-md" (click)="closeAll()">
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+</div>

@@ -1,0 +1,66 @@
+<div class="bg-white text-gray-800 font-sans p-6">
+
+  <div class="w-full">
+    <div class="flex justify-between items-center mb-8">
+      <h1 class="text-3xl font-semibold text-primary-orange">User Profile</h1>
+      <div class="space-x-3">
+        <button class="customBtn">Schedule Slots</button>
+        <button class="customBtn-secondary">Edit Profile</button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+
+      <div class="col-span-1 border-2 border-primary-border-color bg-[#F8FAFF] rounded-lg p-6 flex flex-col items-center">
+        <div class="w-24 h-24 rounded-full bg-gradient-to-br from-primary-orange to-[#4F81C7] flex items-center justify-center text-white text-2xl font-semibold uppercase mb-4 transition-transform duration-300 hover:scale-105 hover:ring-4 hover:ring-[#EDF1FF]">
+          CA
+        </div>
+
+        <div class="space-y-2 text-sm text-center w-full">
+          <p><span class="font-semibold">Name:</span> null. Client Admin</p>
+          <p><span class="font-semibold">D.O.B:</span> NA</p>
+          <p><span class="font-semibold">Gender:</span> NA</p>
+        </div>
+
+        <div class="mt-6 text-center">
+          <p class="text-sm font-semibold">Profile Pin</p>
+          <p class="text-lg tracking-wider">**** <span class="text-primary-orange cursor-pointer ml-2"><i class="fas fa-edit text-lg text-[#3863A7]"></i></span></p>
+        </div>
+      </div>
+
+      <div class="col-span-3 space-y-6">
+
+        <div class="border-2 border-primary-border-color bg-[#F8FAFF] rounded-lg p-6">
+          <h2 class="text-xl font-semibold text-primary-orange mb-4">Contact Details</h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+            <p><span class="font-semibold">Phone Number:</span> NA</p>
+            <p><span class="font-semibold">Emergency Contact:</span> NA</p>
+            <p><span class="font-semibold">Email ID:</span>{{userEmail}}</p>
+            <p><span class="font-semibold">Flat No & Street:</span> NA</p>
+            <p><span class="font-semibold">City:</span> NA</p>
+            <p><span class="font-semibold">State:</span> NA</p>
+            <p><span class="font-semibold">PinCode:</span> NA</p>
+            <p><span class="font-semibold">Country:</span> NA</p>
+          </div>
+        </div>
+
+        <div class="border-2 border-primary-border-color bg-[#F8FAFF] rounded-lg p-6">
+          <h2 class="text-xl font-semibold text-primary-orange mb-4">Professional Details</h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+            <p><span class="font-semibold">Qualification:</span> NA</p>
+            <p><span class="font-semibold">Board:</span> NA</p>
+          </div>
+        </div>
+
+        <div class="border-2 border-primary-border-color bg-[#F8FAFF] rounded-lg p-6">
+          <h2 class="text-xl font-semibold text-primary-orange mb-4">Other Details</h2>
+          <div class="text-sm">
+            <p><span class="font-semibold">Language:</span> NA</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
