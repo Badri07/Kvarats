@@ -1356,28 +1356,46 @@ onDrugUsageStatusChange(): void {
 
 
   ngDoCheck(): void {
-    if (!this.originalAssessmentData) return;
-
-    const fieldsToCheck: (keyof typeof this.patientData)[] = [
-      'systolic', 'diastolic', 'heartRate', 'pulse', 'respiratoryRate',
-      'temperature', 'bloodSugar', 'spO2', 'weight', 'height', 'bmi',
-      'bloodGroupId', 'chiefComplaints', 'allergySeverities', 'medications',
-      'chronicConditions', 'surgicalHistory', 'familyHistoryConditions',
-      'socialHabits', 'fileUrl', 'isFileUpload'
-    ];
-
-    const wasDirty = this.isDirty;
-    this.isDirty = fieldsToCheck.some(field => {
-      const current = JSON.stringify(this.patientData[field]);
-      const original = JSON.stringify(this.originalAssessmentData[field]);
-      return current !== original;
-    });
-    
-    // Only trigger auto-save check if dirty state changed from clean to dirty
-    if (!wasDirty && this.isDirty) {
-      this.triggerAutoSave();
-    }
+  console.log('--- ngDoCheck triggered ---');
+  
+  if (!this.originalAssessmentData) {
+    console.log('No original assessment data to compare with');
+    return;
   }
+
+  const fieldsToCheck: (keyof typeof this.patientData)[] = [
+    'systolic', 'diastolic', 'heartRate', 'pulse', 'respiratoryRate',
+    'temperature', 'bloodSugar', 'spO2', 'weight', 'height', 'bmi',
+    'bloodGroupId', 'chiefComplaints', 'allergySeverities', 'medications',
+    'chronicConditions', 'surgicalHistory', 'familyHistoryConditions',
+    'socialHabits', 'fileUrl', 'isFileUpload'
+  ];
+
+  console.log('Checking dirty fields...');
+  
+  const wasDirty = this.isDirty;
+  this.isDirty = fieldsToCheck.some(field => {
+    const current = JSON.stringify(this.patientData[field]);
+    const original = JSON.stringify(this.originalAssessmentData[field]);
+    const isDifferent = current !== original;
+    
+    if (isDifferent) {
+      console.log(`Field changed: ${field}`, {
+        current: this.patientData[field],
+        original: this.originalAssessmentData[field]
+      });
+    }
+    
+    return isDifferent;
+  });
+  
+  console.log(`Dirty state - Was: ${wasDirty}, Now: ${this.isDirty}`);
+  
+  if (!wasDirty && this.isDirty) {
+    console.log('New changes detected, triggering auto-save');
+    this.triggerAutoSave();
+  }
+}
 
   // Utility methods for better UX
   getSaveButtonText(): string {
