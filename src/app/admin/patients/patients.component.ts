@@ -1622,31 +1622,31 @@ onDrugUsageStatusChange(): void {
 
 
   ngDoCheck(): void {
-    console.log('--- ngDoCheck triggered ---');
-    
-    // Ensure social habits are always properly initialized
-    if (!this.assessmentData.socialHabits || this.assessmentData.socialHabits.length === 0) {
-      this.initializeSocialHabits();
-    }
-    
-    // Validate each social habit object
-    if (this.assessmentData.socialHabits) {
-      this.assessmentData.socialHabits.forEach((habit, index) => {
-        if (!habit || typeof habit !== 'object') {
-          this.assessmentData.socialHabits[index] = {
-            smokingStatusId: null,
-            cigarettesPerDay: null,
-            alcoholStatusId: null,
-            alcoholFrequency: null,
-            beverageStatusId: null,
-            cupsPerDay: null,
-            drugUsageStatusId: null,
-            drugDetails: null
-          };
-        }
-      });
-    }
+  console.log('--- ngDoCheck triggered ---');
   
+  // Ensure social habits are always properly initialized
+  if (!this.assessmentData?.socialHabits || this.assessmentData.socialHabits.length === 0) {
+    this.initializeSocialHabits();
+  }
+  
+  // Validate each social habit object
+  if (this.assessmentData?.socialHabits) {
+    this.assessmentData.socialHabits.forEach((habit: any, index: number) => {
+      if (!habit || typeof habit !== 'object') {
+        this.assessmentData.socialHabits[index] = {
+          smokingStatusId: null,
+          cigarettesPerDay: null,
+          alcoholStatusId: null,
+          alcoholFrequencyId: null,
+          beverageStatusId: null,
+          cupsPerDay: null,
+          drugUsageStatusId: null,
+          drugDetails: null
+        };
+      }
+    });
+  }
+
   if (!this.originalAssessmentData) {
     console.log('No original assessment data to compare with');
     return;
@@ -1663,7 +1663,7 @@ onDrugUsageStatusChange(): void {
   console.log('Checking dirty fields...');
   
   const wasDirty = this.isDirty;
-  this.isDirty = fieldsToCheck.some(field => {
+  this.isDirty = fieldsToCheck.some((field: keyof typeof this.patientData) => {
     const current = JSON.stringify(this.patientData[field]);
     const original = JSON.stringify(this.originalAssessmentData[field]);
     const isDifferent = current !== original;
@@ -1673,6 +1673,7 @@ onDrugUsageStatusChange(): void {
         current: this.patientData[field],
         original: this.originalAssessmentData[field]
       });
+      this.modifiedFields.add(field as string);
     }
     
     return isDifferent;
