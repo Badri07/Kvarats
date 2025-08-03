@@ -180,9 +180,7 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
     reactionDetails: '',
     firstObserved: null as string | null,
     lastObserved: null as string | null
-  };
-
-  
+  }; 
 
   newMedication = {
     medicationId: null as number | null,
@@ -217,6 +215,21 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
     hadComplications: false,
     complicationDetails: ''
   };
+
+  interface SocialHabit {
+  smokingStatusId?: number | null;
+  cigarettesPerDay?: number | null;
+  yearsSmoking?: number | null;
+  hasQuitSmoking?: boolean | null;
+  smokingQuitDate?: string | null;
+  alcoholStatusId?: number | null;
+  alcoholFrequencyId?: number | null;
+  yearsDrinking?: number | null;
+  beverageStatusId?: number | null;
+  cupsPerDay?: number | null;
+  drugUsageStatusId?: number | null;
+  drugDetails?: string | null;
+}
 
   // UI state for dropdowns
   showBpWarning = false;
