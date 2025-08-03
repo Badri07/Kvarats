@@ -403,32 +403,131 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
 }
 
   private prepopulateData(): void {
-    const assessmentData = JSON.parse(JSON.stringify(this.assessmentData));
-    
-    // Initialize arrays if not provided
-    if (!assessmentData.allergySeverities) assessmentData.allergySeverities = [];
-    if (!assessmentData.medications) assessmentData.medications = [];
-    if (!assessmentData.chronicConditions) assessmentData.chronicConditions = [];
-    if (!assessmentData.socialHabits || assessmentData.socialHabits.length === 0) {
-      assessmentData.socialHabits = [{}];
-    }
-
-    this.patientData = {
-      ...this.patientData,
-      ...assessmentData,
-      patientId: this.patientData.patientId
-    };
-
-    // Initialize selected names arrays
-    this.selectedAllergyNames = this.patientData.allergySeverities.map(item => 
-      this.getOptionLabel('allergy', item.allergyId));
-    this.selectedMedicationNames = this.patientData.medications.map(item => 
-      this.getOptionLabel('medication', item.medicationId));
-    this.selectedConditionNames = this.patientData.chronicConditions.map(item => 
-      this.getOptionLabel('condition', item.conditionId));
-    
-    this.initializeSocialHabits();
+  // Check if we have data to work with
+  if (!this.assessmentData) {
+    console.warn('Cannot prepopulate - no assessment data provided');
+    return;
   }
+
+  // Create deep copy of input data
+  const assessmentData = JSON.parse(JSON.stringify(this.assessmentData));
+
+  // Initialize all arrays if they don't exist
+  assessmentData.allergySeverities = assessmentData.allergySeverities || [];
+  assessmentData.medications = assessmentData.medications || [];
+  assessmentData.chronicConditions = assessmentData.chronicConditions || [];
+  assessmentData.surgicalHistory = assessmentData.surgicalHistory || [];
+  assessmentData.familyHistoryConditions = assessmentData.familyHistoryConditions || [];
+  assessmentData.chiefComplaints = assessmentData.chiefComplaints || [];
+  assessmentData.socialHabits = assessmentData.socialHabits || [{}];
+  assessmentData.fileUrl = assessmentData.fileUrl || [];
+
+  // Merge with current patientData while preserving patientId and other defaults
+  this.patientData = {
+    patientId: this.patientData.patientId,  // Preserve existing
+    isDraft: false,
+    isFileUpload: assessmentData.fileUrl?.length > 0 || false,
+    fileUrl: assessmentData.fileUrl,
+    
+    // Vital signs
+    systolic: assessmentData.systolic || null,
+    diastolic: assessmentData.diastolic || null,
+    heartRate: assessmentData.heartRate || null,
+    pulse: assessmentData.pulse || null,
+    respiratoryRate: assessmentData.respiratoryRate || null,
+    temperature: assessmentData.temperature || null,
+    bloodSugar: assessmentData.bloodSugar || null,
+    spO2: assessmentData.spO2 || null,
+    weight: assessmentData.weight || null,
+    height: assessmentData.height || null,
+    bmi: assessmentData.bmi || '',
+    bloodGroupId: assessmentData.bloodGroupId || null,
+
+    // Symptoms
+    chiefComplaints: assessmentData.chiefComplaints.map((c: any) => ({
+      complaint: c.complaint || '',
+      painScale: c.painScale || null,
+      notes: c.notes || this.complaintTemplates[c.complaint] || '',
+      onsetDate: c.onsetDate || null
+    })),
+
+    // Allergies
+    allergySeverities: assessmentData.allergySeverities.map((a: any) => ({
+      allergyId: a.allergyId || null,
+      severityId: a.severityId || null,
+      allergyCategoryId: a.allergyCategoryId || null,
+      reactionDetails: a.reactionDetails || '',
+      firstObserved: a.firstObserved || null,
+      lastObserved: a.lastObserved || null
+    })),
+
+    // Medications
+    medications: assessmentData.medications.map((m: any) => ({
+      medicationId: m.medicationId || null,
+      dosage: m.dosage || '',
+      frequency: m.frequency || '',
+      startDate: m.startDate || null,
+      endDate: m.endDate || null,
+      reason: m.reason || ''
+    })),
+
+    // Conditions
+    chronicConditions: assessmentData.chronicConditions.map((c: any) => ({
+      conditionId: c.conditionId || null,
+      diagnosisDate: c.diagnosisDate || null,
+      treatmentDetails: c.treatmentDetails || '',
+      isControlled: c.isControlled || null
+    })),
+
+    // Surgical history
+    surgicalHistory: assessmentData.surgicalHistory.map((s: any) => ({
+      procedure: s.procedure || '',
+      date: s.date || null,
+      hospital: s.hospital || '',
+      surgeonName: s.surgeonName || '',
+      surgeryTypeId: s.surgeryTypeId || null,
+      hadComplications: s.hadComplications || false,
+      complicationDetails: s.complicationDetails || ''
+    })),
+
+    // Family history
+    familyHistoryConditions: assessmentData.familyHistoryConditions.map((f: any) => ({
+      conditionId: f.conditionId || null,
+      relationship: f.relationship || '',
+      ageAtDiagnosis: f.ageAtDiagnosis || null,
+      isDeceased: f.isDeceased || null,
+      causeOfDeath: f.causeOfDeath || ''
+    })),
+
+    // Social habits
+    socialHabits: assessmentData.socialHabits.map((s: any) => ({
+      smokingStatusId: s.smokingStatusId || null,
+      cigarettesPerDay: s.cigarettesPerDay || null,
+      yearsSmoking: s.yearsSmoking || null,
+      hasQuitSmoking: s.hasQuitSmoking || null,
+      smokingQuitDate: s.smokingQuitDate || null,
+      alcoholStatusId: s.alcoholStatusId || null,
+      alcoholFrequencyId: s.alcoholFrequencyId || null,
+      yearsDrinking: s.yearsDrinking || null,
+      beverageStatusId: s.beverageStatusId || null,
+      cupsPerDay: s.cupsPerDay || null,
+      drugUsageStatusId: s.drugUsageStatusId || null,
+      drugDetails: s.drugDetails || null
+    }))
+  };
+
+  // Initialize selected names arrays
+  this.selectedAllergyNames = this.patientData.allergySeverities
+    .map(item => this.getOptionLabel('allergy', item.allergyId));
+  this.selectedMedicationNames = this.patientData.medications
+    .map(item => this.getOptionLabel('medication', item.medicationId));
+  this.selectedConditionNames = this.patientData.chronicConditions
+    .map(item => this.getOptionLabel('condition', item.conditionId));
+
+  // Set original baseline for dirty checking
+  this.originalAssessmentData = JSON.parse(JSON.stringify(this.patientData));
+  console.log('Original assessment data initialized:', this.originalAssessmentData);
+}
 
   private loadDropdowns(): void {
     // First load all static dropdowns
