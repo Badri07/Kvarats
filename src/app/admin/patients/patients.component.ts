@@ -394,25 +394,10 @@ private async loadInitialAssessmentData(): Promise<void> {
       takeUntil(this.destroy$)
     ).subscribe(() => {
       if (this.isDirty && this.autoSaveEnabled && !this.saveInProgress) {
-        
-        // Ensure social habits are properly initialized after dropdowns load
-        this.initializeSocialHabits();
         const now = Date.now();
         if (now - this.lastSaveTime >= this.MIN_SAVE_INTERVAL) {
           this.autoSaveAssessment();
         }
-        
-        // Initialize with empty arrays on error
-        this.allergyOptions = [];
-        this.medicationOptions = [];
-        this.chronicConditionOptions = [];
-        this.smokingStatusOptions = [];
-        this.alcoholStatusOptions = [];
-        this.beverageStatusOptions = [];
-        this.drugUsageStatusOptions = [];
-        
-        // Still initialize social habits
-        this.initializeSocialHabits();
       }
     });
   }
@@ -1614,7 +1599,30 @@ onDrugUsageStatusChange(): void {
 
 
   ngDoCheck(): void {
-  console.log('--- ngDoCheck triggered ---');
+    console.log('--- ngDoCheck triggered ---');
+    
+    // Ensure social habits are always properly initialized
+    if (!this.assessmentData.socialHabits || this.assessmentData.socialHabits.length === 0) {
+      this.initializeSocialHabits();
+    }
+    
+    // Validate each social habit object
+    if (this.assessmentData.socialHabits) {
+      this.assessmentData.socialHabits.forEach((habit, index) => {
+        if (!habit || typeof habit !== 'object') {
+          this.assessmentData.socialHabits[index] = {
+            smokingStatusId: null,
+            cigarettesPerDay: null,
+            alcoholStatusId: null,
+            alcoholFrequency: null,
+            beverageStatusId: null,
+            cupsPerDay: null,
+            drugUsageStatusId: null,
+            drugDetails: null
+          };
+        }
+      });
+    }
   
   if (!this.originalAssessmentData) {
     console.log('No original assessment data to compare with');
