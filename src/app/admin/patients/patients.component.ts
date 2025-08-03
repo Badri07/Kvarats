@@ -345,39 +345,31 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
   }
 
   private autoSaveAssessment(): void {
-    if (this.saveInProgress) return;
-    
-    this.saveInProgress = true;
-    this.lastSaveTime = Date.now();
-    
-    // Show subtle auto-save indicator
-    this._toastr.info('Auto-saving assessment...', '', {
-      timeOut: 1000,
-      progressBar: false
-    });
+  if (this.saveInProgress || !this.autoSaveEnabled) return;
+  
+  this.saveInProgress = true;
+  this.lastSaveTime = Date.now();
 
-    this.adminservice.savePatientAssessment(this.patientData).subscribe({
-      next: (res) => {
-        this.saveInProgress = false;
-        this.originalAssessmentData = JSON.parse(JSON.stringify(this.patientData));
-        this.isDirty = false;
-        this.modifiedFields.clear();
-        
-        // Show success indicator briefly
-        this._toastr.success('Assessment auto-saved', '', {
-          timeOut: 1500,
-          progressBar: false
-        });
-        
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        this.saveInProgress = false;
-        console.error('Auto-save failed:', err);
-        // Don't show error toast for auto-save failures to avoid interrupting user
-      }
-    });
-  }
+  // Create copy with draft flag
+  const draftData = {...this.patientData, isDraft: true};
+  
+  this._toastr.info('Auto-saving draft...', '', {
+    timeOut: 1000,
+    progressBar: false
+  });
+
+  this.adminservice.savePatientAssessment(draftData).subscribe({
+    next: (res) => {
+      this.saveInProgress = false;
+      this.isDirty = false;
+      this.cdr.detectChanges();
+    },
+    error: (err) => {
+      this.saveInProgress = false;
+      console.error('Auto-save failed:', err);
+    }
+  });
+}
 
   public triggerAutoSave(): void {
     this.destroy$.next();
