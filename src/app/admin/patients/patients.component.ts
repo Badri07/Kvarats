@@ -180,7 +180,9 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
     reactionDetails: '',
     firstObserved: null as string | null,
     lastObserved: null as string | null
-  }; 
+  };
+
+  
 
   newMedication = {
     medicationId: null as number | null,
@@ -215,21 +217,6 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
     hadComplications: false,
     complicationDetails: ''
   };
-
-   newSocialHabit {
-  smokingStatusId?: number | null;
-  cigarettesPerDay?: number | null;
-  yearsSmoking?: number | null;
-  hasQuitSmoking?: boolean | null;
-  smokingQuitDate?: string | null;
-  alcoholStatusId?: number | null;
-  alcoholFrequencyId?: number | null;
-  yearsDrinking?: number | null;
-  beverageStatusId?: number | null;
-  cupsPerDay?: number | null;
-  drugUsageStatusId?: number | null;
-  drugDetails?: string | null;
-}
 
   // UI state for dropdowns
   showBpWarning = false;
@@ -1512,7 +1499,7 @@ isAllergyCategorySelected(option: any): boolean {
 
 
 
-selectAllergy(option: any) {
+selectAllergy(option: DropdownOption): void {
   if (this.isAllergySelected(option)) {
     // Deselect if already selected
     this.newAllergy.allergyId = null;
@@ -1525,11 +1512,11 @@ selectAllergy(option: any) {
   this.closeDropdown('allergy');
 }
 
-isAllergySelected(option: any): boolean {
+isAllergySelected(option: DropdownOption): boolean {
   return this.newAllergy.allergyId === option.id;
 }
 
-selectSeverity(option: any) {
+selectSeverity(option: DropdownOption): void {
   if (this.isSeveritySelected(option)) {
     // Deselect if already selected
     this.newAllergy.severityId = null;
@@ -1542,40 +1529,54 @@ selectSeverity(option: any) {
   this.closeDropdown('severity');
 }
 
-isSeveritySelected(option: any): boolean {
+isSeveritySelected(option: DropdownOption): boolean {
   return this.newAllergy.severityId === option.id;
 }
 
 // Helper methods to check status
 isNeverSmoker(): boolean {
-  return this.patientData.socialHabits[0]?.smokingStatusId !== undefined &&
-         this.smokingOptions.find(opt => opt.id === this.patientData.socialHabits[0]?.smokingStatusId)?.value === 'Never Smoked';
+  const socialHabit = this.patientData.socialHabits[0];
+  if (!socialHabit?.smokingStatusId) return false;
+  
+  const smokingOption = this.smokingOptions.find(opt => opt.id === socialHabit.smokingStatusId);
+  return smokingOption?.value === 'Never Smoked';
 }
 
 isNeverDrinker(): boolean {
-  return this.patientData.socialHabits[0]?.alcoholStatusId !== undefined &&
-         this.alcoholOptions.find(opt => opt.id === this.patientData.socialHabits[0]?.alcoholStatusId)?.value === 'Never';
+  const socialHabit = this.patientData.socialHabits[0];
+  if (!socialHabit?.alcoholStatusId) return false;
+  
+  const alcoholOption = this.alcoholOptions.find(opt => opt.id === socialHabit.alcoholStatusId);
+  return alcoholOption?.value === 'Never';
 }
 
 isNonBeverageConsumer(): boolean {
-  return this.patientData.socialHabits[0]?.beverageStatusId !== undefined &&
-         this.beverageOptions.find(opt => opt.id === this.patientData.socialHabits[0]?.beverageStatusId)?.value === 'Does not consume';
+  const socialHabit = this.patientData.socialHabits[0];
+  if (!socialHabit?.beverageStatusId) return false;
+  
+  const beverageOption = this.beverageOptions.find(opt => opt.id === socialHabit.beverageStatusId);
+  return beverageOption?.value === 'Does not consume';
 }
 
 isNeverDrugUser(): boolean {
-  return this.patientData.socialHabits[0]?.drugUsageStatusId !== undefined &&
-         this.drugUsageOptions.find(opt => opt.id === this.patientData.socialHabits[0]?.drugUsageStatusId)?.value === 'Never used'; // Replace with exact value if different
+  const socialHabit = this.patientData.socialHabits[0];
+  if (!socialHabit?.drugUsageStatusId) return false;
+  
+  const drugOption = this.drugUsageOptions.find(opt => opt.id === socialHabit.drugUsageStatusId);
+  return drugOption?.value === 'Never used';
 }
-
 
 // Change handlers
 onSmokingStatusChange(): void {
   if (this.isNeverSmoker()) {
     // Clear smoking-related fields
-    this.patientData.socialHabits[0].cigarettesPerDay = null;
-    this.patientData.socialHabits[0].yearsSmoking = null;
-    this.patientData.socialHabits[0].hasQuitSmoking = null;
-    this.patientData.socialHabits[0].smokingQuitDate = null;
+    const socialHabit = this.patientData.socialHabits[0];
+    if (socialHabit) {
+      socialHabit.cigarettesPerDay = null;
+      socialHabit.yearsSmoking = null;
+      socialHabit.hasQuitSmoking = null;
+      socialHabit.smokingQuitDate = null;
+    }
   }
   this.markFieldChanged('socialHabits');
   this.triggerAutoSave();
@@ -1584,8 +1585,11 @@ onSmokingStatusChange(): void {
 onAlcoholStatusChange(): void {
   if (this.isNeverDrinker()) {
     // Clear alcohol-related fields
-    this.patientData.socialHabits[0].alcoholFrequencyId = null;
-    this.patientData.socialHabits[0].yearsDrinking = null;
+    const socialHabit = this.patientData.socialHabits[0];
+    if (socialHabit) {
+      socialHabit.alcoholFrequencyId = null;
+      socialHabit.yearsDrinking = null;
+    }
   }
   this.markFieldChanged('socialHabits');
   this.triggerAutoSave();
@@ -1594,7 +1598,10 @@ onAlcoholStatusChange(): void {
 onBeverageStatusChange(): void {
   if (this.isNonBeverageConsumer()) {
     // Clear beverage-related fields
-    this.patientData.socialHabits[0].cupsPerDay = null;
+    const socialHabit = this.patientData.socialHabits[0];
+    if (socialHabit) {
+      socialHabit.cupsPerDay = null;
+    }
   }
   this.markFieldChanged('socialHabits');
   this.triggerAutoSave();
@@ -1603,7 +1610,10 @@ onBeverageStatusChange(): void {
 onDrugUsageStatusChange(): void {
   if (this.isNeverDrugUser()) {
     // Clear drug-related fields
-    this.patientData.socialHabits[0].drugDetails = null;
+    const socialHabit = this.patientData.socialHabits[0];
+    if (socialHabit) {
+      socialHabit.drugDetails = null;
+    }
   }
   this.markFieldChanged('socialHabits');
   this.triggerAutoSave();
@@ -1615,23 +1625,19 @@ onDrugUsageStatusChange(): void {
     console.log('--- ngDoCheck triggered ---');
     
     // Ensure social habits are always properly initialized
-    if (!this.assessmentData?.socialHabits || this.assessmentData.socialHabits.length === 0) {
+    if (!this.assessmentData.socialHabits || this.assessmentData.socialHabits.length === 0) {
       this.initializeSocialHabits();
     }
     
-    // Validate each social habit object with proper typing
-    if (this.assessmentData?.socialHabits) {
-      this.assessmentData.socialHabits.forEach((habit: newSocialHabit, index: number) => {
+    // Validate each social habit object
+    if (this.assessmentData.socialHabits) {
+      this.assessmentData.socialHabits.forEach((habit, index) => {
         if (!habit || typeof habit !== 'object') {
           this.assessmentData.socialHabits[index] = {
             smokingStatusId: null,
             cigarettesPerDay: null,
-            yearsSmoking: null,
-            hasQuitSmoking: null,
-            smokingQuitDate: null,
             alcoholStatusId: null,
-            alcoholFrequencyId: null,
-            yearsDrinking: null,
+            alcoholFrequency: null,
             beverageStatusId: null,
             cupsPerDay: null,
             drugUsageStatusId: null,
@@ -1641,44 +1647,43 @@ onDrugUsageStatusChange(): void {
       });
     }
   
-    if (!this.originalAssessmentData) {
-      console.log('No original assessment data to compare with');
-      return;
-    }
+  if (!this.originalAssessmentData) {
+    console.log('No original assessment data to compare with');
+    return;
+  }
 
-    const fieldsToCheck: (keyof typeof this.patientData)[] = [
-      'systolic', 'diastolic', 'heartRate', 'pulse', 'respiratoryRate',
-      'temperature', 'bloodSugar', 'spO2', 'weight', 'height', 'bmi',
-      'bloodGroupId', 'chiefComplaints', 'allergySeverities', 'medications',
-      'chronicConditions', 'surgicalHistory', 'familyHistoryConditions',
-      'socialHabits', 'fileUrl', 'isFileUpload'
-    ];
+  const fieldsToCheck: (keyof typeof this.patientData)[] = [
+    'systolic', 'diastolic', 'heartRate', 'pulse', 'respiratoryRate',
+    'temperature', 'bloodSugar', 'spO2', 'weight', 'height', 'bmi',
+    'bloodGroupId', 'chiefComplaints', 'allergySeverities', 'medications',
+    'chronicConditions', 'surgicalHistory', 'familyHistoryConditions',
+    'socialHabits', 'fileUrl', 'isFileUpload'
+  ];
 
-    console.log('Checking dirty fields...');
+  console.log('Checking dirty fields...');
+  
+  const wasDirty = this.isDirty;
+  this.isDirty = fieldsToCheck.some(field => {
+    const current = JSON.stringify(this.patientData[field]);
+    const original = JSON.stringify(this.originalAssessmentData[field]);
+    const isDifferent = current !== original;
     
-    const wasDirty = this.isDirty;
-    this.isDirty = fieldsToCheck.some((field: keyof typeof this.patientData) => {
-      const current = JSON.stringify(this.patientData[field]);
-      const original = JSON.stringify(this.originalAssessmentData[field]);
-      const isDifferent = current !== original;
-      
-      if (isDifferent) {
-        console.log(`Field changed: ${field}`, {
-          current: this.patientData[field],
-          original: this.originalAssessmentData[field]
-        });
-        this.modifiedFields.add(field);
-      }
-      
-      return isDifferent;
-    });
-    
-    console.log(`Dirty state - Was: ${wasDirty}, Now: ${this.isDirty}`);
-    
-    if (!wasDirty && this.isDirty) {
-      console.log('New changes detected, triggering auto-save');
-      this.triggerAutoSave();
+    if (isDifferent) {
+      console.log(`Field changed: ${field}`, {
+        current: this.patientData[field],
+        original: this.originalAssessmentData[field]
+      });
     }
+    
+    return isDifferent;
+  });
+  
+  console.log(`Dirty state - Was: ${wasDirty}, Now: ${this.isDirty}`);
+  
+  if (!wasDirty && this.isDirty) {
+    console.log('New changes detected, triggering auto-save');
+    this.triggerAutoSave();
+  }
 }
 
   // Utility methods for better UX
