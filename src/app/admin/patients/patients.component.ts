@@ -1062,52 +1062,55 @@ isMedicalConditionSelected(option: DropdownOption): boolean {
   return this.newFamilyHistory.conditionId === option.id;
 }
 
-  onSubmit(): void {
-    if (this.saveInProgress) {
-      this._toastr.warning('Save already in progress, please wait...');
-      return;
-    }
+  saveAssessment(isDraft: boolean = false): void {
+  if (this.saveInProgress) {
+    this._toastr.warning('Save already in progress, please wait...');
+    return;
+  }
 
-    // Clean up empty social habits if no values are set
-    if (this.patientData.socialHabits.length > 0) {
-      const hasValues = Object.values(this.patientData.socialHabits[0]).some(
-        val => val !== null && val !== undefined && val !== ''
-      );
+  // Set draft flag
+  this.patientData.isDraft = isDraft;
+
+  // Clean up empty social habits if needed
+  if (this.patientData.socialHabits.length > 0) {
+    const hasValues = Object.values(this.patientData.socialHabits[0]).some(
+      val => val !== null && val !== undefined && val !== ''
+    );
+    if (!hasValues) {
+      this.patientData.socialHabits = [];
+    }
+  }
+
+  if (this.showBpWarning) {
+    this._toastr.warning('Diastolic pressure cannot be greater than systolic');
+    return;
+  }
+
+  this.saveInProgress = true;
+  this._loader.show();
+  
+  this.adminservice.savePatientAssessment(this.patientData).subscribe({
+    next: (res) => {
+      this.saveInProgress = false;
+      this._loader.hide();
       
-      if (!hasValues) {
-        this.patientData.socialHabits = [];
-      }
-    }
-
-    if (this.showBpWarning) {
-      this._toastr.warning('Diastolic pressure cannot be greater than systolic');
-      return;
-    }
-
-    this.saveInProgress = true;
-    this.autoSaveEnabled = false; // Disable auto-save during manual save
-    this._loader.show();
-    
-    this.adminservice.savePatientAssessment(this.patientData).subscribe({
-      next: (res) => {
-        this.saveInProgress = false;
-        this.autoSaveEnabled = true;
-        this._loader.hide();
+      if (isDraft) {
+        this._toastr.success('Draft saved successfully');
+      } else {
         this._toastr.success('Assessment saved successfully');
         this.originalAssessmentData = JSON.parse(JSON.stringify(this.patientData));
         this.isDirty = false;
         this.modifiedFields.clear();
-        this.initializeSocialHabits();
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        this.saveInProgress = false;
-        this.autoSaveEnabled = true;
-        this._loader.hide();
-        this._toastr.error(`Error saving assessment: ${err.message}`);
       }
-    });
-  }
+      this.cdr.detectChanges();
+    },
+    error: (err) => {
+      this.saveInProgress = false;
+      this._loader.hide();
+      this._toastr.error(`Error saving ${isDraft ? 'draft' : 'assessment'}`);
+    }
+  });
+}
 
     selectSurgeryType(option: any): void {
     this.newSurgery.surgeryTypeId = option.id;
