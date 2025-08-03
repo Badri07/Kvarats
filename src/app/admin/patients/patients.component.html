@@ -20,6 +20,15 @@
 <div class="container mt-4">
  <form #form="ngForm" class="space-y-4">
 
+    <!-- Add the Draft Status Banner here -->
+    <div *ngIf="patientData.isDraft" class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4 rounded" role="alert">
+      <div class="flex items-center">
+        <i class="fas fa-exclamation-circle mr-2"></i>
+        <strong>Draft Version</strong>
+      </div>
+      <p class="text-sm mt-1">This is an unsaved draft. Please submit when complete.</p>
+    </div>
+
         <!-- Vitals Section (Mandatory) -->
       <div class="card border border-gray-200 rounded-lg overflow-hidden">
     <div class="bg-primary-border-color text-white py-2 px-3 flex items-center justify-between cursor-pointer transition-colors duration-200" (click)="isshowvital = !isshowvital">
