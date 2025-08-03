@@ -304,24 +304,82 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
   };
 
   ngOnInit(): void {
-    this.initializeSocialHabits();
-    this.setupAutoSave();
-    this.activate.params.subscribe(params => {
+  this._loader.show(); // Show loader immediately
+  
+  // 1. Initialize core data structures
+  this.initializeSocialHabits();
+  
+  // 2. Get route parameters
+  this.activate.params.pipe(
+    takeUntil(this.destroy$)
+  ).subscribe({
+    next: params => {
       this.patId = params['id'];
       this.patientData.patientId = this.patId;
-      this.loadDropdowns();
-    });
+      
+      // 3. Load assessment data first
+      this.loadInitialAssessmentData().then(() => {
+        // 4. Then load dropdowns after data is ready
+        this.loadDropdowns();
+        
+        // 5. Setup auto-save only after everything is initialized
+        this.setupAutoSave();
+        this._loader.hide();
+      });
+    },
+    error: err => {
+      this._loader.hide();
+      this._toastr.error('Failed to load patient parameters');
+      console.error('Route param error:', err);
+    }
+  });
 
-    this.adminservice.fileUrl$.subscribe((url) => {
+  // 6. File upload subscription
+  this.adminservice.fileUrl$.pipe(
+    takeUntil(this.destroy$)
+  ).subscribe({
+    next: url => {
       if (url) {
         this.fileUrl = [url];
         this.isUpload = true;
         this.patientData.fileUrl = [url];
         this.patientData.isFileUpload = true;
+        this.markFieldChanged('fileUrl');
+        this.cdr.detectChanges();
       }
+    },
+    error: err => {
+      console.error('File URL subscription error:', err);
+    }
+  });
+}
+
+private async loadInitialAssessmentData(): Promise<void> {
+  try {
+    const data = await this.adminservice.getPatientAssessment(this.patId).toPromise();
+    
+    if (!data) {
+      throw new Error('No assessment data returned');
+    }
+    
+    this.assessmentData = data;
+    this.prepopulateData(); // This sets originalAssessmentData
+    
+    console.log('Initial assessment data loaded', {
+      patientId: this.patId,
+      data: this.assessmentData
     });
-    this.loadDropdowns();
+    
+  } catch (error) {
+    console.error('Failed to load initial data:', error);
+    this._toastr.error('Could not load patient assessment');
+    
+    // Initialize empty state
+    this.assessmentData = null;
+    this.originalAssessmentData = null;
+    this.resetForm();
   }
+}
 
   ngOnDestroy(): void {
     this.destroy$.next();
