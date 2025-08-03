@@ -1602,19 +1602,23 @@ onDrugUsageStatusChange(): void {
     console.log('--- ngDoCheck triggered ---');
     
     // Ensure social habits are always properly initialized
-    if (!this.assessmentData.socialHabits || this.assessmentData.socialHabits.length === 0) {
+    if (!this.assessmentData?.socialHabits || this.assessmentData.socialHabits.length === 0) {
       this.initializeSocialHabits();
     }
     
-    // Validate each social habit object
-    if (this.assessmentData.socialHabits) {
-      this.assessmentData.socialHabits.forEach((habit, index) => {
+    // Validate each social habit object with proper typing
+    if (this.assessmentData?.socialHabits) {
+      this.assessmentData.socialHabits.forEach((habit: SocialHabit, index: number) => {
         if (!habit || typeof habit !== 'object') {
           this.assessmentData.socialHabits[index] = {
             smokingStatusId: null,
             cigarettesPerDay: null,
+            yearsSmoking: null,
+            hasQuitSmoking: null,
+            smokingQuitDate: null,
             alcoholStatusId: null,
-            alcoholFrequency: null,
+            alcoholFrequencyId: null,
+            yearsDrinking: null,
             beverageStatusId: null,
             cupsPerDay: null,
             drugUsageStatusId: null,
@@ -1624,43 +1628,44 @@ onDrugUsageStatusChange(): void {
       });
     }
   
-  if (!this.originalAssessmentData) {
-    console.log('No original assessment data to compare with');
-    return;
-  }
-
-  const fieldsToCheck: (keyof typeof this.patientData)[] = [
-    'systolic', 'diastolic', 'heartRate', 'pulse', 'respiratoryRate',
-    'temperature', 'bloodSugar', 'spO2', 'weight', 'height', 'bmi',
-    'bloodGroupId', 'chiefComplaints', 'allergySeverities', 'medications',
-    'chronicConditions', 'surgicalHistory', 'familyHistoryConditions',
-    'socialHabits', 'fileUrl', 'isFileUpload'
-  ];
-
-  console.log('Checking dirty fields...');
-  
-  const wasDirty = this.isDirty;
-  this.isDirty = fieldsToCheck.some(field => {
-    const current = JSON.stringify(this.patientData[field]);
-    const original = JSON.stringify(this.originalAssessmentData[field]);
-    const isDifferent = current !== original;
-    
-    if (isDifferent) {
-      console.log(`Field changed: ${field}`, {
-        current: this.patientData[field],
-        original: this.originalAssessmentData[field]
-      });
+    if (!this.originalAssessmentData) {
+      console.log('No original assessment data to compare with');
+      return;
     }
+
+    const fieldsToCheck: (keyof typeof this.patientData)[] = [
+      'systolic', 'diastolic', 'heartRate', 'pulse', 'respiratoryRate',
+      'temperature', 'bloodSugar', 'spO2', 'weight', 'height', 'bmi',
+      'bloodGroupId', 'chiefComplaints', 'allergySeverities', 'medications',
+      'chronicConditions', 'surgicalHistory', 'familyHistoryConditions',
+      'socialHabits', 'fileUrl', 'isFileUpload'
+    ];
+
+    console.log('Checking dirty fields...');
     
-    return isDifferent;
-  });
-  
-  console.log(`Dirty state - Was: ${wasDirty}, Now: ${this.isDirty}`);
-  
-  if (!wasDirty && this.isDirty) {
-    console.log('New changes detected, triggering auto-save');
-    this.triggerAutoSave();
-  }
+    const wasDirty = this.isDirty;
+    this.isDirty = fieldsToCheck.some((field: keyof typeof this.patientData) => {
+      const current = JSON.stringify(this.patientData[field]);
+      const original = JSON.stringify(this.originalAssessmentData[field]);
+      const isDifferent = current !== original;
+      
+      if (isDifferent) {
+        console.log(`Field changed: ${field}`, {
+          current: this.patientData[field],
+          original: this.originalAssessmentData[field]
+        });
+        this.modifiedFields.add(field);
+      }
+      
+      return isDifferent;
+    });
+    
+    console.log(`Dirty state - Was: ${wasDirty}, Now: ${this.isDirty}`);
+    
+    if (!wasDirty && this.isDirty) {
+      console.log('New changes detected, triggering auto-save');
+      this.triggerAutoSave();
+    }
 }
 
   // Utility methods for better UX
