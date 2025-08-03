@@ -216,7 +216,7 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
     complicationDetails: ''
   };
 
-  interface SocialHabit {
+   newSocialHabit {
   smokingStatusId?: number | null;
   cigarettesPerDay?: number | null;
   yearsSmoking?: number | null;
