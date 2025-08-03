@@ -1621,7 +1621,7 @@ onDrugUsageStatusChange(): void {
     
     // Validate each social habit object with proper typing
     if (this.assessmentData?.socialHabits) {
-      this.assessmentData.socialHabits.forEach((habit: SocialHabit, index: number) => {
+      this.assessmentData.socialHabits.forEach((habit: newSocialHabit, index: number) => {
         if (!habit || typeof habit !== 'object') {
           this.assessmentData.socialHabits[index] = {
             smokingStatusId: null,
