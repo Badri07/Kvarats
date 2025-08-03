@@ -394,10 +394,25 @@ private async loadInitialAssessmentData(): Promise<void> {
       takeUntil(this.destroy$)
     ).subscribe(() => {
       if (this.isDirty && this.autoSaveEnabled && !this.saveInProgress) {
+        
+        // Ensure social habits are properly initialized after dropdowns load
+        this.initializeSocialHabits();
         const now = Date.now();
         if (now - this.lastSaveTime >= this.MIN_SAVE_INTERVAL) {
           this.autoSaveAssessment();
         }
+        
+        // Initialize with empty arrays on error
+        this.allergyOptions = [];
+        this.medicationOptions = [];
+        this.chronicConditionOptions = [];
+        this.smokingStatusOptions = [];
+        this.alcoholStatusOptions = [];
+        this.beverageStatusOptions = [];
+        this.drugUsageStatusOptions = [];
+        
+        // Still initialize social habits
+        this.initializeSocialHabits();
       }
     });
   }
