@@ -81,7 +81,7 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
   // Patient data structure
   patientData = {
     patientId: '',
-    version: 0,
+    isDraft: false,
     isFileUpload: this.isUpload,
     fileUrl: this.fileUrl,
     
