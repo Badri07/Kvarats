@@ -1257,24 +1257,76 @@ isMedicalConditionSelected(option: DropdownOption): boolean {
   }
 
 
-  resetForm(form: NgForm): void {
-    if (!this.originalAssessmentData) return;
+  resetForm(form?: NgForm): void {
+  if (!this.originalAssessmentData) {
+    console.warn('Cannot reset form - no original assessment data available');
+    return;
+  }
 
+  try {
+    // 1. Reset modified fields from tracked changes
     this.modifiedFields.forEach(field => {
-      (this.patientData as any)[field] = this.originalAssessmentData[field];
+      if (field in this.originalAssessmentData) {
+        (this.patientData as any)[field] = this.deepCopy(this.originalAssessmentData[field]);
+      } else {
+        console.warn(`Field ${field} not found in original data`);
+      }
     });
 
-    this.modifiedFields.clear();
+    // 2. Reset UI selections
+    this.selectedAllergyNames = this.patientData.allergySeverities
+      .map(item => this.getOptionLabel('allergy', item.allergyId))
+      .filter(Boolean); // Remove any undefined/null values
 
-    this.selectedAllergyNames = this.patientData.allergySeverities.map(item => 
-      this.getOptionLabel('allergy', item.allergyId));
-    this.selectedMedicationNames = this.patientData.medications.map(item => 
-      this.getOptionLabel('medication', item.medicationId));
-    this.selectedConditionNames = this.patientData.chronicConditions.map(item => 
-      this.getOptionLabel('condition', item.conditionId));
-    
+    this.selectedMedicationNames = this.patientData.medications
+      .map(item => this.getOptionLabel('medication', item.medicationId))
+      .filter(Boolean);
+
+    this.selectedConditionNames = this.patientData.chronicConditions
+      .map(item => this.getOptionLabel('condition', item.conditionId))
+      .filter(Boolean);
+
+    // 3. Reset form controls if NgForm provided
+    if (form) {
+      setTimeout(() => {
+        form.resetForm({
+          ...this.patientData,
+          // Special cases for reactive form controls
+          bloodGroupId: this.patientData.bloodGroupId,
+          socialHabits: this.patientData.socialHabits[0] || {}
+        });
+      }, 0);
+    }
+
+    // 4. Reinitialize dynamic sections
     this.initializeSocialHabits();
+    this.filteredAllergyOptions = [...this.allergyOptions];
+    
+    // 5. Reset state flags
+    this.isDirty = false;
+    this.modifiedFields.clear();
+    this.painScaleErrors = {};
+
+    console.log('Form reset successfully', {
+      originalData: this.originalAssessmentData,
+      currentData: this.patientData
+    });
+
+  } catch (error) {
+    console.error('Error resetting form:', error);
+    this._toastr.error('Failed to reset form data');
+    
+    // Fallback: Hard reset
+    if (this.originalAssessmentData) {
+      this.patientData = this.deepCopy(this.originalAssessmentData);
+      this.cdr.detectChanges();
+    }
   }
+}
+
+private deepCopy<T>(obj: T): T {
+  return JSON.parse(JSON.stringify(obj));
+}
 
   markFieldChanged(field: string): void {
     this.modifiedFields.add(field);
