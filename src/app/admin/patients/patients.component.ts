@@ -376,12 +376,46 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['assessmentData'] && this.assessmentData) {
-      this.prepopulateData();
-      this.originalAssessmentData = JSON.parse(JSON.stringify(this.patientData));
-      this.isDirty = false;
+  if (!changes['assessmentData']) return;
+
+  try {
+    const previousData = changes['assessmentData'].previousValue;
+    const currentData = changes['assessmentData'].currentValue;
+
+    // Deep compare to avoid unnecessary processing
+    if (JSON.stringify(previousData) === JSON.stringify(currentData)) {
+      console.debug('Assessment data changed but content is identical');
+      return;
     }
+
+    if (!currentData) {
+      console.warn('Received empty assessment data - resetting form');
+      this.resetForm();
+      return;
+    }
+
+    console.log('Assessment data changed - prepopulating', {
+      previous: previousData ? 'exists' : 'null',
+      current: currentData ? 'exists' : 'null'
+    });
+
+    // Process new data
+    this.prepopulateData();
+    
+    // Reset tracking states
+    this.isDirty = false;
+    this.modifiedFields.clear();
+    this.lastSaveTime = Date.now();
+
+    // Force UI update if needed
+    this.cdr.detectChanges();
+
+  } catch (error) {
+    console.error('Error processing assessment data change:', error);
+    this._toastr.error('Failed to process patient data changes');
+    this.resetForm();
   }
+}
 
   private initializeSocialHabits(): void {
   if (!this.patientData.socialHabits || this.patientData.socialHabits.length === 0) {
