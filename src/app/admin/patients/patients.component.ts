@@ -1,5 +1,5 @@
 import { Component, Input, OnChanges, SimpleChanges, OnInit, DoCheck, Inject, ChangeDetectorRef, OnDestroy } from '@angular/core';
-import { NgForm } from '@angular/forms';
+import { NgForm, FormBuilder } from '@angular/forms';
 import { AdminService } from '../../service/admin/admin.service';
 import { ActivatedRoute } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
@@ -30,12 +30,23 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
   private readonly SAVE_DEBOUNCE_TIME = 2000; // 2 seconds
   private readonly MIN_SAVE_INTERVAL = 5000; // 5 seconds minimum between saves
 
+  // Status properties
+  saveStatus: 'saved' | 'saving' | 'unsaved' = 'unsaved';
+  isSaving = false;
+  isLoading = false;
+
+  // Form arrays
+  chiefComplaintsArray = this.fb.array([]);
+  surgicalHistoryArray = this.fb.array([]);
+  socialHabitsArray = this.fb.array([]);
+
   constructor(
     private adminservice: AdminService,
     private activate: ActivatedRoute,
     private _toastr: ToastrService,
     private _loader: PopupService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private fb: FormBuilder
   ) { }
 
   @Input() assessmentData: any;
@@ -65,7 +76,7 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
   frequencyOptions: DropdownOption[] = [];
   surgeryTypeOptions: DropdownOption[] = [];
   allergyCategoryOptions: DropdownOption[] = [];
-  medicalConditionOptions:DropdownOption[] = [];
+  medicalConditionOptions: DropdownOption[] = [];
   allergyOptionsByCategory: { [categoryId: number]: any[] } = {};
   chiefComplaintOptions: string[] = [
     'Fever', 'Cough', 'Headache', 'Cold', 'Body Pain',
@@ -78,6 +89,7 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
   selectedConditionNames: string[] = [];
   selectedAllergyCategoryId: number | null = null;
   filteredAllergyOptions: DropdownOption[] = [];
+
   // Patient data structure
   patientData = {
     patientId: '',
@@ -109,7 +121,7 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
 
     // Allergies
     allergySeverities: [] as {
-      allergyId: number;  // Required
+      allergyId: number;
       severityId: number | null;
       allergyCategoryId: number | null;
       reactionDetails: string;
@@ -174,15 +186,13 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
 
   // Form models for complex additions
   newAllergy = {
-    allergyId: null as number | null,  // Can be null when empty
+    allergyId: null as number | null,
     severityId: null as number | null,
     allergyCategoryId: null as number | null,
     reactionDetails: '',
     firstObserved: null as string | null,
     lastObserved: null as string | null
   };
-
-  
 
   newMedication = {
     medicationId: null as number | null,
@@ -201,12 +211,12 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
   };
 
   newFamilyHistory = {
-  conditionId: null as number | null,  // Changed to match DTO and use ID
-  relationship: '',
-  ageAtDiagnosis: null as number | null,
-  isDeceased: null as boolean | null,  // Changed to allow null
-  causeOfDeath: ''
-};
+    conditionId: null as number | null,
+    relationship: '',
+    ageAtDiagnosis: null as number | null,
+    isDeceased: null as boolean | null,
+    causeOfDeath: ''
+  };
 
   newSurgery = {
     procedure: '',
@@ -236,7 +246,7 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
     frequency: [] as DropdownOption[],
     surgerytype: [] as DropdownOption[],
     allergycategory: [] as DropdownOption[],
-    medicalcondition:[] as DropdownOption[]
+    medicalcondition: [] as DropdownOption[]
   };
 
   isDropdownOpen = {
@@ -253,7 +263,7 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
     frequency: false,
     surgerytype: false,
     allergycategory: false,
-    medicalcondition:false
+    medicalcondition: false
   };
 
   searchInputs = {
@@ -270,7 +280,7 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
     frequency: '',
     surgerytype: '',
     allergycategory: '',
-    medicalcondition:''
+    medicalcondition: ''
   };
 
   showAddButtons = {
@@ -287,7 +297,7 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
     frequency: false,
     surgerytype: false,
     allergycategory: false,
-    medicalcondition:false
+    medicalcondition: false
   };
 
   complaintTemplates: { [key: string]: string } = {
@@ -304,82 +314,87 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
   };
 
   ngOnInit(): void {
-  this._loader.show(); // Show loader immediately
-  
-  // 1. Initialize core data structures
-  this.initializeSocialHabits();
-  
-  // 2. Get route parameters
-  this.activate.params.pipe(
-    takeUntil(this.destroy$)
-  ).subscribe({
-    next: params => {
-      this.patId = params['id'];
-      this.patientData.patientId = this.patId;
-      
-      // 3. Load assessment data first
-      this.loadInitialAssessmentData().then(() => {
-        // 4. Then load dropdowns after data is ready
-        this.loadDropdowns();
+    this._loader.show();
+    
+    // Initialize form arrays
+    this.chiefComplaintsArray = this.fb.array([]);
+    this.surgicalHistoryArray = this.fb.array([]);
+    this.socialHabitsArray = this.fb.array([]);
+    
+    // 1. Initialize core data structures
+    this.initializeSocialHabits();
+    
+    // 2. Get route parameters
+    this.activate.params.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: params => {
+        this.patId = params['id'];
+        this.patientData.patientId = this.patId;
         
-        // 5. Setup auto-save only after everything is initialized
-        this.setupAutoSave();
+        // 3. Load assessment data first
+        this.loadInitialAssessmentData().then(() => {
+          // 4. Then load dropdowns after data is ready
+          this.loadDropdowns();
+          
+          // 5. Setup auto-save only after everything is initialized
+          this.setupAutoSave();
+          this._loader.hide();
+        });
+      },
+      error: err => {
         this._loader.hide();
-      });
-    },
-    error: err => {
-      this._loader.hide();
-      this._toastr.error('Failed to load patient parameters');
-      console.error('Route param error:', err);
-    }
-  });
-
-  // 6. File upload subscription
-  this.adminservice.fileUrl$.pipe(
-    takeUntil(this.destroy$)
-  ).subscribe({
-    next: url => {
-      if (url) {
-        this.fileUrl = [url];
-        this.isUpload = true;
-        this.patientData.fileUrl = [url];
-        this.patientData.isFileUpload = true;
-        this.markFieldChanged('fileUrl');
-        this.cdr.detectChanges();
+        this._toastr.error('Failed to load patient parameters');
+        console.error('Route param error:', err);
       }
-    },
-    error: err => {
-      console.error('File URL subscription error:', err);
-    }
-  });
-}
-
-private async loadInitialAssessmentData(): Promise<void> {
-  try {
-    const data = await this.adminservice.getPatientAssessment(this.patId).toPromise();
-    
-    if (!data) {
-      throw new Error('No assessment data returned');
-    }
-    
-    this.assessmentData = data;
-    this.prepopulateData(); // This sets originalAssessmentData
-    
-    console.log('Initial assessment data loaded', {
-      patientId: this.patId,
-      data: this.assessmentData
     });
-    
-  } catch (error) {
-    console.error('Failed to load initial data:', error);
-    this._toastr.error('Could not load patient assessment');
-    
-    // Initialize empty state
-    this.assessmentData = null;
-    this.originalAssessmentData = null;
-    this.resetForm();
+
+    // 6. File upload subscription
+    this.adminservice.fileUrl$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: url => {
+        if (url) {
+          this.fileUrl = [url];
+          this.isUpload = true;
+          this.patientData.fileUrl = [url];
+          this.patientData.isFileUpload = true;
+          this.markFieldChanged('fileUrl');
+          this.cdr.detectChanges();
+        }
+      },
+      error: err => {
+        console.error('File URL subscription error:', err);
+      }
+    });
   }
-}
+
+  private async loadInitialAssessmentData(): Promise<void> {
+    try {
+      const data = await this.adminservice.getPatientAssessment(this.patId).toPromise();
+      
+      if (!data) {
+        throw new Error('No assessment data returned');
+      }
+      
+      this.assessmentData = data;
+      this.prepopulateData(); // This sets originalAssessmentData
+      
+      console.log('Initial assessment data loaded', {
+        patientId: this.patId,
+        data: this.assessmentData
+      });
+      
+    } catch (error) {
+      console.error('Failed to load initial data:', error);
+      this._toastr.error('Could not load patient assessment');
+      
+      // Initialize empty state
+      this.assessmentData = null;
+      this.originalAssessmentData = null;
+      this.resetForm();
+    }
+  }
 
   ngOnDestroy(): void {
     this.destroy$.next();
@@ -403,223 +418,226 @@ private async loadInitialAssessmentData(): Promise<void> {
   }
 
   private autoSaveAssessment(): void {
-  if (this.saveInProgress || !this.autoSaveEnabled) return;
-  
-  this.saveInProgress = true;
-  this.lastSaveTime = Date.now();
+    if (this.saveInProgress || !this.autoSaveEnabled) return;
+    
+    this.saveInProgress = true;
+    this.lastSaveTime = Date.now();
+    this.saveStatus = 'saving';
 
-  // Create copy with draft flag
-  const draftData = {...this.patientData, isDraft: true};
-  
-  this._toastr.info('Auto-saving draft...', '', {
-    timeOut: 1000,
-    progressBar: false
-  });
+    // Create copy with draft flag
+    const draftData = {...this.patientData, isDraft: true};
+    
+    this._toastr.info('Auto-saving draft...', '', {
+      timeOut: 1000,
+      progressBar: false
+    });
 
-  this.adminservice.savePatientAssessment(draftData).subscribe({
-    next: (res) => {
-      this.saveInProgress = false;
-      this.isDirty = false;
-      this.cdr.detectChanges();
-    },
-    error: (err) => {
-      this.saveInProgress = false;
-      console.error('Auto-save failed:', err);
-    }
-  });
-}
+    this.adminservice.savePatientAssessment(draftData).subscribe({
+      next: (res) => {
+        this.saveInProgress = false;
+        this.isDirty = false;
+        this.saveStatus = 'saved';
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.saveInProgress = false;
+        this.saveStatus = 'unsaved';
+        console.error('Auto-save failed:', err);
+      }
+    });
+  }
 
   public triggerAutoSave(): void {
     this.destroy$.next();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-  if (!changes['assessmentData']) return;
+    if (!changes['assessmentData']) return;
 
-  try {
-    const previousData = changes['assessmentData'].previousValue;
-    const currentData = changes['assessmentData'].currentValue;
+    try {
+      const previousData = changes['assessmentData'].previousValue;
+      const currentData = changes['assessmentData'].currentValue;
 
-    // Deep compare to avoid unnecessary processing
-    if (JSON.stringify(previousData) === JSON.stringify(currentData)) {
-      console.debug('Assessment data changed but content is identical');
-      return;
-    }
+      // Deep compare to avoid unnecessary processing
+      if (JSON.stringify(previousData) === JSON.stringify(currentData)) {
+        console.debug('Assessment data changed but content is identical');
+        return;
+      }
 
-    if (!currentData) {
-      console.warn('Received empty assessment data - resetting form');
+      if (!currentData) {
+        console.warn('Received empty assessment data - resetting form');
+        this.resetForm();
+        return;
+      }
+
+      console.log('Assessment data changed - prepopulating', {
+        previous: previousData ? 'exists' : 'null',
+        current: currentData ? 'exists' : 'null'
+      });
+
+      // Process new data
+      this.prepopulateData();
+      
+      // Reset tracking states
+      this.isDirty = false;
+      this.modifiedFields.clear();
+      this.lastSaveTime = Date.now();
+
+      // Force UI update if needed
+      this.cdr.detectChanges();
+
+    } catch (error) {
+      console.error('Error processing assessment data change:', error);
+      this._toastr.error('Failed to process patient data changes');
       this.resetForm();
-      return;
     }
-
-    console.log('Assessment data changed - prepopulating', {
-      previous: previousData ? 'exists' : 'null',
-      current: currentData ? 'exists' : 'null'
-    });
-
-    // Process new data
-    this.prepopulateData();
-    
-    // Reset tracking states
-    this.isDirty = false;
-    this.modifiedFields.clear();
-    this.lastSaveTime = Date.now();
-
-    // Force UI update if needed
-    this.cdr.detectChanges();
-
-  } catch (error) {
-    console.error('Error processing assessment data change:', error);
-    this._toastr.error('Failed to process patient data changes');
-    this.resetForm();
   }
-}
 
   private initializeSocialHabits(): void {
-  if (!this.patientData.socialHabits || this.patientData.socialHabits.length === 0) {
-    this.patientData.socialHabits = [{
-      smokingStatusId: null,
-      cigarettesPerDay: null,
-      yearsSmoking: null,
-      hasQuitSmoking: null,
-      smokingQuitDate: null,
-      alcoholStatusId: null,
-      alcoholFrequencyId: null,
-      yearsDrinking: null,
-      beverageStatusId: null,
-      cupsPerDay: null,
-      drugUsageStatusId: null,
-      drugDetails: null
-    }];
+    if (!this.patientData.socialHabits || this.patientData.socialHabits.length === 0) {
+      this.patientData.socialHabits = [{
+        smokingStatusId: null,
+        cigarettesPerDay: null,
+        yearsSmoking: null,
+        hasQuitSmoking: null,
+        smokingQuitDate: null,
+        alcoholStatusId: null,
+        alcoholFrequencyId: null,
+        yearsDrinking: null,
+        beverageStatusId: null,
+        cupsPerDay: null,
+        drugUsageStatusId: null,
+        drugDetails: null
+      }];
+    }
   }
-}
 
   private prepopulateData(): void {
-  // Check if we have data to work with
-  if (!this.assessmentData) {
-    console.warn('Cannot prepopulate - no assessment data provided');
-    return;
+    // Check if we have data to work with
+    if (!this.assessmentData) {
+      console.warn('Cannot prepopulate - no assessment data provided');
+      return;
+    }
+
+    // Create deep copy of input data
+    const assessmentData = JSON.parse(JSON.stringify(this.assessmentData));
+
+    // Initialize all arrays if they don't exist
+    assessmentData.allergySeverities = assessmentData.allergySeverities || [];
+    assessmentData.medications = assessmentData.medications || [];
+    assessmentData.chronicConditions = assessmentData.chronicConditions || [];
+    assessmentData.surgicalHistory = assessmentData.surgicalHistory || [];
+    assessmentData.familyHistoryConditions = assessmentData.familyHistoryConditions || [];
+    assessmentData.chiefComplaints = assessmentData.chiefComplaints || [];
+    assessmentData.socialHabits = assessmentData.socialHabits || [{}];
+    assessmentData.fileUrl = assessmentData.fileUrl || [];
+
+    // Merge with current patientData while preserving patientId and other defaults
+    this.patientData = {
+      patientId: this.patientData.patientId,  // Preserve existing
+      isDraft: false,
+      isFileUpload: assessmentData.fileUrl?.length > 0 || false,
+      fileUrl: assessmentData.fileUrl,
+      
+      // Vital signs
+      systolic: assessmentData.systolic || null,
+      diastolic: assessmentData.diastolic || null,
+      heartRate: assessmentData.heartRate || null,
+      pulse: assessmentData.pulse || null,
+      respiratoryRate: assessmentData.respiratoryRate || null,
+      temperature: assessmentData.temperature || null,
+      bloodSugar: assessmentData.bloodSugar || null,
+      spO2: assessmentData.spO2 || null,
+      weight: assessmentData.weight || null,
+      height: assessmentData.height || null,
+      bmi: assessmentData.bmi || '',
+      bloodGroupId: assessmentData.bloodGroupId || null,
+
+      // Symptoms
+      chiefComplaints: assessmentData.chiefComplaints.map((c: any) => ({
+        complaint: c.complaint || '',
+        painScale: c.painScale || null,
+        notes: c.notes || this.complaintTemplates[c.complaint] || '',
+        onsetDate: c.onsetDate || null
+      })),
+
+      // Allergies
+      allergySeverities: assessmentData.allergySeverities.map((a: any) => ({
+        allergyId: a.allergyId || null,
+        severityId: a.severityId || null,
+        allergyCategoryId: a.allergyCategoryId || null,
+        reactionDetails: a.reactionDetails || '',
+        firstObserved: a.firstObserved || null,
+        lastObserved: a.lastObserved || null
+      })),
+
+      // Medications
+      medications: assessmentData.medications.map((m: any) => ({
+        medicationId: m.medicationId || null,
+        dosage: m.dosage || '',
+        frequency: m.frequency || '',
+        startDate: m.startDate || null,
+        endDate: m.endDate || null,
+        reason: m.reason || ''
+      })),
+
+      // Conditions
+      chronicConditions: assessmentData.chronicConditions.map((c: any) => ({
+        conditionId: c.conditionId || null,
+        diagnosisDate: c.diagnosisDate || null,
+        treatmentDetails: c.treatmentDetails || '',
+        isControlled: c.isControlled || null
+      })),
+
+      // Surgical history
+      surgicalHistory: assessmentData.surgicalHistory.map((s: any) => ({
+        procedure: s.procedure || '',
+        date: s.date || null,
+        hospital: s.hospital || '',
+        surgeonName: s.surgeonName || '',
+        surgeryTypeId: s.surgeryTypeId || null,
+        hadComplications: s.hadComplications || false,
+        complicationDetails: s.complicationDetails || ''
+      })),
+
+      // Family history
+      familyHistoryConditions: assessmentData.familyHistoryConditions.map((f: any) => ({
+        conditionId: f.conditionId || null,
+        relationship: f.relationship || '',
+        ageAtDiagnosis: f.ageAtDiagnosis || null,
+        isDeceased: f.isDeceased || null,
+        causeOfDeath: f.causeOfDeath || ''
+      })),
+
+      // Social habits
+      socialHabits: assessmentData.socialHabits.map((s: any) => ({
+        smokingStatusId: s.smokingStatusId || null,
+        cigarettesPerDay: s.cigarettesPerDay || null,
+        yearsSmoking: s.yearsSmoking || null,
+        hasQuitSmoking: s.hasQuitSmoking || null,
+        smokingQuitDate: s.smokingQuitDate || null,
+        alcoholStatusId: s.alcoholStatusId || null,
+        alcoholFrequencyId: s.alcoholFrequencyId || null,
+        yearsDrinking: s.yearsDrinking || null,
+        beverageStatusId: s.beverageStatusId || null,
+        cupsPerDay: s.cupsPerDay || null,
+        drugUsageStatusId: s.drugUsageStatusId || null,
+        drugDetails: s.drugDetails || null
+      }))
+    };
+
+    // Initialize selected names arrays
+    this.selectedAllergyNames = this.patientData.allergySeverities
+      .map(item => this.getOptionLabel('allergy', item.allergyId));
+    this.selectedMedicationNames = this.patientData.medications
+      .map(item => this.getOptionLabel('medication', item.medicationId));
+    this.selectedConditionNames = this.patientData.chronicConditions
+      .map(item => this.getOptionLabel('condition', item.conditionId));
+
+    // Set original baseline for dirty checking
+    this.originalAssessmentData = JSON.parse(JSON.stringify(this.patientData));
+    console.log('Original assessment data initialized:', this.originalAssessmentData);
   }
-
-  // Create deep copy of input data
-  const assessmentData = JSON.parse(JSON.stringify(this.assessmentData));
-
-  // Initialize all arrays if they don't exist
-  assessmentData.allergySeverities = assessmentData.allergySeverities || [];
-  assessmentData.medications = assessmentData.medications || [];
-  assessmentData.chronicConditions = assessmentData.chronicConditions || [];
-  assessmentData.surgicalHistory = assessmentData.surgicalHistory || [];
-  assessmentData.familyHistoryConditions = assessmentData.familyHistoryConditions || [];
-  assessmentData.chiefComplaints = assessmentData.chiefComplaints || [];
-  assessmentData.socialHabits = assessmentData.socialHabits || [{}];
-  assessmentData.fileUrl = assessmentData.fileUrl || [];
-
-  // Merge with current patientData while preserving patientId and other defaults
-  this.patientData = {
-    patientId: this.patientData.patientId,  // Preserve existing
-    isDraft: false,
-    isFileUpload: assessmentData.fileUrl?.length > 0 || false,
-    fileUrl: assessmentData.fileUrl,
-    
-    // Vital signs
-    systolic: assessmentData.systolic || null,
-    diastolic: assessmentData.diastolic || null,
-    heartRate: assessmentData.heartRate || null,
-    pulse: assessmentData.pulse || null,
-    respiratoryRate: assessmentData.respiratoryRate || null,
-    temperature: assessmentData.temperature || null,
-    bloodSugar: assessmentData.bloodSugar || null,
-    spO2: assessmentData.spO2 || null,
-    weight: assessmentData.weight || null,
-    height: assessmentData.height || null,
-    bmi: assessmentData.bmi || '',
-    bloodGroupId: assessmentData.bloodGroupId || null,
-
-    // Symptoms
-    chiefComplaints: assessmentData.chiefComplaints.map((c: any) => ({
-      complaint: c.complaint || '',
-      painScale: c.painScale || null,
-      notes: c.notes || this.complaintTemplates[c.complaint] || '',
-      onsetDate: c.onsetDate || null
-    })),
-
-    // Allergies
-    allergySeverities: assessmentData.allergySeverities.map((a: any) => ({
-      allergyId: a.allergyId || null,
-      severityId: a.severityId || null,
-      allergyCategoryId: a.allergyCategoryId || null,
-      reactionDetails: a.reactionDetails || '',
-      firstObserved: a.firstObserved || null,
-      lastObserved: a.lastObserved || null
-    })),
-
-    // Medications
-    medications: assessmentData.medications.map((m: any) => ({
-      medicationId: m.medicationId || null,
-      dosage: m.dosage || '',
-      frequency: m.frequency || '',
-      startDate: m.startDate || null,
-      endDate: m.endDate || null,
-      reason: m.reason || ''
-    })),
-
-    // Conditions
-    chronicConditions: assessmentData.chronicConditions.map((c: any) => ({
-      conditionId: c.conditionId || null,
-      diagnosisDate: c.diagnosisDate || null,
-      treatmentDetails: c.treatmentDetails || '',
-      isControlled: c.isControlled || null
-    })),
-
-    // Surgical history
-    surgicalHistory: assessmentData.surgicalHistory.map((s: any) => ({
-      procedure: s.procedure || '',
-      date: s.date || null,
-      hospital: s.hospital || '',
-      surgeonName: s.surgeonName || '',
-      surgeryTypeId: s.surgeryTypeId || null,
-      hadComplications: s.hadComplications || false,
-      complicationDetails: s.complicationDetails || ''
-    })),
-
-    // Family history
-    familyHistoryConditions: assessmentData.familyHistoryConditions.map((f: any) => ({
-      conditionId: f.conditionId || null,
-      relationship: f.relationship || '',
-      ageAtDiagnosis: f.ageAtDiagnosis || null,
-      isDeceased: f.isDeceased || null,
-      causeOfDeath: f.causeOfDeath || ''
-    })),
-
-    // Social habits
-    socialHabits: assessmentData.socialHabits.map((s: any) => ({
-      smokingStatusId: s.smokingStatusId || null,
-      cigarettesPerDay: s.cigarettesPerDay || null,
-      yearsSmoking: s.yearsSmoking || null,
-      hasQuitSmoking: s.hasQuitSmoking || null,
-      smokingQuitDate: s.smokingQuitDate || null,
-      alcoholStatusId: s.alcoholStatusId || null,
-      alcoholFrequencyId: s.alcoholFrequencyId || null,
-      yearsDrinking: s.yearsDrinking || null,
-      beverageStatusId: s.beverageStatusId || null,
-      cupsPerDay: s.cupsPerDay || null,
-      drugUsageStatusId: s.drugUsageStatusId || null,
-      drugDetails: s.drugDetails || null
-    }))
-  };
-
-  // Initialize selected names arrays
-  this.selectedAllergyNames = this.patientData.allergySeverities
-    .map(item => this.getOptionLabel('allergy', item.allergyId));
-  this.selectedMedicationNames = this.patientData.medications
-    .map(item => this.getOptionLabel('medication', item.medicationId));
-  this.selectedConditionNames = this.patientData.chronicConditions
-    .map(item => this.getOptionLabel('condition', item.conditionId));
-
-  // Set original baseline for dirty checking
-  this.originalAssessmentData = JSON.parse(JSON.stringify(this.patientData));
-  console.log('Original assessment data initialized:', this.originalAssessmentData);
-}
 
   private loadDropdowns(): void {
     // First load all static dropdowns
@@ -680,52 +698,49 @@ private async loadInitialAssessmentData(): Promise<void> {
   }
 
   private loadAllergiesByCategory(categoryId: number): void {
-  
-  this.adminservice.getAllergyDataByCategory('Allergy', categoryId).subscribe({
-    next: (allergies) => {
-      // Store the allergies by category for caching
-      this.allergyOptionsByCategory[categoryId] = allergies || [];
-      
-      // Set the current allergy options
-      this.allergyOptions = this.allergyOptionsByCategory[categoryId];
-      this.filteredAllergyOptions = this.allergyOptions;
-      this.filteredOptions.allergy = [...this.allergyOptions];
-      
-      
-    },
-    error: (err) => {
-      console.error('Error loading allergies:', err);
-      this._toastr.error('Failed to load allergy options');
+    this.adminservice.getAllergyDataByCategory('Allergy', categoryId).subscribe({
+      next: (allergies) => {
+        // Store the allergies by category for caching
+        this.allergyOptionsByCategory[categoryId] = allergies || [];
+        
+        // Set the current allergy options
+        this.allergyOptions = this.allergyOptionsByCategory[categoryId];
+        this.filteredAllergyOptions = this.allergyOptions;
+        this.filteredOptions.allergy = [...this.allergyOptions];
+      },
+      error: (err) => {
+        console.error('Error loading allergies:', err);
+        this._toastr.error('Failed to load allergy options');
+      }
+    });
+  }
+
+  // Add this to your component to debug the current state
+  printCurrentAllergyState(): void {
+    console.log('Current Allergy State:');
+    console.log('Selected Category ID:', this.newAllergy.allergyCategoryId);
+    console.log('Selected Allergy ID:', this.newAllergy.allergyId);
+    console.log('Allergy Options:', this.allergyOptions);
+    console.log('Filtered Options:', this.filteredOptions.allergy);
+    console.log('Allergy Options by Category:', this.allergyOptionsByCategory);
+  }
+
+  onAllergyFocus(): void {
+    if (!this.newAllergy.allergyCategoryId) {
+      this._toastr.warning('Please select an allergy category first');
+      this.isDropdownOpen.allergy = false;
+      return;
     }
-  });
-}
-
-// Add this to your component to debug the current state
-printCurrentAllergyState(): void {
-  console.log('Current Allergy State:');
-  console.log('Selected Category ID:', this.newAllergy.allergyCategoryId);
-  console.log('Selected Allergy ID:', this.newAllergy.allergyId);
-  console.log('Allergy Options:', this.allergyOptions);
-  console.log('Filtered Options:', this.filteredOptions.allergy);
-  console.log('Allergy Options by Category:', this.allergyOptionsByCategory);
-}
-
-onAllergyFocus(): void {
-  if (!this.newAllergy.allergyCategoryId) {
-    this._toastr.warning('Please select an allergy category first');
-    this.isDropdownOpen.allergy = false;
-    return;
+    
+    // Ensure we have options for this category
+    if (!this.allergyOptionsByCategory[this.newAllergy.allergyCategoryId]) {
+      this.loadAllergiesByCategory(this.newAllergy.allergyCategoryId);
+    } else {
+      this.allergyOptions = this.allergyOptionsByCategory[this.newAllergy.allergyCategoryId];
+      this.filteredOptions.allergy = this.filterAllergies(this.allergyOptions);
+      this.isDropdownOpen.allergy = this.filteredOptions.allergy.length > 0;
+    }
   }
-  
-  // Ensure we have options for this category
-  if (!this.allergyOptionsByCategory[this.newAllergy.allergyCategoryId]) {
-    this.loadAllergiesByCategory(this.newAllergy.allergyCategoryId);
-  } else {
-    this.allergyOptions = this.allergyOptionsByCategory[this.newAllergy.allergyCategoryId];
-    this.filteredOptions.allergy = this.filterAllergies(this.allergyOptions);
-    this.isDropdownOpen.allergy = this.filteredOptions.allergy.length > 0;
-  }
-}
 
   private filterAllergies(allergies: any[]): any[] {
     // Your filtering logic here based on search input
@@ -734,36 +749,36 @@ onAllergyFocus(): void {
   }
 
   filterOptions(type: DropdownType, searchTerm: string): void {
-  this.isDropdownOpen[type] = true;
-  
-  if (type === 'allergy') {
-    // Start with the category-filtered allergies
-    let baseOptions = this.filteredAllergyOptions;
+    this.isDropdownOpen[type] = true;
     
-    // Apply search filter if there's a term
-    if (searchTerm.trim() !== '') {
-      baseOptions = baseOptions.filter(option =>
-        option.value.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+    if (type === 'allergy') {
+      // Start with the category-filtered allergies
+      let baseOptions = this.filteredAllergyOptions;
+      
+      // Apply search filter if there's a term
+      if (searchTerm.trim() !== '') {
+        baseOptions = baseOptions.filter(option =>
+          option.value.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      }
+      
+      this.filteredOptions[type] = baseOptions;
+    } else {
+      // Original filter logic for other dropdowns
+      const sourceOptions = this.getSourceOptions(type);
+      this.filteredOptions[type] = searchTerm.trim() === ''
+        ? sourceOptions.slice(0, 100)
+        : sourceOptions.filter((opt: any) =>
+          opt.value.toLowerCase().includes(searchTerm.toLowerCase())
+        ).slice(0, 100);
     }
-    
-    this.filteredOptions[type] = baseOptions;
-  } else {
-    // Original filter logic for other dropdowns
-    const sourceOptions = this.getSourceOptions(type);
-    this.filteredOptions[type] = searchTerm.trim() === ''
-      ? sourceOptions.slice(0, 100)
-      : sourceOptions.filter((opt: any) =>
-        opt.value.toLowerCase().includes(searchTerm.toLowerCase())
-      ).slice(0, 100);
-  }
 
-  // Show add button logic
-  this.showAddButtons[type] = !!searchTerm.trim() &&
-    !this.filteredOptions[type].some((opt: any) =>
-      opt.value.toLowerCase() === searchTerm.toLowerCase()
-    );
-}
+    // Show add button logic
+    this.showAddButtons[type] = !!searchTerm.trim() &&
+      !this.filteredOptions[type].some((opt: any) =>
+        opt.value.toLowerCase() === searchTerm.toLowerCase()
+      );
+  }
 
   private getSourceOptions(type: DropdownType): any[] {
     switch (type) {
@@ -780,7 +795,7 @@ onAllergyFocus(): void {
       case 'frequency': return this.frequencyOptions;
       case 'surgerytype': return this.surgeryTypeOptions;
       case 'allergycategory': return this.allergyCategoryOptions;
-      case 'medicalcondition':return this.medicalConditionOptions;
+      case 'medicalcondition': return this.medicalConditionOptions;
       default: return [];
     }
   }
@@ -926,7 +941,7 @@ onAllergyFocus(): void {
     this.showAddButtons[type] = false;
   }
 
-    private generateNewId(): number {
+  private generateNewId(): number {
     return Math.floor(Math.random() * 1000000) + 1;
   }
 
@@ -949,121 +964,121 @@ onAllergyFocus(): void {
   }
 
   selectComplaint(complaint: string): void {
-  if (!this.patientData.chiefComplaints.some(c => c.complaint === complaint)) {
-    this.patientData.chiefComplaints.push({ 
-      complaint, 
-      painScale: null,
-      notes: this.complaintTemplates[complaint] || '',
-      onsetDate: null
-    });
+    if (!this.patientData.chiefComplaints.some(c => c.complaint === complaint)) {
+      this.patientData.chiefComplaints.push({ 
+        complaint, 
+        painScale: null,
+        notes: this.complaintTemplates[complaint] || '',
+        onsetDate: null
+      });
+    }
+    this.isDropdownOpen['complaint'] = false;
+    this.searchInputs['complaint'] = '';
   }
-  this.isDropdownOpen['complaint'] = false;
-  this.searchInputs['complaint'] = '';
-}
 
   addAllergy(): void {
-  if (this.newAllergy.allergyId !== null) {  // Explicit null check
-    this.patientData.allergySeverities.push({
-      allergyId: this.newAllergy.allergyId,  // We know it's not null here
-      severityId: this.newAllergy.severityId,
-      allergyCategoryId: this.newAllergy.allergyCategoryId,
-      reactionDetails: this.newAllergy.reactionDetails,
-      firstObserved: this.newAllergy.firstObserved,
-      lastObserved: this.newAllergy.lastObserved
-    });
-    
-    this.selectedAllergyNames.push(this.getOptionLabel('allergy', this.newAllergy.allergyId));
-    
-    this.newAllergy = {
-      allergyId: null,
-      severityId: null,
-      allergyCategoryId: null,
-      reactionDetails: '',
-      firstObserved: null,
-      lastObserved: null
-    };
-    
-    this.markFieldChanged('allergySeverities');
-    this.triggerAutoSave();
+    if (this.newAllergy.allergyId !== null) {  // Explicit null check
+      this.patientData.allergySeverities.push({
+        allergyId: this.newAllergy.allergyId,  // We know it's not null here
+        severityId: this.newAllergy.severityId,
+        allergyCategoryId: this.newAllergy.allergyCategoryId,
+        reactionDetails: this.newAllergy.reactionDetails,
+        firstObserved: this.newAllergy.firstObserved,
+        lastObserved: this.newAllergy.lastObserved
+      });
+      
+      this.selectedAllergyNames.push(this.getOptionLabel('allergy', this.newAllergy.allergyId));
+      
+      this.newAllergy = {
+        allergyId: null,
+        severityId: null,
+        allergyCategoryId: null,
+        reactionDetails: '',
+        firstObserved: null,
+        lastObserved: null
+      };
+      
+      this.markFieldChanged('allergySeverities');
+      this.triggerAutoSave();
+    }
   }
-}
 
   addMedication(): void {
-  if (this.newMedication.medicationId !== null) {
-    this.patientData.medications.push({
-      medicationId: this.newMedication.medicationId,
-      dosage: this.newMedication.dosage,
-      frequency: this.newMedication.frequency,
-      startDate: this.newMedication.startDate,
-      endDate: this.newMedication.endDate,
-      reason: this.newMedication.reason
-    });
-    
-    this.selectedMedicationNames.push(this.getOptionLabel('medication', this.newMedication.medicationId));
-    
-    this.newMedication = {
-      medicationId: null,
-      dosage: '',
-      frequency: '',
-      startDate: null,
-      endDate: null,
-      reason: ''
-    };
-    
-    this.markFieldChanged('medications');
-    this.triggerAutoSave();
+    if (this.newMedication.medicationId !== null) {
+      this.patientData.medications.push({
+        medicationId: this.newMedication.medicationId,
+        dosage: this.newMedication.dosage,
+        frequency: this.newMedication.frequency,
+        startDate: this.newMedication.startDate,
+        endDate: this.newMedication.endDate,
+        reason: this.newMedication.reason
+      });
+      
+      this.selectedMedicationNames.push(this.getOptionLabel('medication', this.newMedication.medicationId));
+      
+      this.newMedication = {
+        medicationId: null,
+        dosage: '',
+        frequency: '',
+        startDate: null,
+        endDate: null,
+        reason: ''
+      };
+      
+      this.markFieldChanged('medications');
+      this.triggerAutoSave();
+    }
   }
-}
 
   addCondition(): void {
-  if (this.newCondition.conditionId !== null) {
-    this.patientData.chronicConditions.push({
-      conditionId: this.newCondition.conditionId,
-      diagnosisDate: this.newCondition.diagnosisDate,
-      treatmentDetails: this.newCondition.treatmentDetails,
-      isControlled: this.newCondition.isControlled
-    });
-    
-    this.selectedConditionNames.push(this.getOptionLabel('condition', this.newCondition.conditionId));
-    
-    // Reset form
-    this.newCondition = {
-      conditionId: null,
-      diagnosisDate: null,
-      treatmentDetails: '',
-      isControlled: null
-    };
-    
-    this.searchInputs.condition = '';
-    this.markFieldChanged('chronicConditions');
-    this.triggerAutoSave();
+    if (this.newCondition.conditionId !== null) {
+      this.patientData.chronicConditions.push({
+        conditionId: this.newCondition.conditionId,
+        diagnosisDate: this.newCondition.diagnosisDate,
+        treatmentDetails: this.newCondition.treatmentDetails,
+        isControlled: this.newCondition.isControlled
+      });
+      
+      this.selectedConditionNames.push(this.getOptionLabel('condition', this.newCondition.conditionId));
+      
+      // Reset form
+      this.newCondition = {
+        conditionId: null,
+        diagnosisDate: null,
+        treatmentDetails: '',
+        isControlled: null
+      };
+      
+      this.searchInputs.condition = '';
+      this.markFieldChanged('chronicConditions');
+      this.triggerAutoSave();
+    }
   }
-}
 
   addFamilyHistory(): void {
-  if (this.newFamilyHistory.conditionId !== null) {  // Check for null instead of empty string
-    this.patientData.familyHistoryConditions.push({
-      conditionId: this.newFamilyHistory.conditionId,
-      relationship: this.newFamilyHistory.relationship,
-      ageAtDiagnosis: this.newFamilyHistory.ageAtDiagnosis,
-      isDeceased: this.newFamilyHistory.isDeceased,
-      causeOfDeath: this.newFamilyHistory.causeOfDeath
-    });
-    
-    // Reset form
-    this.newFamilyHistory = {
-      conditionId: null,
-      relationship: '',
-      ageAtDiagnosis: null,
-      isDeceased: null,
-      causeOfDeath: ''
-    };
-    
-    this.searchInputs.medicalcondition = '';
-    this.markFieldChanged('familyHistoryConditions');
-    this.triggerAutoSave();
+    if (this.newFamilyHistory.conditionId !== null) {  // Check for null instead of empty string
+      this.patientData.familyHistoryConditions.push({
+        conditionId: this.newFamilyHistory.conditionId,
+        relationship: this.newFamilyHistory.relationship,
+        ageAtDiagnosis: this.newFamilyHistory.ageAtDiagnosis,
+        isDeceased: this.newFamilyHistory.isDeceased,
+        causeOfDeath: this.newFamilyHistory.causeOfDeath
+      });
+      
+      // Reset form
+      this.newFamilyHistory = {
+        conditionId: null,
+        relationship: '',
+        ageAtDiagnosis: null,
+        isDeceased: null,
+        causeOfDeath: ''
+      };
+      
+      this.searchInputs.medicalcondition = '';
+      this.markFieldChanged('familyHistoryConditions');
+      this.triggerAutoSave();
+    }
   }
-}
 
   addSurgery(): void {
     if (this.newSurgery.procedure.trim()) {
@@ -1149,296 +1164,324 @@ onAllergyFocus(): void {
   }
 
   getOptionLabel(
-  type: 'allergy' | 'medication' | 'condition' | 'severity' | 'surgerytype' | 'allergycategory' | 'medicalcondition' | 'bloodgroup',
-  id: number | null | undefined
+    type: 'allergy' | 'medication' | 'condition' | 'severity' | 'surgerytype' | 'allergycategory' | 'medicalcondition' | 'bloodgroup',
+    id: number | null | undefined
   ): string {
-  // Handle null/undefined cases
-  if (id == null) {
-    return 'Not specified';
+    // Handle null/undefined cases
+    if (id == null) {
+      return 'Not specified';
+    }
+
+    // Get the correct options array based on type
+    const options: DropdownOption[] =
+      type === 'allergy' ? this.allergyOptions :
+      type === 'medication' ? this.medicationOptions :
+      type === 'condition' ? this.chronicConditionOptions :
+      type === 'severity' ? this.severityOptions :
+      type === 'allergycategory' ? this.allergyCategoryOptions :
+      type === 'surgerytype' ? this.surgeryTypeOptions:
+      type === 'bloodgroup' ? this.bloodGroupOptions :
+      this.medicalConditionOptions;
+
+    // Find and return the matching value
+    const foundOption = options.find(opt => opt.id === id);
+    return foundOption?.value || 'Unknown';
   }
-
-  // Get the correct options array based on type
-  const options: DropdownOption[] =
-    type === 'allergy' ? this.allergyOptions :
-    type === 'medication' ? this.medicationOptions :
-    type === 'condition' ? this.chronicConditionOptions :
-    type === 'severity' ? this.severityOptions :
-    type === 'allergycategory' ? this.allergyCategoryOptions :
-    type === 'surgerytype' ? this.surgeryTypeOptions:
-    type === 'bloodgroup' ? this.bloodGroupOptions :
-    this.medicalConditionOptions;
-
-  // Find and return the matching value
-  const foundOption = options.find(opt => opt.id === id);
-  return foundOption?.value || 'Unknown';
-}
 
   isComplaintSelected(complaint: string): boolean {
     return this.patientData.chiefComplaints?.some(c => c.complaint === complaint) ?? false;
   }
 
   openDropdown() {
-  this.isDropdownOpen.bloodgroup = true;
-  this.filterOptions('bloodgroup', this.searchInputs.bloodgroup);
-  
-  // Optional: Scroll into view if needed
-  setTimeout(() => {
-    const dropdown = document.querySelector('.bloodgroup-dropdown');
-    dropdown?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-  }, 0);
-}
+    this.isDropdownOpen.bloodgroup = true;
+    this.filterOptions('bloodgroup', this.searchInputs.bloodgroup);
+    
+    // Optional: Scroll into view if needed
+    setTimeout(() => {
+      const dropdown = document.querySelector('.bloodgroup-dropdown');
+      dropdown?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }, 0);
+  }
 
   closeDropdown(type: DropdownType): void {
     setTimeout(() => this.isDropdownOpen[type] = false, 200);
   }
 
   selectMedication(option: any) {
-  if (this.isMedicationSelected(option)) {
-    // Deselect if clicking the same item
-    this.newMedication.medicationId = null;
-    this.searchInputs.medication = '';
-  } else {
-    // Select new medication
-    this.newMedication.medicationId = option.id;
-    this.searchInputs.medication = option.value;
+    if (this.isMedicationSelected(option)) {
+      // Deselect if clicking the same item
+      this.newMedication.medicationId = null;
+      this.searchInputs.medication = '';
+    } else {
+      // Select new medication
+      this.newMedication.medicationId = option.id;
+      this.searchInputs.medication = option.value;
+    }
+    this.closeDropdown('medication');
   }
-  this.closeDropdown('medication');
-}
 
-isMedicationSelected(option: any): boolean {
-  return this.newMedication.medicationId === option.id;
-}
-
-selectFrequency(option: any) {
-  if (this.isFrequencySelected(option)) {
-    // Deselect if clicking the same item
-    this.newMedication.frequency = '';
-    this.searchInputs.frequency = '';
-  } else {
-    // Select new frequency
-    this.newMedication.frequency = option.value;
-    this.searchInputs.frequency = option.value;
+  isMedicationSelected(option: any): boolean {
+    return this.newMedication.medicationId === option.id;
   }
-  this.closeDropdown('frequency');
-}
 
-isFrequencySelected(option: any): boolean {
-  return this.newMedication.frequency === option.value;
-}
-
-selectCondition(option: DropdownOption): void {
-  if (this.isConditionSelected(option)) {
-    // Deselect if clicking the same item
-    this.newCondition.conditionId = null;
-    this.searchInputs.condition = '';
-  } else {
-    // Select new condition
-    this.newCondition.conditionId = option.id;
-    this.searchInputs.condition = option.value;
+  selectFrequency(option: any) {
+    if (this.isFrequencySelected(option)) {
+      // Deselect if clicking the same item
+      this.newMedication.frequency = '';
+      this.searchInputs.frequency = '';
+    } else {
+      // Select new frequency
+      this.newMedication.frequency = option.value;
+      this.searchInputs.frequency = option.value;
+    }
+    this.closeDropdown('frequency');
   }
-  this.closeDropdown('condition');
-}
 
-isConditionSelected(option: DropdownOption): boolean {
-  return this.newCondition.conditionId === option.id;
-}
+  isFrequencySelected(option: any): boolean {
+    return this.newMedication.frequency === option.value;
+  }
 
-selectMedicalCondition(option: DropdownOption): void {
-  this.newFamilyHistory.conditionId = option.id;
-  this.searchInputs.medicalcondition = option.value;
-  this.isDropdownOpen.medicalcondition = false;
-}
+  selectCondition(option: DropdownOption): void {
+    if (this.isConditionSelected(option)) {
+      // Deselect if clicking the same item
+      this.newCondition.conditionId = null;
+      this.searchInputs.condition = '';
+    } else {
+      // Select new condition
+      this.newCondition.conditionId = option.id;
+      this.searchInputs.condition = option.value;
+    }
+    this.closeDropdown('condition');
+  }
 
-isMedicalConditionSelected(option: DropdownOption): boolean {
-  return this.newFamilyHistory.conditionId === option.id;
-}
+  isConditionSelected(option: DropdownOption): boolean {
+    return this.newCondition.conditionId === option.id;
+  }
+
+  selectMedicalCondition(option: DropdownOption): void {
+    this.newFamilyHistory.conditionId = option.id;
+    this.searchInputs.medicalcondition = option.value;
+    this.isDropdownOpen.medicalcondition = false;
+  }
+
+  isMedicalConditionSelected(option: DropdownOption): boolean {
+    return this.newFamilyHistory.conditionId === option.id;
+  }
 
   saveAssessment(isDraft: boolean = false): void {
-  if (this.saveInProgress) {
-    this._toastr.warning('Save already in progress, please wait...');
-    return;
-  }
-
-  // Set draft flag
-  this.patientData.isDraft = isDraft;
-
-  // Clean up empty social habits if needed
-  if (this.patientData.socialHabits.length > 0) {
-    const hasValues = Object.values(this.patientData.socialHabits[0]).some(
-      val => val !== null && val !== undefined && val !== ''
-    );
-    if (!hasValues) {
-      this.patientData.socialHabits = [];
+    if (this.saveInProgress) {
+      this._toastr.warning('Save already in progress, please wait...');
+      return;
     }
-  }
 
-  if (this.showBpWarning) {
-    this._toastr.warning('Diastolic pressure cannot be greater than systolic');
-    return;
-  }
+    // Set draft flag
+    this.patientData.isDraft = isDraft;
 
-  this.saveInProgress = true;
-  this._loader.show();
-  
-  this.adminservice.savePatientAssessment(this.patientData).subscribe({
-    next: (res) => {
-      this.saveInProgress = false;
-      this._loader.hide();
-      
-      if (isDraft) {
-        this._toastr.success('Draft saved successfully');
-      } else {
-        this._toastr.success('Assessment saved successfully');
-        this.originalAssessmentData = JSON.parse(JSON.stringify(this.patientData));
-        this.isDirty = false;
-        this.modifiedFields.clear();
+    // Clean up empty social habits if needed
+    if (this.patientData.socialHabits.length > 0) {
+      const hasValues = Object.values(this.patientData.socialHabits[0]).some(
+        val => val !== null && val !== undefined && val !== ''
+      );
+      if (!hasValues) {
+        this.patientData.socialHabits = [];
       }
-      this.cdr.detectChanges();
-    },
-    error: (err) => {
-      this.saveInProgress = false;
-      this._loader.hide();
-      this._toastr.error(`Error saving ${isDraft ? 'draft' : 'assessment'}`);
     }
-  });
-}
 
-    selectSurgeryType(option: any): void {
+    if (this.showBpWarning) {
+      this._toastr.warning('Diastolic pressure cannot be greater than systolic');
+      return;
+    }
+
+    this.saveInProgress = true;
+    this.saveStatus = 'saving';
+    this._loader.show();
+    
+    this.adminservice.savePatientAssessment(this.patientData).subscribe({
+      next: (res) => {
+        this.saveInProgress = false;
+        this.saveStatus = 'saved';
+        this._loader.hide();
+        
+        if (isDraft) {
+          this._toastr.success('Draft saved successfully');
+        } else {
+          this._toastr.success('Assessment saved successfully');
+          this.originalAssessmentData = JSON.parse(JSON.stringify(this.patientData));
+          this.isDirty = false;
+          this.modifiedFields.clear();
+        }
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.saveInProgress = false;
+        this.saveStatus = 'unsaved';
+        this._loader.hide();
+        this._toastr.error(`Error saving ${isDraft ? 'draft' : 'assessment'}`);
+      }
+    });
+  }
+
+  selectSurgeryType(option: any): void {
     this.newSurgery.surgeryTypeId = option.id;
     this.searchInputs.surgerytype = option.value;
     this.isDropdownOpen.surgerytype = false;
   }
 
-
   isSurgeryTypeSelected(option: any): boolean {
     return this.newSurgery.surgeryTypeId === option.id;
   }
 
-
   resetForm(form?: NgForm): void {
-  if (!this.originalAssessmentData) {
-    console.warn('Cannot reset form - no original assessment data available');
-    return;
-  }
+    if (!this.originalAssessmentData) {
+      console.warn('Cannot reset form - no original assessment data available');
+      return;
+    }
 
-  try {
-    // 1. Reset modified fields from tracked changes
-    this.modifiedFields.forEach(field => {
-      if (field in this.originalAssessmentData) {
-        (this.patientData as any)[field] = this.deepCopy(this.originalAssessmentData[field]);
-      } else {
-        console.warn(`Field ${field} not found in original data`);
+    try {
+      // 1. Reset modified fields from tracked changes
+      this.modifiedFields.forEach(field => {
+        if (field in this.originalAssessmentData) {
+          (this.patientData as any)[field] = this.deepCopy(this.originalAssessmentData[field]);
+        } else {
+          console.warn(`Field ${field} not found in original data`);
+        }
+      });
+
+      // 2. Reset UI selections
+      this.selectedAllergyNames = this.patientData.allergySeverities
+        .map(item => this.getOptionLabel('allergy', item.allergyId))
+        .filter(Boolean); // Remove any undefined/null values
+
+      this.selectedMedicationNames = this.patientData.medications
+        .map(item => this.getOptionLabel('medication', item.medicationId))
+        .filter(Boolean);
+
+      this.selectedConditionNames = this.patientData.chronicConditions
+        .map(item => this.getOptionLabel('condition', item.conditionId))
+        .filter(Boolean);
+
+      // 3. Reset form controls if NgForm provided
+      if (form) {
+        setTimeout(() => {
+          form.resetForm({
+            ...this.patientData,
+            // Special cases for reactive form controls
+            bloodGroupId: this.patientData.bloodGroupId,
+            socialHabits: this.patientData.socialHabits[0] || {}
+          });
+        }, 0);
       }
-    });
 
-    // 2. Reset UI selections
-    this.selectedAllergyNames = this.patientData.allergySeverities
-      .map(item => this.getOptionLabel('allergy', item.allergyId))
-      .filter(Boolean); // Remove any undefined/null values
+      // 4. Reinitialize dynamic sections
+      this.initializeSocialHabits();
+      this.filteredAllergyOptions = [...this.allergyOptions];
+      
+      // 5. Reset state flags
+      this.isDirty = false;
+      this.modifiedFields.clear();
+      this.painScaleErrors = {};
 
-    this.selectedMedicationNames = this.patientData.medications
-      .map(item => this.getOptionLabel('medication', item.medicationId))
-      .filter(Boolean);
+      console.log('Form reset successfully', {
+        originalData: this.originalAssessmentData,
+        currentData: this.patientData
+      });
 
-    this.selectedConditionNames = this.patientData.chronicConditions
-      .map(item => this.getOptionLabel('condition', item.conditionId))
-      .filter(Boolean);
-
-    // 3. Reset form controls if NgForm provided
-    if (form) {
-      setTimeout(() => {
-        form.resetForm({
-          ...this.patientData,
-          // Special cases for reactive form controls
-          bloodGroupId: this.patientData.bloodGroupId,
-          socialHabits: this.patientData.socialHabits[0] || {}
-        });
-      }, 0);
-    }
-
-    // 4. Reinitialize dynamic sections
-    this.initializeSocialHabits();
-    this.filteredAllergyOptions = [...this.allergyOptions];
-    
-    // 5. Reset state flags
-    this.isDirty = false;
-    this.modifiedFields.clear();
-    this.painScaleErrors = {};
-
-    console.log('Form reset successfully', {
-      originalData: this.originalAssessmentData,
-      currentData: this.patientData
-    });
-
-  } catch (error) {
-    console.error('Error resetting form:', error);
-    this._toastr.error('Failed to reset form data');
-    
-    // Fallback: Hard reset
-    if (this.originalAssessmentData) {
-      this.patientData = this.deepCopy(this.originalAssessmentData);
-      this.cdr.detectChanges();
+    } catch (error) {
+      console.error('Error resetting form:', error);
+      this._toastr.error('Failed to reset form data');
+      
+      // Fallback: Hard reset
+      if (this.originalAssessmentData) {
+        this.patientData = this.deepCopy(this.originalAssessmentData);
+        this.cdr.detectChanges();
+      }
     }
   }
-}
 
-private deepCopy<T>(obj: T): T {
-  return JSON.parse(JSON.stringify(obj));
-}
+  private deepCopy<T>(obj: T): T {
+    return JSON.parse(JSON.stringify(obj));
+  }
 
   markFieldChanged(field: string): void {
     this.modifiedFields.add(field);
+    this.saveStatus = 'unsaved';
+    this.isDirty = true;
   }
 
   validatePainScale(event: Event, index: number) {
-  const input = event.target as HTMLInputElement;
-  let value = parseInt(input.value, 10);
-  
-  // Handle empty/NaN case
-  if (isNaN(value)) {
+    const input = event.target as HTMLInputElement;
+    let value = parseInt(input.value, 10);
+    
+    // Handle empty/NaN case
+    if (isNaN(value)) {
+      this.painScaleErrors[index] = false;
+      return;
+    }
+
+    // Enforce range
+    if (value < 0) {
+      value = 0;
+      input.value = '0';
+    } else if (value > 10) {
+      value = 10;
+      input.value = '10';
+    }
+
+    // Update the model
+    this.patientData.chiefComplaints[index].painScale = value;
     this.painScaleErrors[index] = false;
-    return;
+    this.markFieldChanged('chiefComplaints');
+    this.triggerAutoSave();
   }
 
-  // Enforce range
-  if (value < 0) {
-    value = 0;
-    input.value = '0';
-  } else if (value > 10) {
-    value = 10;
-    input.value = '10';
+  preventInvalidInput(event: KeyboardEvent) {
+    // Allow: backspace, delete, tab, escape, enter, numbers, and decimal point
+    if ([46, 8, 9, 27, 13, 110].includes(event.keyCode) ||
+        // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+        (event.keyCode === 65 && event.ctrlKey === true) ||
+        (event.keyCode === 67 && event.ctrlKey === true) ||
+        (event.keyCode === 86 && event.ctrlKey === true) ||
+        (event.keyCode === 88 && event.ctrlKey === true) ||
+        // Allow: home, end, left, right
+        (event.keyCode >= 35 && event.keyCode <= 39)) {
+      return;
+    }
+    
+    // Prevent if not a number
+    if (event.shiftKey || (event.keyCode < 48 || event.keyCode > 57)) {
+      event.preventDefault();
+    }
   }
-
-  // Update the model
-  this.patientData.chiefComplaints[index].painScale = value;
-  this.painScaleErrors[index] = false;
-  this.markFieldChanged('chiefComplaints');
-  this.triggerAutoSave();
-}
-
-preventInvalidInput(event: KeyboardEvent) {
-  // Allow: backspace, delete, tab, escape, enter, numbers, and decimal point
-  if ([46, 8, 9, 27, 13, 110].includes(event.keyCode) ||
-      // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
-      (event.keyCode === 65 && event.ctrlKey === true) ||
-      (event.keyCode === 67 && event.ctrlKey === true) ||
-      (event.keyCode === 86 && event.ctrlKey === true) ||
-      (event.keyCode === 88 && event.ctrlKey === true) ||
-      // Allow: home, end, left, right
-      (event.keyCode >= 35 && event.keyCode <= 39)) {
-    return;
-  }
-  
-  // Prevent if not a number
-  if (event.shiftKey || (event.keyCode < 48 || event.keyCode > 57)) {
-    event.preventDefault();
-  }
-}
 
   selectAllergyCategory(option: DropdownOption): void {
-  // Check if clicking the already selected category
-  if (this.newAllergy.allergyCategoryId === option.id) {
-    // Deselect the category
+    // Check if clicking the already selected category
+    if (this.newAllergy.allergyCategoryId === option.id) {
+      // Deselect the category
+      this.newAllergy.allergyCategoryId = null;
+      this.searchInputs.allergycategory = '';
+      
+      // Clear allergy selection and options
+      this.newAllergy.allergyId = null;
+      this.searchInputs.allergy = '';
+      this.allergyOptions = [];
+      this.filteredOptions.allergy = [];
+    } else {
+      // Select new category
+      this.newAllergy.allergyCategoryId = option.id;
+      this.searchInputs.allergycategory = option.value;
+      
+      // Clear any existing allergy selection
+      this.newAllergy.allergyId = null;
+      this.searchInputs.allergy = '';
+      
+      // Load allergies for this category
+      this.loadAllergiesByCategory(option.id);
+    }
+    
+    this.isDropdownOpen.allergycategory = false;
+  }
+
+  clearAllergyCategory(): void {
     this.newAllergy.allergyCategoryId = null;
     this.searchInputs.allergycategory = '';
     
@@ -1447,177 +1490,150 @@ preventInvalidInput(event: KeyboardEvent) {
     this.searchInputs.allergy = '';
     this.allergyOptions = [];
     this.filteredOptions.allergy = [];
-  } else {
-    // Select new category
-    this.newAllergy.allergyCategoryId = option.id;
-    this.searchInputs.allergycategory = option.value;
     
-    // Clear any existing allergy selection
-    this.newAllergy.allergyId = null;
-    this.searchInputs.allergy = '';
+    // Close dropdowns
+    this.isDropdownOpen.allergycategory = false;
+    this.isDropdownOpen.allergy = false;
+  }
+
+  private filterAllergiesByCategory(categoryId: number): void {
+    if (!this.allergyOptions || this.allergyOptions.length === 0) {
+      console.warn('No allergy options available');
+      this.filteredAllergyOptions = [];
+      return;
+    }
+
+    this.filteredAllergyOptions = this.allergyOptions.filter(
+      allergy => allergy.parentid === categoryId
+    );
+
+    // Update the display options but DON'T open the dropdown here
+    this.filteredOptions.allergy = [...this.filteredAllergyOptions];
+  }
+
+  isAllergyCategorySelected(option: any): boolean {
+    return this.newAllergy.allergyCategoryId === option.id;
+  }
+
+  selectAllergy(option: DropdownOption): void {
+    if (this.isAllergySelected(option)) {
+      // Deselect if already selected
+      this.newAllergy.allergyId = null;
+      this.searchInputs.allergy = '';
+    } else {
+      // Select new allergy
+      this.newAllergy.allergyId = option.id;
+      this.searchInputs.allergy = option.value;
+    }
+    this.closeDropdown('allergy');
+  }
+
+  isAllergySelected(option: DropdownOption): boolean {
+    return this.newAllergy.allergyId === option.id;
+  }
+
+  selectSeverity(option: DropdownOption): void {
+    if (this.isSeveritySelected(option)) {
+      // Deselect if already selected
+      this.newAllergy.severityId = null;
+      this.searchInputs.severity = '';
+    } else {
+      // Select new severity
+      this.newAllergy.severityId = option.id;
+      this.searchInputs.severity = option.value;
+    }
+    this.closeDropdown('severity');
+  }
+
+  isSeveritySelected(option: DropdownOption): boolean {
+    return this.newAllergy.severityId === option.id;
+  }
+
+  // Helper methods to check status
+  isNeverSmoker(): boolean {
+    const socialHabit = this.patientData.socialHabits[0];
+    if (!socialHabit?.smokingStatusId) return false;
     
-    // Load allergies for this category
-    this.loadAllergiesByCategory(option.id);
-  }
-  
-  this.isDropdownOpen.allergycategory = false;
-}
-
-clearAllergyCategory(): void {
-  this.newAllergy.allergyCategoryId = null;
-  this.searchInputs.allergycategory = '';
-  
-  // Clear allergy selection and options
-  this.newAllergy.allergyId = null;
-  this.searchInputs.allergy = '';
-  this.allergyOptions = [];
-  this.filteredOptions.allergy = [];
-  
-  // Close dropdowns
-  this.isDropdownOpen.allergycategory = false;
-  this.isDropdownOpen.allergy = false;
-}
-
-private filterAllergiesByCategory(categoryId: number): void {
-  if (!this.allergyOptions || this.allergyOptions.length === 0) {
-    console.warn('No allergy options available');
-    this.filteredAllergyOptions = [];
-    return;
+    const smokingOption = this.smokingOptions.find(opt => opt.id === socialHabit.smokingStatusId);
+    return smokingOption?.value === 'Never Smoked';
   }
 
-  this.filteredAllergyOptions = this.allergyOptions.filter(
-    allergy => allergy.parentid === categoryId
-  );
-
-  // Update the display options but DON'T open the dropdown here
-  this.filteredOptions.allergy = [...this.filteredAllergyOptions];
-}
-
-isAllergyCategorySelected(option: any): boolean {
-  return this.newAllergy.allergyCategoryId === option.id;
-}
-
-
-
-selectAllergy(option: DropdownOption): void {
-  if (this.isAllergySelected(option)) {
-    // Deselect if already selected
-    this.newAllergy.allergyId = null;
-    this.searchInputs.allergy = '';
-  } else {
-    // Select new allergy
-    this.newAllergy.allergyId = option.id;
-    this.searchInputs.allergy = option.value;
-  }
-  this.closeDropdown('allergy');
-}
-
-isAllergySelected(option: DropdownOption): boolean {
-  return this.newAllergy.allergyId === option.id;
-}
-
-selectSeverity(option: DropdownOption): void {
-  if (this.isSeveritySelected(option)) {
-    // Deselect if already selected
-    this.newAllergy.severityId = null;
-    this.searchInputs.severity = '';
-  } else {
-    // Select new severity
-    this.newAllergy.severityId = option.id;
-    this.searchInputs.severity = option.value;
-  }
-  this.closeDropdown('severity');
-}
-
-isSeveritySelected(option: DropdownOption): boolean {
-  return this.newAllergy.severityId === option.id;
-}
-
-// Helper methods to check status
-isNeverSmoker(): boolean {
-  const socialHabit = this.patientData.socialHabits[0];
-  if (!socialHabit?.smokingStatusId) return false;
-  
-  const smokingOption = this.smokingOptions.find(opt => opt.id === socialHabit.smokingStatusId);
-  return smokingOption?.value === 'Never Smoked';
-}
-
-isNeverDrinker(): boolean {
-  const socialHabit = this.patientData.socialHabits[0];
-  if (!socialHabit?.alcoholStatusId) return false;
-  
-  const alcoholOption = this.alcoholOptions.find(opt => opt.id === socialHabit.alcoholStatusId);
-  return alcoholOption?.value === 'Never';
-}
-
-isNonBeverageConsumer(): boolean {
-  const socialHabit = this.patientData.socialHabits[0];
-  if (!socialHabit?.beverageStatusId) return false;
-  
-  const beverageOption = this.beverageOptions.find(opt => opt.id === socialHabit.beverageStatusId);
-  return beverageOption?.value === 'Does not consume';
-}
-
-isNeverDrugUser(): boolean {
-  const socialHabit = this.patientData.socialHabits[0];
-  if (!socialHabit?.drugUsageStatusId) return false;
-  
-  const drugOption = this.drugUsageOptions.find(opt => opt.id === socialHabit.drugUsageStatusId);
-  return drugOption?.value === 'Never used';
-}
-
-// Change handlers
-onSmokingStatusChange(): void {
-  if (this.isNeverSmoker()) {
-    // Clear smoking-related fields
+  isNeverDrinker(): boolean {
     const socialHabit = this.patientData.socialHabits[0];
-    if (socialHabit) {
-      socialHabit.cigarettesPerDay = null;
-      socialHabit.yearsSmoking = null;
-      socialHabit.hasQuitSmoking = null;
-      socialHabit.smokingQuitDate = null;
-    }
+    if (!socialHabit?.alcoholStatusId) return false;
+    
+    const alcoholOption = this.alcoholOptions.find(opt => opt.id === socialHabit.alcoholStatusId);
+    return alcoholOption?.value === 'Never';
   }
-  this.markFieldChanged('socialHabits');
-  this.triggerAutoSave();
-}
 
-onAlcoholStatusChange(): void {
-  if (this.isNeverDrinker()) {
-    // Clear alcohol-related fields
+  isNonBeverageConsumer(): boolean {
     const socialHabit = this.patientData.socialHabits[0];
-    if (socialHabit) {
-      socialHabit.alcoholFrequencyId = null;
-      socialHabit.yearsDrinking = null;
-    }
+    if (!socialHabit?.beverageStatusId) return false;
+    
+    const beverageOption = this.beverageOptions.find(opt => opt.id === socialHabit.beverageStatusId);
+    return beverageOption?.value === 'Does not consume';
   }
-  this.markFieldChanged('socialHabits');
-  this.triggerAutoSave();
-}
 
-onBeverageStatusChange(): void {
-  if (this.isNonBeverageConsumer()) {
-    // Clear beverage-related fields
+  isNeverDrugUser(): boolean {
     const socialHabit = this.patientData.socialHabits[0];
-    if (socialHabit) {
-      socialHabit.cupsPerDay = null;
-    }
+    if (!socialHabit?.drugUsageStatusId) return false;
+    
+    const drugOption = this.drugUsageOptions.find(opt => opt.id === socialHabit.drugUsageStatusId);
+    return drugOption?.value === 'Never used';
   }
-  this.markFieldChanged('socialHabits');
-  this.triggerAutoSave();
-}
 
-onDrugUsageStatusChange(): void {
-  if (this.isNeverDrugUser()) {
-    // Clear drug-related fields
-    const socialHabit = this.patientData.socialHabits[0];
-    if (socialHabit) {
-      socialHabit.drugDetails = null;
+  // Change handlers
+  onSmokingStatusChange(): void {
+    if (this.isNeverSmoker()) {
+      // Clear smoking-related fields
+      const socialHabit = this.patientData.socialHabits[0];
+      if (socialHabit) {
+        socialHabit.cigarettesPerDay = null;
+        socialHabit.yearsSmoking = null;
+        socialHabit.hasQuitSmoking = null;
+        socialHabit.smokingQuitDate = null;
+      }
     }
+    this.markFieldChanged('socialHabits');
+    this.triggerAutoSave();
   }
-  this.markFieldChanged('socialHabits');
-  this.triggerAutoSave();
-}
+
+  onAlcoholStatusChange(): void {
+    if (this.isNeverDrinker()) {
+      // Clear alcohol-related fields
+      const socialHabit = this.patientData.socialHabits[0];
+      if (socialHabit) {
+        socialHabit.alcoholFrequencyId = null;
+        socialHabit.yearsDrinking = null;
+      }
+    }
+    this.markFieldChanged('socialHabits');
+    this.triggerAutoSave();
+  }
+
+  onBeverageStatusChange(): void {
+    if (this.isNonBeverageConsumer()) {
+      // Clear beverage-related fields
+      const socialHabit = this.patientData.socialHabits[0];
+      if (socialHabit) {
+        socialHabit.cupsPerDay = null;
+      }
+    }
+    this.markFieldChanged('socialHabits');
+    this.triggerAutoSave();
+  }
+
+  onDrugUsageStatusChange(): void {
+    if (this.isNeverDrugUser()) {
+      // Clear drug-related fields
+      const socialHabit = this.patientData.socialHabits[0];
+      if (socialHabit) {
+        socialHabit.drugDetails = null;
+      }
+    }
+    this.markFieldChanged('socialHabits');
+    this.triggerAutoSave();
+  }
 
   // Helper method for getting patient initials
   getPatientInitials(): string {
@@ -1627,7 +1643,7 @@ onDrugUsageStatusChange(): void {
 
   // Helper method for BMI category
   getBMICategory(): string {
-    const bmi = this.assessmentForm.get('bmi')?.value;
+    const bmi = parseFloat(this.patientData.bmi || '0');
     if (!bmi) return '';
     
     if (bmi < 18.5) return 'Underweight';
@@ -1638,20 +1654,25 @@ onDrugUsageStatusChange(): void {
 
   // Helper method for form completion percentage
   getFormCompletionPercentage(): number {
-    const form = this.assessmentForm;
-    if (!form) return 0;
-
-    const totalFields = Object.keys(form.controls).length;
+    let totalFields = 0;
     let filledFields = 0;
 
-    Object.keys(form.controls).forEach(key => {
-      const control = form.get(key);
-      if (control?.value && control.value !== '' && control.value !== null) {
-        filledFields++;
+    // Count all fields in patientData
+    const countFields = (obj: any) => {
+      for (const key in obj) {
+        if (typeof obj[key] === 'object' && obj[key] !== null) {
+          countFields(obj[key]);
+        } else {
+          totalFields++;
+          if (obj[key] !== null && obj[key] !== '' && obj[key] !== false) {
+            filledFields++;
+          }
+        }
       }
-    });
+    };
 
-    return Math.round((filledFields / totalFields) * 100);
+    countFields(this.patientData);
+    return totalFields > 0 ? Math.round((filledFields / totalFields) * 100) : 0;
   }
 
   // Track by function for ngFor performance
@@ -1660,70 +1681,71 @@ onDrugUsageStatusChange(): void {
   }
 
   ngDoCheck(): void {
-  console.log('--- ngDoCheck triggered ---');
-  
-  // Ensure social habits are always properly initialized
-  if (!this.assessmentData?.socialHabits || this.assessmentData.socialHabits.length === 0) {
-    this.initializeSocialHabits();
-  }
-  
-  // Validate each social habit object
-  if (this.assessmentData?.socialHabits) {
-    this.assessmentData.socialHabits.forEach((habit: any, index: number) => {
-      if (!habit || typeof habit !== 'object') {
-        this.assessmentData.socialHabits[index] = {
-          smokingStatusId: null,
-          cigarettesPerDay: null,
-          alcoholStatusId: null,
-          alcoholFrequencyId: null,
-          beverageStatusId: null,
-          cupsPerDay: null,
-          drugUsageStatusId: null,
-          drugDetails: null
-        };
-      }
-    });
-  }
-
-  if (!this.originalAssessmentData) {
-    console.log('No original assessment data to compare with');
-    return;
-  }
-
-  const fieldsToCheck: (keyof typeof this.patientData)[] = [
-    'systolic', 'diastolic', 'heartRate', 'pulse', 'respiratoryRate',
-    'temperature', 'bloodSugar', 'spO2', 'weight', 'height', 'bmi',
-    'bloodGroupId', 'chiefComplaints', 'allergySeverities', 'medications',
-    'chronicConditions', 'surgicalHistory', 'familyHistoryConditions',
-    'socialHabits', 'fileUrl', 'isFileUpload'
-  ];
-
-  console.log('Checking dirty fields...');
-  
-  const wasDirty = this.isDirty;
-  this.isDirty = fieldsToCheck.some((field: keyof typeof this.patientData) => {
-    const current = JSON.stringify(this.patientData[field]);
-    const original = JSON.stringify(this.originalAssessmentData[field]);
-    const isDifferent = current !== original;
+    console.log('--- ngDoCheck triggered ---');
     
-    if (isDifferent) {
-      console.log(`Field changed: ${field}`, {
-        current: this.patientData[field],
-        original: this.originalAssessmentData[field]
-      });
-      this.modifiedFields.add(field as string);
+    // Ensure social habits are always properly initialized
+    if (!this.assessmentData?.socialHabits || this.assessmentData.socialHabits.length === 0) {
+      this.initializeSocialHabits();
     }
     
-    return isDifferent;
-  });
-  
-  console.log(`Dirty state - Was: ${wasDirty}, Now: ${this.isDirty}`);
-  
-  if (!wasDirty && this.isDirty) {
-    console.log('New changes detected, triggering auto-save');
-    this.triggerAutoSave();
+    // Validate each social habit object
+    if (this.assessmentData?.socialHabits) {
+      this.assessmentData.socialHabits.forEach((habit: any, index: number) => {
+        if (!habit || typeof habit !== 'object') {
+          this.assessmentData.socialHabits[index] = {
+            smokingStatusId: null,
+            cigarettesPerDay: null,
+            alcoholStatusId: null,
+            alcoholFrequencyId: null,
+            beverageStatusId: null,
+            cupsPerDay: null,
+            drugUsageStatusId: null,
+            drugDetails: null
+          };
+        }
+      });
+    }
+
+    if (!this.originalAssessmentData) {
+      console.log('No original assessment data to compare with');
+      return;
+    }
+
+    const fieldsToCheck: (keyof typeof this.patientData)[] = [
+      'systolic', 'diastolic', 'heartRate', 'pulse', 'respiratoryRate',
+      'temperature', 'bloodSugar', 'spO2', 'weight', 'height', 'bmi',
+      'bloodGroupId', 'chiefComplaints', 'allergySeverities', 'medications',
+      'chronicConditions', 'surgicalHistory', 'familyHistoryConditions',
+      'socialHabits', 'fileUrl', 'isFileUpload'
+    ];
+
+    console.log('Checking dirty fields...');
+    
+    const wasDirty = this.isDirty;
+    this.isDirty = fieldsToCheck.some((field: keyof typeof this.patientData) => {
+      const current = JSON.stringify(this.patientData[field]);
+      const original = JSON.stringify(this.originalAssessmentData[field]);
+      const isDifferent = current !== original;
+      
+      if (isDifferent) {
+        console.log(`Field changed: ${field}`, {
+          current: this.patientData[field],
+          original: this.originalAssessmentData[field]
+        });
+        this.modifiedFields.add(field as string);
+      }
+      
+      return isDifferent;
+    });
+    
+    console.log(`Dirty state - Was: ${wasDirty}, Now: ${this.isDirty}`);
+    
+    if (!wasDirty && this.isDirty) {
+      console.log('New changes detected, triggering auto-save');
+      this.saveStatus = 'unsaved';
+      this.triggerAutoSave();
+    }
   }
-}
 
   // Enhanced validation for social habits data
   validateSocialHabitsData(data: any): { isValid: boolean; errors: string[] } {
@@ -1771,5 +1793,166 @@ onDrugUsageStatusChange(): void {
     if (this.saveInProgress) return 'Saving...';
     if (this.isDirty) return 'Unsaved changes';
     return 'All changes saved';
+  }
+
+  // Form change handler
+  onFormChange(): void {
+    this.saveStatus = 'unsaved';
+    this.isDirty = true;
+    this.cdr.detectChanges();
+  }
+
+  // Blood pressure validation
+  validateBloodPressure(): void {
+    if (this.patientData.systolic && this.patientData.diastolic) {
+      this.showBpWarning = this.patientData.diastolic > this.patientData.systolic;
+    } else {
+      this.showBpWarning = false;
+    }
+  }
+
+  // Add complaint
+  addChiefComplaint(): void {
+    this.chiefComplaintsArray.push(this.fb.control({
+      complaint: '',
+      painScale: null,
+      notes: '',
+      onsetDate: null
+    }));
+    this.onFormChange();
+  }
+
+  // Remove complaint
+  removeChiefComplaint(index: number): void {
+    this.chiefComplaintsArray.removeAt(index);
+    this.onFormChange();
+  }
+
+  // Add surgical history
+  addSurgicalHistory(): void {
+    this.surgicalHistoryArray.push(this.fb.control({
+      procedure: '',
+      date: null,
+      hospital: '',
+      surgeonName: '',
+      surgeryTypeId: null,
+      hadComplications: false,
+      complicationDetails: ''
+    }));
+    this.onFormChange();
+  }
+
+  // Remove surgical history
+  removeSurgicalHistory(index: number): void {
+    this.surgicalHistoryArray.removeAt(index);
+    this.onFormChange();
+  }
+
+  // Add social habit
+  addSocialHabit(): void {
+    this.socialHabitsArray.push(this.fb.control({
+      smokingStatusId: null,
+      cigarettesPerDay: null,
+      yearsSmoking: null,
+      hasQuitSmoking: null,
+      smokingQuitDate: null,
+      alcoholStatusId: null,
+      alcoholFrequencyId: null,
+      yearsDrinking: null,
+      beverageStatusId: null,
+      cupsPerDay: null,
+      drugUsageStatusId: null,
+      drugDetails: null
+    }));
+    this.onFormChange();
+  }
+
+  // Toggle allergy selection
+  toggleAllergy(allergyId: number): void {
+    const index = this.patientData.allergySeverities.findIndex(a => a.allergyId === allergyId);
+    if (index >= 0) {
+      this.patientData.allergySeverities.splice(index, 1);
+    } else {
+      this.patientData.allergySeverities.push({
+        allergyId,
+        severityId: null,
+        allergyCategoryId: null,
+        reactionDetails: '',
+        firstObserved: null,
+        lastObserved: null
+      });
+    }
+    this.onFormChange();
+  }
+
+  // Check if allergy is selected
+  isAllergySelected(allergyId: number): boolean {
+    return this.patientData.allergySeverities.some(a => a.allergyId === allergyId);
+  }
+
+  // Toggle medication selection
+  toggleMedication(medicationId: number): void {
+    const index = this.patientData.medications.findIndex(m => m.medicationId === medicationId);
+    if (index >= 0) {
+      this.patientData.medications.splice(index, 1);
+    } else {
+      this.patientData.medications.push({
+        medicationId,
+        dosage: '',
+        frequency: '',
+        startDate: null,
+        endDate: null,
+        reason: ''
+      });
+    }
+    this.onFormChange();
+  }
+
+  // Check if medication is selected
+  isMedicationSelected(medicationId: number): boolean {
+    return this.patientData.medications.some(m => m.medicationId === medicationId);
+  }
+
+  // Toggle chronic condition selection
+  toggleChronicCondition(conditionId: number): void {
+    const index = this.patientData.chronicConditions.findIndex(c => c.conditionId === conditionId);
+    if (index >= 0) {
+      this.patientData.chronicConditions.splice(index, 1);
+    } else {
+      this.patientData.chronicConditions.push({
+        conditionId,
+        diagnosisDate: null,
+        treatmentDetails: '',
+        isControlled: null
+      });
+    }
+    this.onFormChange();
+  }
+
+  // Check if chronic condition is selected
+  isChronicConditionSelected(conditionId: number): boolean {
+    return this.patientData.chronicConditions.some(c => c.conditionId === conditionId);
+  }
+
+  // Toggle family history selection
+  toggleFamilyHistory(conditionId: number): void {
+    const index = this.patientData.familyHistoryConditions.findIndex(f => f.conditionId === conditionId);
+    if (index >= 0) {
+      this.patientData.familyHistoryConditions.splice(index, 1);
+    } else {
+      this.patientData.familyHistoryConditions.push({
+        conditionId,
+        relationship: '',
+        ageAtDiagnosis: null,
+        isDeceased: null,
+        causeOfDeath: ''
+      });
+    }
+    this.onFormChange();
+  }
+
+  // Check if family history is selected
+  isFamilyHistorySelected(conditionId: number): boolean {
+    return this.patientData.familyHistoryConditions.some(f => f.conditionId === conditionId);
   }
 }
