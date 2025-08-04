@@ -1619,7 +1619,45 @@ onDrugUsageStatusChange(): void {
   this.triggerAutoSave();
 }
 
+  // Helper method for getting patient initials
+  getPatientInitials(): string {
+    // This would typically come from patient data
+    return 'PA'; // Patient Assessment
+  }
 
+  // Helper method for BMI category
+  getBMICategory(): string {
+    const bmi = this.assessmentForm.get('bmi')?.value;
+    if (!bmi) return '';
+    
+    if (bmi < 18.5) return 'Underweight';
+    if (bmi < 25) return 'Normal';
+    if (bmi < 30) return 'Overweight';
+    return 'Obese';
+  }
+
+  // Helper method for form completion percentage
+  getFormCompletionPercentage(): number {
+    const form = this.assessmentForm;
+    if (!form) return 0;
+
+    const totalFields = Object.keys(form.controls).length;
+    let filledFields = 0;
+
+    Object.keys(form.controls).forEach(key => {
+      const control = form.get(key);
+      if (control?.value && control.value !== '' && control.value !== null) {
+        filledFields++;
+      }
+    });
+
+    return Math.round((filledFields / totalFields) * 100);
+  }
+
+  // Track by function for ngFor performance
+  trackByIndex(index: number, item: any): number {
+    return index;
+  }
 
   ngDoCheck(): void {
   console.log('--- ngDoCheck triggered ---');
@@ -1686,6 +1724,37 @@ onDrugUsageStatusChange(): void {
     this.triggerAutoSave();
   }
 }
+
+  // Enhanced validation for social habits data
+  validateSocialHabitsData(data: any): { isValid: boolean; errors: string[] } {
+    const errors: string[] = [];
+
+    if (!data || typeof data !== 'object') {
+      errors.push('Social habits data is invalid');
+      return { isValid: false, errors };
+    }
+
+    // Validate smoking data
+    if (data.smokingStatusId && data.cigarettesPerDay && data.cigarettesPerDay < 0) {
+      errors.push('Cigarettes per day cannot be negative');
+    }
+
+    if (data.smokingStatusId && data.yearsSmoking && data.yearsSmoking < 0) {
+      errors.push('Years smoking cannot be negative');
+    }
+
+    // Validate alcohol data
+    if (data.alcoholStatusId && data.yearsDrinking && data.yearsDrinking < 0) {
+      errors.push('Years drinking cannot be negative');
+    }
+
+    // Validate beverage data
+    if (data.beverageStatusId && data.cupsPerDay && data.cupsPerDay < 0) {
+      errors.push('Cups per day cannot be negative');
+    }
+
+    return { isValid: errors.length === 0, errors };
+  }
 
   // Utility methods for better UX
   getSaveButtonText(): string {
