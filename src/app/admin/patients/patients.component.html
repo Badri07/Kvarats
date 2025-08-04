@@ -391,7 +391,7 @@
                     <input type="checkbox" 
                            [id]="'medication-' + medication.id"
                            [checked]="isMedicationSelected(medication.name)"
-                           (change)="toggleMedication(medication.name)"
+                           (change)="toggleMedication(medication.name || '')"
                            class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500">
                     <label [for]="'medication-' + medication.id" 
                            class="ml-2 text-sm text-gray-700 cursor-pointer hover:text-purple-600 transition-colors duration-200">
