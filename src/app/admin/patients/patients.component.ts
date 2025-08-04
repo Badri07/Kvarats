@@ -1,5 +1,6 @@
 import { Component, Input, OnChanges, SimpleChanges, OnInit, DoCheck, Inject, ChangeDetectorRef, OnDestroy } from '@angular/core';
-import { NgForm, FormBuilder } from '@angular/forms';
+import { FormGroup, FormBuilder } from '@angular/forms';
+import { NgForm } from '@angular/forms';
 import { AdminService } from '../../service/admin/admin.service';
 import { ActivatedRoute } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
@@ -10,7 +11,12 @@ type DropdownType = 'allergy' | 'medication' | 'condition' | 'complaint' | 'smok
                    'alcoholstatus' | 'beveragestatus' | 'drugusagestatus' | 'bloodgroup' | 
                    'severity' | 'frequency' | 'surgerytype' | 'allergycategory' |'medicalcondition';
 type SortDirection = 'asc' | 'desc';
-type DropdownOption = { id: number; value: string; parentid: number; };
+type DropdownOption = { 
+  id: number; 
+  value: string; 
+  name?: string;
+  parentid: number; 
+};
 type ComplaintOption = string;
 
 @Component({
@@ -27,18 +33,19 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
   public saveInProgress = false;
   private autoSaveEnabled = true;
   private lastSaveTime = 0;
-  private readonly SAVE_DEBOUNCE_TIME = 2000; // 2 seconds
-  private readonly MIN_SAVE_INTERVAL = 5000; // 5 seconds minimum between saves
+  private readonly SAVE_DEBOUNCE_TIME = 2000;
+  private readonly MIN_SAVE_INTERVAL = 5000;
+
+  // Form properties
+  assessmentForm: FormGroup;
+  chiefComplaintsArray: any;
+  surgicalHistoryArray: any;
+  socialHabitsArray: any;
 
   // Status properties
   saveStatus: 'saved' | 'saving' | 'unsaved' = 'unsaved';
   isSaving = false;
   isLoading = false;
-
-  // Form arrays
-  chiefComplaintsArray = this.fb.array([]);
-  surgicalHistoryArray = this.fb.array([]);
-  socialHabitsArray = this.fb.array([]);
 
   constructor(
     private adminservice: AdminService,
@@ -47,7 +54,12 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
     private _loader: PopupService,
     private cdr: ChangeDetectorRef,
     private fb: FormBuilder
-  ) { }
+  ) { 
+    this.chiefComplaintsArray = this.fb.array([]);
+    this.surgicalHistoryArray = this.fb.array([]);
+    this.socialHabitsArray = this.fb.array([]);
+    this.assessmentForm = this.fb.group({});
+  }
 
   @Input() assessmentData: any;
 
@@ -77,6 +89,7 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
   surgeryTypeOptions: DropdownOption[] = [];
   allergyCategoryOptions: DropdownOption[] = [];
   medicalConditionOptions: DropdownOption[] = [];
+  familyHistoryOptions: DropdownOption[] = [];
   allergyOptionsByCategory: { [categoryId: number]: any[] } = {};
   chiefComplaintOptions: string[] = [
     'Fever', 'Cough', 'Headache', 'Cold', 'Body Pain',
@@ -315,16 +328,10 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
 
   ngOnInit(): void {
     this._loader.show();
+    this.familyHistoryOptions = this.medicalConditionOptions;
     
-    // Initialize form arrays
-    this.chiefComplaintsArray = this.fb.array([]);
-    this.surgicalHistoryArray = this.fb.array([]);
-    this.socialHabitsArray = this.fb.array([]);
-    
-    // 1. Initialize core data structures
     this.initializeSocialHabits();
     
-    // 2. Get route parameters
     this.activate.params.pipe(
       takeUntil(this.destroy$)
     ).subscribe({
@@ -332,12 +339,8 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
         this.patId = params['id'];
         this.patientData.patientId = this.patId;
         
-        // 3. Load assessment data first
         this.loadInitialAssessmentData().then(() => {
-          // 4. Then load dropdowns after data is ready
           this.loadDropdowns();
-          
-          // 5. Setup auto-save only after everything is initialized
           this.setupAutoSave();
           this._loader.hide();
         });
@@ -349,7 +352,6 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
       }
     });
 
-    // 6. File upload subscription
     this.adminservice.fileUrl$.pipe(
       takeUntil(this.destroy$)
     ).subscribe({
@@ -378,7 +380,7 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
       }
       
       this.assessmentData = data;
-      this.prepopulateData(); // This sets originalAssessmentData
+      this.prepopulateData();
       
       console.log('Initial assessment data loaded', {
         patientId: this.patId,
@@ -389,7 +391,6 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
       console.error('Failed to load initial data:', error);
       this._toastr.error('Could not load patient assessment');
       
-      // Initialize empty state
       this.assessmentData = null;
       this.originalAssessmentData = null;
       this.resetForm();
@@ -402,7 +403,6 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
   }
 
   private setupAutoSave(): void {
-    // Auto-save when form becomes dirty after user stops typing
     this.destroy$.pipe(
       debounceTime(this.SAVE_DEBOUNCE_TIME),
       distinctUntilChanged(),
@@ -421,10 +421,9 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
     if (this.saveInProgress || !this.autoSaveEnabled) return;
     
     this.saveInProgress = true;
-    this.lastSaveTime = Date.now();
     this.saveStatus = 'saving';
+    this.lastSaveTime = Date.now();
 
-    // Create copy with draft flag
     const draftData = {...this.patientData, isDraft: true};
     
     this._toastr.info('Auto-saving draft...', '', {
@@ -458,7 +457,6 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
       const previousData = changes['assessmentData'].previousValue;
       const currentData = changes['assessmentData'].currentValue;
 
-      // Deep compare to avoid unnecessary processing
       if (JSON.stringify(previousData) === JSON.stringify(currentData)) {
         console.debug('Assessment data changed but content is identical');
         return;
@@ -475,15 +473,12 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
         current: currentData ? 'exists' : 'null'
       });
 
-      // Process new data
       this.prepopulateData();
       
-      // Reset tracking states
       this.isDirty = false;
       this.modifiedFields.clear();
       this.lastSaveTime = Date.now();
 
-      // Force UI update if needed
       this.cdr.detectChanges();
 
     } catch (error) {
@@ -513,16 +508,13 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
   }
 
   private prepopulateData(): void {
-    // Check if we have data to work with
     if (!this.assessmentData) {
       console.warn('Cannot prepopulate - no assessment data provided');
       return;
     }
 
-    // Create deep copy of input data
     const assessmentData = JSON.parse(JSON.stringify(this.assessmentData));
 
-    // Initialize all arrays if they don't exist
     assessmentData.allergySeverities = assessmentData.allergySeverities || [];
     assessmentData.medications = assessmentData.medications || [];
     assessmentData.chronicConditions = assessmentData.chronicConditions || [];
@@ -532,14 +524,12 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
     assessmentData.socialHabits = assessmentData.socialHabits || [{}];
     assessmentData.fileUrl = assessmentData.fileUrl || [];
 
-    // Merge with current patientData while preserving patientId and other defaults
     this.patientData = {
-      patientId: this.patientData.patientId,  // Preserve existing
+      patientId: this.patientData.patientId,
       isDraft: false,
       isFileUpload: assessmentData.fileUrl?.length > 0 || false,
       fileUrl: assessmentData.fileUrl,
       
-      // Vital signs
       systolic: assessmentData.systolic || null,
       diastolic: assessmentData.diastolic || null,
       heartRate: assessmentData.heartRate || null,
@@ -553,7 +543,6 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
       bmi: assessmentData.bmi || '',
       bloodGroupId: assessmentData.bloodGroupId || null,
 
-      // Symptoms
       chiefComplaints: assessmentData.chiefComplaints.map((c: any) => ({
         complaint: c.complaint || '',
         painScale: c.painScale || null,
@@ -561,7 +550,6 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
         onsetDate: c.onsetDate || null
       })),
 
-      // Allergies
       allergySeverities: assessmentData.allergySeverities.map((a: any) => ({
         allergyId: a.allergyId || null,
         severityId: a.severityId || null,
@@ -571,7 +559,6 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
         lastObserved: a.lastObserved || null
       })),
 
-      // Medications
       medications: assessmentData.medications.map((m: any) => ({
         medicationId: m.medicationId || null,
         dosage: m.dosage || '',
@@ -581,7 +568,6 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
         reason: m.reason || ''
       })),
 
-      // Conditions
       chronicConditions: assessmentData.chronicConditions.map((c: any) => ({
         conditionId: c.conditionId || null,
         diagnosisDate: c.diagnosisDate || null,
@@ -589,7 +575,6 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
         isControlled: c.isControlled || null
       })),
 
-      // Surgical history
       surgicalHistory: assessmentData.surgicalHistory.map((s: any) => ({
         procedure: s.procedure || '',
         date: s.date || null,
@@ -600,7 +585,6 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
         complicationDetails: s.complicationDetails || ''
       })),
 
-      // Family history
       familyHistoryConditions: assessmentData.familyHistoryConditions.map((f: any) => ({
         conditionId: f.conditionId || null,
         relationship: f.relationship || '',
@@ -609,7 +593,6 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
         causeOfDeath: f.causeOfDeath || ''
       })),
 
-      // Social habits
       socialHabits: assessmentData.socialHabits.map((s: any) => ({
         smokingStatusId: s.smokingStatusId || null,
         cigarettesPerDay: s.cigarettesPerDay || null,
@@ -626,7 +609,6 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
       }))
     };
 
-    // Initialize selected names arrays
     this.selectedAllergyNames = this.patientData.allergySeverities
       .map(item => this.getOptionLabel('allergy', item.allergyId));
     this.selectedMedicationNames = this.patientData.medications
@@ -634,14 +616,11 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
     this.selectedConditionNames = this.patientData.chronicConditions
       .map(item => this.getOptionLabel('condition', item.conditionId));
 
-    // Set original baseline for dirty checking
     this.originalAssessmentData = JSON.parse(JSON.stringify(this.patientData));
     console.log('Original assessment data initialized:', this.originalAssessmentData);
   }
 
   private loadDropdowns(): void {
-    // First load all static dropdowns
-    // Load dropdowns in parallel for better performance
     const dropdownRequests = [
       this.adminservice.getMedicationdata(),
       this.adminservice.getDropdowndata('ChronicCondition'),
@@ -657,7 +636,6 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
       this.adminservice.getDropdowndata('AllergyCategory')
     ];
 
-    // Use forkJoin for parallel loading
     import('rxjs').then(({ forkJoin }) => {
       forkJoin(dropdownRequests).subscribe({
         next: ([medications, conditions, smoking, alcohol, beverage, drug, bloodGroup, severity, frequency, surgery, medical, allergyCategory]) => {
@@ -673,6 +651,7 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
           this.surgeryTypeOptions = surgery || [];
           this.medicalConditionOptions = medical || [];
           this.allergyCategoryOptions = allergyCategory || [];
+          this.familyHistoryOptions = this.medicalConditionOptions;
           
           this.cdr.detectChanges();
         },
@@ -684,26 +663,18 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
     });
   }
 
-  // Call this when a category is selected in the UI
   public onCategorySelected(categoryId: number): void {
     this.selectedAllergyCategoryId = categoryId;
-    this.newAllergy.allergyCategoryId = categoryId; // Make sure this is set
-    
-    // Clear any existing allergy selection
+    this.newAllergy.allergyCategoryId = categoryId;
     this.newAllergy.allergyId = null;
     this.searchInputs.allergy = '';
-    
-    // Load allergies for this category
     this.loadAllergiesByCategory(categoryId);
   }
 
   private loadAllergiesByCategory(categoryId: number): void {
     this.adminservice.getAllergyDataByCategory('Allergy', categoryId).subscribe({
       next: (allergies) => {
-        // Store the allergies by category for caching
         this.allergyOptionsByCategory[categoryId] = allergies || [];
-        
-        // Set the current allergy options
         this.allergyOptions = this.allergyOptionsByCategory[categoryId];
         this.filteredAllergyOptions = this.allergyOptions;
         this.filteredOptions.allergy = [...this.allergyOptions];
@@ -715,7 +686,6 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
     });
   }
 
-  // Add this to your component to debug the current state
   printCurrentAllergyState(): void {
     console.log('Current Allergy State:');
     console.log('Selected Category ID:', this.newAllergy.allergyCategoryId);
@@ -732,7 +702,6 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
       return;
     }
     
-    // Ensure we have options for this category
     if (!this.allergyOptionsByCategory[this.newAllergy.allergyCategoryId]) {
       this.loadAllergiesByCategory(this.newAllergy.allergyCategoryId);
     } else {
@@ -743,7 +712,6 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
   }
 
   private filterAllergies(allergies: any[]): any[] {
-    // Your filtering logic here based on search input
     return allergies.filter(allergy => 
       allergy.value.toLowerCase().includes(this.searchInputs.allergy.toLowerCase()))
   }
@@ -752,10 +720,8 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
     this.isDropdownOpen[type] = true;
     
     if (type === 'allergy') {
-      // Start with the category-filtered allergies
       let baseOptions = this.filteredAllergyOptions;
       
-      // Apply search filter if there's a term
       if (searchTerm.trim() !== '') {
         baseOptions = baseOptions.filter(option =>
           option.value.toLowerCase().includes(searchTerm.toLowerCase())
@@ -764,7 +730,6 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
       
       this.filteredOptions[type] = baseOptions;
     } else {
-      // Original filter logic for other dropdowns
       const sourceOptions = this.getSourceOptions(type);
       this.filteredOptions[type] = searchTerm.trim() === ''
         ? sourceOptions.slice(0, 100)
@@ -773,7 +738,6 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
         ).slice(0, 100);
     }
 
-    // Show add button logic
     this.showAddButtons[type] = !!searchTerm.trim() &&
       !this.filteredOptions[type].some((opt: any) =>
         opt.value.toLowerCase() === searchTerm.toLowerCase()
@@ -881,12 +845,11 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
       const newOption: DropdownOption = {
         id: this.generateNewId(),
         value: newItem,
-        parentid: 0 // Add appropriate parentid if needed
+        parentid: 0
       };
       
       optionsArray.unshift(newOption);
       
-      // Handle type-specific logic
       if (type === 'allergy') {
         if (!this.newAllergy.allergyCategoryId) {
           this._toastr.warning('Please select an allergy category first');
@@ -894,45 +857,31 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
         }
 
         newOption.parentid = this.newAllergy.allergyCategoryId;
-        
-        // Add to both main options and filtered options
         this.allergyOptions.unshift(newOption);
         this.filteredAllergyOptions.unshift(newOption);
-        
-        // Select the new allergy
         this.newAllergy.allergyId = newOption.id;
         this.searchInputs.allergy = newItem;
-        
         this.markFieldChanged('allergySeverities');
       } 
       else if (type === 'medication') {
         this.medicationOptions.unshift(newOption);
         this.filteredOptions.medication.unshift(newOption);
-        
-        // Select the new medication
         this.newMedication.medicationId = newOption.id;
         this.searchInputs.medication = newItem;
-        
         this.markFieldChanged('medications');
       } 
       else if (type === 'condition') {
         this.chronicConditionOptions.unshift(newOption);
         this.filteredOptions.condition.unshift(newOption);
-        
-        // Select the new condition
         this.newCondition.conditionId = newOption.id;
         this.searchInputs.condition = newItem;
-        
         this.markFieldChanged('chronicConditions');
       }
       else if (type === 'surgerytype') {
         this.surgeryTypeOptions.unshift(newOption);
         this.filteredOptions.surgerytype.unshift(newOption);
-        
-        // Select the new surgery type
         this.newSurgery.surgeryTypeId = newOption.id;
         this.searchInputs.surgerytype = newItem;
-        
         this.markFieldChanged('surgicalHistory');
       }
     }
@@ -977,9 +926,9 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
   }
 
   addAllergy(): void {
-    if (this.newAllergy.allergyId !== null) {  // Explicit null check
+    if (this.newAllergy.allergyId !== null) {
       this.patientData.allergySeverities.push({
-        allergyId: this.newAllergy.allergyId,  // We know it's not null here
+        allergyId: this.newAllergy.allergyId,
         severityId: this.newAllergy.severityId,
         allergyCategoryId: this.newAllergy.allergyCategoryId,
         reactionDetails: this.newAllergy.reactionDetails,
@@ -1041,7 +990,6 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
       
       this.selectedConditionNames.push(this.getOptionLabel('condition', this.newCondition.conditionId));
       
-      // Reset form
       this.newCondition = {
         conditionId: null,
         diagnosisDate: null,
@@ -1056,7 +1004,7 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
   }
 
   addFamilyHistory(): void {
-    if (this.newFamilyHistory.conditionId !== null) {  // Check for null instead of empty string
+    if (this.newFamilyHistory.conditionId !== null) {
       this.patientData.familyHistoryConditions.push({
         conditionId: this.newFamilyHistory.conditionId,
         relationship: this.newFamilyHistory.relationship,
@@ -1065,7 +1013,6 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
         causeOfDeath: this.newFamilyHistory.causeOfDeath
       });
       
-      // Reset form
       this.newFamilyHistory = {
         conditionId: null,
         relationship: '',
@@ -1167,12 +1114,10 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
     type: 'allergy' | 'medication' | 'condition' | 'severity' | 'surgerytype' | 'allergycategory' | 'medicalcondition' | 'bloodgroup',
     id: number | null | undefined
   ): string {
-    // Handle null/undefined cases
     if (id == null) {
       return 'Not specified';
     }
 
-    // Get the correct options array based on type
     const options: DropdownOption[] =
       type === 'allergy' ? this.allergyOptions :
       type === 'medication' ? this.medicationOptions :
@@ -1183,7 +1128,6 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
       type === 'bloodgroup' ? this.bloodGroupOptions :
       this.medicalConditionOptions;
 
-    // Find and return the matching value
     const foundOption = options.find(opt => opt.id === id);
     return foundOption?.value || 'Unknown';
   }
@@ -1196,7 +1140,6 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
     this.isDropdownOpen.bloodgroup = true;
     this.filterOptions('bloodgroup', this.searchInputs.bloodgroup);
     
-    // Optional: Scroll into view if needed
     setTimeout(() => {
       const dropdown = document.querySelector('.bloodgroup-dropdown');
       dropdown?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
@@ -1209,11 +1152,9 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
 
   selectMedication(option: any) {
     if (this.isMedicationSelected(option)) {
-      // Deselect if clicking the same item
       this.newMedication.medicationId = null;
       this.searchInputs.medication = '';
     } else {
-      // Select new medication
       this.newMedication.medicationId = option.id;
       this.searchInputs.medication = option.value;
     }
@@ -1226,11 +1167,9 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
 
   selectFrequency(option: any) {
     if (this.isFrequencySelected(option)) {
-      // Deselect if clicking the same item
       this.newMedication.frequency = '';
       this.searchInputs.frequency = '';
     } else {
-      // Select new frequency
       this.newMedication.frequency = option.value;
       this.searchInputs.frequency = option.value;
     }
@@ -1243,11 +1182,9 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
 
   selectCondition(option: DropdownOption): void {
     if (this.isConditionSelected(option)) {
-      // Deselect if clicking the same item
       this.newCondition.conditionId = null;
       this.searchInputs.condition = '';
     } else {
-      // Select new condition
       this.newCondition.conditionId = option.id;
       this.searchInputs.condition = option.value;
     }
@@ -1274,10 +1211,8 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
       return;
     }
 
-    // Set draft flag
     this.patientData.isDraft = isDraft;
 
-    // Clean up empty social habits if needed
     if (this.patientData.socialHabits.length > 0) {
       const hasValues = Object.values(this.patientData.socialHabits[0]).some(
         val => val !== null && val !== undefined && val !== ''
@@ -1338,19 +1273,17 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
     }
 
     try {
-      // 1. Reset modified fields from tracked changes
       this.modifiedFields.forEach(field => {
         if (field in this.originalAssessmentData) {
-          (this.patientData as any)[field] = this.deepCopy(this.originalAssessmentData[field]);
+          (this.patientData as any)[field] = JSON.parse(JSON.stringify(this.originalAssessmentData[field]));
         } else {
           console.warn(`Field ${field} not found in original data`);
         }
       });
 
-      // 2. Reset UI selections
       this.selectedAllergyNames = this.patientData.allergySeverities
         .map(item => this.getOptionLabel('allergy', item.allergyId))
-        .filter(Boolean); // Remove any undefined/null values
+        .filter(Boolean);
 
       this.selectedMedicationNames = this.patientData.medications
         .map(item => this.getOptionLabel('medication', item.medicationId))
@@ -1360,23 +1293,19 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
         .map(item => this.getOptionLabel('condition', item.conditionId))
         .filter(Boolean);
 
-      // 3. Reset form controls if NgForm provided
       if (form) {
         setTimeout(() => {
           form.resetForm({
             ...this.patientData,
-            // Special cases for reactive form controls
             bloodGroupId: this.patientData.bloodGroupId,
             socialHabits: this.patientData.socialHabits[0] || {}
           });
         }, 0);
       }
 
-      // 4. Reinitialize dynamic sections
       this.initializeSocialHabits();
       this.filteredAllergyOptions = [...this.allergyOptions];
       
-      // 5. Reset state flags
       this.isDirty = false;
       this.modifiedFields.clear();
       this.painScaleErrors = {};
@@ -1390,16 +1319,11 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
       console.error('Error resetting form:', error);
       this._toastr.error('Failed to reset form data');
       
-      // Fallback: Hard reset
       if (this.originalAssessmentData) {
-        this.patientData = this.deepCopy(this.originalAssessmentData);
+        this.patientData = JSON.parse(JSON.stringify(this.originalAssessmentData));
         this.cdr.detectChanges();
       }
     }
-  }
-
-  private deepCopy<T>(obj: T): T {
-    return JSON.parse(JSON.stringify(obj));
   }
 
   markFieldChanged(field: string): void {
@@ -1412,13 +1336,11 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
     const input = event.target as HTMLInputElement;
     let value = parseInt(input.value, 10);
     
-    // Handle empty/NaN case
     if (isNaN(value)) {
       this.painScaleErrors[index] = false;
       return;
     }
 
-    // Enforce range
     if (value < 0) {
       value = 0;
       input.value = '0';
@@ -1427,7 +1349,6 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
       input.value = '10';
     }
 
-    // Update the model
     this.patientData.chiefComplaints[index].painScale = value;
     this.painScaleErrors[index] = false;
     this.markFieldChanged('chiefComplaints');
@@ -1435,46 +1356,33 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
   }
 
   preventInvalidInput(event: KeyboardEvent) {
-    // Allow: backspace, delete, tab, escape, enter, numbers, and decimal point
     if ([46, 8, 9, 27, 13, 110].includes(event.keyCode) ||
-        // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
         (event.keyCode === 65 && event.ctrlKey === true) ||
         (event.keyCode === 67 && event.ctrlKey === true) ||
         (event.keyCode === 86 && event.ctrlKey === true) ||
         (event.keyCode === 88 && event.ctrlKey === true) ||
-        // Allow: home, end, left, right
         (event.keyCode >= 35 && event.keyCode <= 39)) {
       return;
     }
     
-    // Prevent if not a number
     if (event.shiftKey || (event.keyCode < 48 || event.keyCode > 57)) {
       event.preventDefault();
     }
   }
 
   selectAllergyCategory(option: DropdownOption): void {
-    // Check if clicking the already selected category
     if (this.newAllergy.allergyCategoryId === option.id) {
-      // Deselect the category
       this.newAllergy.allergyCategoryId = null;
       this.searchInputs.allergycategory = '';
-      
-      // Clear allergy selection and options
       this.newAllergy.allergyId = null;
       this.searchInputs.allergy = '';
       this.allergyOptions = [];
       this.filteredOptions.allergy = [];
     } else {
-      // Select new category
       this.newAllergy.allergyCategoryId = option.id;
       this.searchInputs.allergycategory = option.value;
-      
-      // Clear any existing allergy selection
       this.newAllergy.allergyId = null;
       this.searchInputs.allergy = '';
-      
-      // Load allergies for this category
       this.loadAllergiesByCategory(option.id);
     }
     
@@ -1484,14 +1392,10 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
   clearAllergyCategory(): void {
     this.newAllergy.allergyCategoryId = null;
     this.searchInputs.allergycategory = '';
-    
-    // Clear allergy selection and options
     this.newAllergy.allergyId = null;
     this.searchInputs.allergy = '';
     this.allergyOptions = [];
     this.filteredOptions.allergy = [];
-    
-    // Close dropdowns
     this.isDropdownOpen.allergycategory = false;
     this.isDropdownOpen.allergy = false;
   }
@@ -1507,7 +1411,6 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
       allergy => allergy.parentid === categoryId
     );
 
-    // Update the display options but DON'T open the dropdown here
     this.filteredOptions.allergy = [...this.filteredAllergyOptions];
   }
 
@@ -1517,11 +1420,9 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
 
   selectAllergy(option: DropdownOption): void {
     if (this.isAllergySelected(option)) {
-      // Deselect if already selected
       this.newAllergy.allergyId = null;
       this.searchInputs.allergy = '';
     } else {
-      // Select new allergy
       this.newAllergy.allergyId = option.id;
       this.searchInputs.allergy = option.value;
     }
@@ -1534,11 +1435,9 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
 
   selectSeverity(option: DropdownOption): void {
     if (this.isSeveritySelected(option)) {
-      // Deselect if already selected
       this.newAllergy.severityId = null;
       this.searchInputs.severity = '';
     } else {
-      // Select new severity
       this.newAllergy.severityId = option.id;
       this.searchInputs.severity = option.value;
     }
@@ -1549,7 +1448,6 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
     return this.newAllergy.severityId === option.id;
   }
 
-  // Helper methods to check status
   isNeverSmoker(): boolean {
     const socialHabit = this.patientData.socialHabits[0];
     if (!socialHabit?.smokingStatusId) return false;
@@ -1582,10 +1480,8 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
     return drugOption?.value === 'Never used';
   }
 
-  // Change handlers
   onSmokingStatusChange(): void {
     if (this.isNeverSmoker()) {
-      // Clear smoking-related fields
       const socialHabit = this.patientData.socialHabits[0];
       if (socialHabit) {
         socialHabit.cigarettesPerDay = null;
@@ -1600,7 +1496,6 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
 
   onAlcoholStatusChange(): void {
     if (this.isNeverDrinker()) {
-      // Clear alcohol-related fields
       const socialHabit = this.patientData.socialHabits[0];
       if (socialHabit) {
         socialHabit.alcoholFrequencyId = null;
@@ -1613,7 +1508,6 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
 
   onBeverageStatusChange(): void {
     if (this.isNonBeverageConsumer()) {
-      // Clear beverage-related fields
       const socialHabit = this.patientData.socialHabits[0];
       if (socialHabit) {
         socialHabit.cupsPerDay = null;
@@ -1625,7 +1519,6 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
 
   onDrugUsageStatusChange(): void {
     if (this.isNeverDrugUser()) {
-      // Clear drug-related fields
       const socialHabit = this.patientData.socialHabits[0];
       if (socialHabit) {
         socialHabit.drugDetails = null;
@@ -1635,13 +1528,10 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
     this.triggerAutoSave();
   }
 
-  // Helper method for getting patient initials
   getPatientInitials(): string {
-    // This would typically come from patient data
-    return 'PA'; // Patient Assessment
+    return 'PA';
   }
 
-  // Helper method for BMI category
   getBMICategory(): string {
     const bmi = parseFloat(this.patientData.bmi || '0');
     if (!bmi) return '';
@@ -1652,12 +1542,10 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
     return 'Obese';
   }
 
-  // Helper method for form completion percentage
   getFormCompletionPercentage(): number {
     let totalFields = 0;
     let filledFields = 0;
 
-    // Count all fields in patientData
     const countFields = (obj: any) => {
       for (const key in obj) {
         if (typeof obj[key] === 'object' && obj[key] !== null) {
@@ -1675,7 +1563,6 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
     return totalFields > 0 ? Math.round((filledFields / totalFields) * 100) : 0;
   }
 
-  // Track by function for ngFor performance
   trackByIndex(index: number, item: any): number {
     return index;
   }
@@ -1683,12 +1570,10 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
   ngDoCheck(): void {
     console.log('--- ngDoCheck triggered ---');
     
-    // Ensure social habits are always properly initialized
     if (!this.assessmentData?.socialHabits || this.assessmentData.socialHabits.length === 0) {
       this.initializeSocialHabits();
     }
     
-    // Validate each social habit object
     if (this.assessmentData?.socialHabits) {
       this.assessmentData.socialHabits.forEach((habit: any, index: number) => {
         if (!habit || typeof habit !== 'object') {
@@ -1747,7 +1632,6 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
     }
   }
 
-  // Enhanced validation for social habits data
   validateSocialHabitsData(data: any): { isValid: boolean; errors: string[] } {
     const errors: string[] = [];
 
@@ -1756,7 +1640,6 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
       return { isValid: false, errors };
     }
 
-    // Validate smoking data
     if (data.smokingStatusId && data.cigarettesPerDay && data.cigarettesPerDay < 0) {
       errors.push('Cigarettes per day cannot be negative');
     }
@@ -1765,12 +1648,10 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
       errors.push('Years smoking cannot be negative');
     }
 
-    // Validate alcohol data
     if (data.alcoholStatusId && data.yearsDrinking && data.yearsDrinking < 0) {
       errors.push('Years drinking cannot be negative');
     }
 
-    // Validate beverage data
     if (data.beverageStatusId && data.cupsPerDay && data.cupsPerDay < 0) {
       errors.push('Cups per day cannot be negative');
     }
@@ -1778,7 +1659,6 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
     return { isValid: errors.length === 0, errors };
   }
 
-  // Utility methods for better UX
   getSaveButtonText(): string {
     if (this.saveInProgress) return 'Saving...';
     if (this.isDirty) return 'Save Changes';
@@ -1795,14 +1675,12 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
     return 'All changes saved';
   }
 
-  // Form change handler
   onFormChange(): void {
     this.saveStatus = 'unsaved';
     this.isDirty = true;
     this.cdr.detectChanges();
   }
 
-  // Blood pressure validation
   validateBloodPressure(): void {
     if (this.patientData.systolic && this.patientData.diastolic) {
       this.showBpWarning = this.patientData.diastolic > this.patientData.systolic;
@@ -1811,7 +1689,6 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
     }
   }
 
-  // Add complaint
   addChiefComplaint(): void {
     this.chiefComplaintsArray.push(this.fb.control({
       complaint: '',
@@ -1822,13 +1699,11 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
     this.onFormChange();
   }
 
-  // Remove complaint
   removeChiefComplaint(index: number): void {
     this.chiefComplaintsArray.removeAt(index);
     this.onFormChange();
   }
 
-  // Add surgical history
   addSurgicalHistory(): void {
     this.surgicalHistoryArray.push(this.fb.control({
       procedure: '',
@@ -1842,13 +1717,11 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
     this.onFormChange();
   }
 
-  // Remove surgical history
   removeSurgicalHistory(index: number): void {
     this.surgicalHistoryArray.removeAt(index);
     this.onFormChange();
   }
 
-  // Add social habit
   addSocialHabit(): void {
     this.socialHabitsArray.push(this.fb.control({
       smokingStatusId: null,
@@ -1867,8 +1740,8 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
     this.onFormChange();
   }
 
-  // Toggle allergy selection
-  toggleAllergy(allergyId: number): void {
+  toggleAllergy(allergyValue: string | number): void {
+    const allergyId = typeof allergyValue === 'string' ? parseInt(allergyValue) : allergyValue;
     const index = this.patientData.allergySeverities.findIndex(a => a.allergyId === allergyId);
     if (index >= 0) {
       this.patientData.allergySeverities.splice(index, 1);
@@ -1885,13 +1758,8 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
     this.onFormChange();
   }
 
-  // Check if allergy is selected
-  isAllergySelected(allergyId: number): boolean {
-    return this.patientData.allergySeverities.some(a => a.allergyId === allergyId);
-  }
-
-  // Toggle medication selection
-  toggleMedication(medicationId: number): void {
+  toggleMedication(medicationValue: string | number): void {
+    const medicationId = typeof medicationValue === 'string' ? parseInt(medicationValue) : medicationValue;
     const index = this.patientData.medications.findIndex(m => m.medicationId === medicationId);
     if (index >= 0) {
       this.patientData.medications.splice(index, 1);
@@ -1908,13 +1776,8 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
     this.onFormChange();
   }
 
-  // Check if medication is selected
-  isMedicationSelected(medicationId: number): boolean {
-    return this.patientData.medications.some(m => m.medicationId === medicationId);
-  }
-
-  // Toggle chronic condition selection
-  toggleChronicCondition(conditionId: number): void {
+  toggleChronicCondition(conditionValue: string | number): void {
+    const conditionId = typeof conditionValue === 'string' ? parseInt(conditionValue) : conditionValue;
     const index = this.patientData.chronicConditions.findIndex(c => c.conditionId === conditionId);
     if (index >= 0) {
       this.patientData.chronicConditions.splice(index, 1);
@@ -1929,12 +1792,6 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
     this.onFormChange();
   }
 
-  // Check if chronic condition is selected
-  isChronicConditionSelected(conditionId: number): boolean {
-    return this.patientData.chronicConditions.some(c => c.conditionId === conditionId);
-  }
-
-  // Toggle family history selection
   toggleFamilyHistory(conditionId: number): void {
     const index = this.patientData.familyHistoryConditions.findIndex(f => f.conditionId === conditionId);
     if (index >= 0) {
@@ -1951,7 +1808,6 @@ export class PatientsComponent implements OnInit, OnChanges, DoCheck, OnDestroy 
     this.onFormChange();
   }
 
-  // Check if family history is selected
   isFamilyHistorySelected(conditionId: number): boolean {
     return this.patientData.familyHistoryConditions.some(f => f.conditionId === conditionId);
   }
