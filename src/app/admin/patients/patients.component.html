@@ -411,7 +411,7 @@
                   <div *ngFor="let condition of chronicConditionOptions" class="flex items-center">
                     <input type="checkbox" 
                            [id]="'condition-' + condition.id"
-                           [checked]="isConditionSelected(condition.value)"
+                           [checked]="isConditionSelected(condition)"
                            (change)="toggleChronicCondition(condition.value)"
                            class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500">
                     <label [for]="'condition-' + condition.id" 
