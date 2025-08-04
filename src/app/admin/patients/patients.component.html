@@ -516,7 +516,7 @@
                   <input type="checkbox" 
                          [id]="'family-' + condition.id"
                          [checked]="isFamilyHistorySelected(condition)"
-                         (change)="toggleFamilyHistory(condition)"
+                         (change)="toggleFamilyHistory(condition.value)"
                          class="w-4 h-4 text-yellow-600 border-gray-300 rounded focus:ring-yellow-500">
                   <label [for]="'family-' + condition.id" 
                          class="ml-3 text-sm text-gray-700 cursor-pointer">
