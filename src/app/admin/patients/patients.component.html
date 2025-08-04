@@ -515,8 +515,8 @@
                 <div *ngFor="let condition of familyHistoryOptions" class="flex items-center p-3 rounded-lg hover:bg-yellow-50 transition-colors duration-200">
                   <input type="checkbox" 
                          [id]="'family-' + condition.id"
-                         [checked]="isFamilyHistorySelected(condition)"
-                         (change)="toggleFamilyHistory(condition.value)"
+                         [checked]="isFamilyHistorySelected(+condition.value)"
+                         (change)="toggleFamilyHistory(+condition.value)"
                          class="w-4 h-4 text-yellow-600 border-gray-300 rounded focus:ring-yellow-500">
                   <label [for]="'family-' + condition.id" 
                          class="ml-3 text-sm text-gray-700 cursor-pointer">
