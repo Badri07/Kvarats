@@ -283,8 +283,10 @@
 
       <!-- Transactions Tab Content -->
       <div *ngIf="selectedTab === 'transactions'">
-        <!-- Total Amount -->
-        <div class="mb-3">
+        
+        <div class="row mt-4">
+          <div class="col-6">
+          <div class="mb-3">
           <label class="fw-medium">Total Amount</label>
           <input
             type="number"
@@ -295,47 +297,10 @@
             (ngModelChange)="recalculateInsuranceClaim()"
           />
         </div>
+          </div>
 
-        <!-- Toggle Insurance Use -->
-        <div class="form-check form-switch mb-3">
-          <input
-            class="form-check-input"
-            type="checkbox"
-            id="useInsurance"
-            [(ngModel)]="useInsurance"
-            (change)="onInsuranceToggle($event)"
-          />
-          <label class="form-check-label fw-medium" for="useInsurance"
-            >Use Insurance</label
-          >
-        </div>
-
-        <!-- Insurance Provider -->
-       <!-- Insurance Provider (if enabled) -->
- <div *ngIf="useInsurance && insuranceList.length > 0" class="mb-3">
-<label class="fw-medium">Insurance Provider</label>
-<select 
-
-    class="form-select" 
-
-    [(ngModel)]="selectedInsuranceId" 
-
-    name="selectedInsurance"
-
-    (change)="onInsuranceChange($event)"
->
-<option value="" disabled>Select Insurance</option>
-<option *ngFor="let insurance of insuranceList" [value]="insurance.id">
-
-      {{ insurance.insuranceCarrierName }}
-</option>
-</select>
-</div>
- 
- 
-
-        <!-- Sliding Scale -->
-        <div *ngIf="slidingScalesList.length > 0" class="mb-3">
+           <div class="col-6">
+ <div *ngIf="slidingScalesList.length > 0" class="mb-3">
           <label class="fw-medium">Apply Sliding Scale</label>
           <select
             class="form-select"
@@ -350,9 +315,46 @@
             </option>
           </select>
         </div>
+      </div>
 
-        <!-- Copay -->
-        <div *ngIf="useInsurance" class="mb-3">
+        
+        </div>
+        
+     <div class="row">   
+        <div class="form-check form-switch mb-3">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            id="useInsurance"
+            [(ngModel)]="useInsurance"
+            (change)="onInsuranceToggle($event)"
+          />
+          <label class="form-check-label fw-medium" for="useInsurance"
+            >Use Insurance</label
+          >
+        </div>
+     </div>
+ 
+     <div class="row">
+       <div class="col-6">
+          <div *ngIf="useInsurance && insuranceList.length > 0" class="mb-3">
+          <label class="fw-medium">Insurance Provider</label>
+          <select 
+              class="form-select"
+              [(ngModel)]="selectedInsuranceId" 
+              name="selectedInsurance"
+              (change)="onInsuranceChange($event)">
+          <option value="" disabled>Select Insurance</option>
+          <option *ngFor="let insurance of insuranceList" [value]="insurance.id">
+
+                {{ insurance.insuranceCarrierName }}
+          </option>
+          </select>
+          </div>
+          </div>
+
+      <div class="col-6">
+ <div *ngIf="useInsurance" class="mb-3">
           <label class="fw-medium">Copay</label>
           <input
             type="number"
@@ -363,20 +365,13 @@
             (ngModelChange)="recalculateInsuranceClaim()"
           />
         </div>
+      </div>
+     </div>
+       
 
-        <!-- Auto-calculated Insurance Claim -->
-        <div *ngIf="useInsurance" class="mb-3">
-          <label class="fw-medium">Insurance Claim (auto-calculated)</label>
-          <input
-            type="number"
-            class="form-control"
-            [value]="insuranceClaimAmount"
-            readonly
-          />
-        </div>
-
-        <!-- Patient Pays -->
-        <div *ngIf="!useInsurance" class="mb-3">
+     <div class="row">
+      <div class="col-6">
+  <div *ngIf="!useInsurance" class="mb-3">
           <label class="fw-medium">Patient Pays</label>
           <input
             type="number"
@@ -386,6 +381,32 @@
             placeholder="Enter amount patient pays"
           />
         </div>
+      </div>
+    
+      
+     </div>
+
+     <div class="row">
+        <div class="col-6">
+         <div *ngIf="useInsurance" class="mb-3">
+          <label class="fw-medium">Insurance Claim (auto-calculated)</label>
+          <input
+            type="number"
+            class="form-control"
+            [value]="insuranceClaimAmount"
+            readonly
+          />
+        </div>
+      </div>
+     </div>
+        <!-- Copay -->
+       
+
+        <!-- Auto-calculated Insurance Claim -->
+       
+
+        <!-- Patient Pays -->
+      
 
         <!-- Notes -->
         <div class="mb-3">
