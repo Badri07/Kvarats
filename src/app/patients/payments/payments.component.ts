@@ -16,7 +16,6 @@ import { products } from '../../../stripe-config';
   styleUrl: './payments.component.scss'
 })
 export class PaymentsComponent {
-  private supabase: SupabaseClient;
   private retryCount = 0;
   private maxRetries = 3;
   rowData: any[] = [];
