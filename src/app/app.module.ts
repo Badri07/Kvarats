@@ -1,4 +1,5 @@
 import { NgModule } from '@angular/core';
+import { NgxStripeModule } from '@stripe/stripe-angular';
 import { BrowserModule } from '@angular/platform-browser';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { AppRoutingModule } from './app-routing.module';
@@ -43,6 +44,7 @@ import { SuccessComponent } from './success/success.component';
     BrowserModule,
     BrowserAnimationsModule,
     AppRoutingModule,
+    NgxStripeModule.forRoot('pk_test_your_publishable_key_here'),
     ReactiveFormsModule,
     FormsModule,
     NgSelectModule,
