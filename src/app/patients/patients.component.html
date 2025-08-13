@@ -1,0 +1,125 @@
+<div style="background-color: #F9F4F1;">
+
+  <!-- Navbar -->
+  <nav class="flex justify-between items-center px-8 py-4 shadow" style="background-color: #FFFFFF;">
+    <div class="flex items-center space-x-2">
+      <!-- Logo -->
+      <img [src]="logo" alt="CareSlot Logo" class="w-40">
+    </div>
+
+    <ul class="flex space-x-6" style="color: #555555;">
+      <li>
+        <a
+          routerLink="dashboard"
+          routerLinkActive="active-menu"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="px-4 py-2 rounded hover:text-white hover:bg-[#FFA157] transition-colors">
+          Dashboard
+        </a>
+      </li>
+      <li>
+        <a
+          routerLink="patients-appointments"
+          routerLinkActive="active-menu"
+          class="px-4 py-2 rounded hover:text-white hover:bg-[#FFA157] transition-colors">
+          Appointment
+        </a>
+      </li>
+      <li>
+        <a
+          routerLink="payment"
+          routerLinkActive="active-menu"
+          class="px-4 py-2 rounded hover:text-white hover:bg-[#FFA157] transition-colors">
+          Payments
+        </a>
+      </li>
+      <li>
+        <a
+          routerLink="service"
+          routerLinkActive="active-menu"
+          class="px-3 py-1 rounded hover:text-white hover:bg-[#FFA157] transition-colors">
+          Service
+        </a>
+      </li>
+    </ul>
+
+    <!-- User avatar + name container wrapped in relative -->
+    <div class="relative" #menuToggle>
+      <div
+        class="flex items-center space-x-3 text-gray-800 cursor-pointer"
+        (click)="toggleMenu($event)">
+        <div class="w-8 h-8 rounded-full overflow-hidden">
+          <img
+            src="https://randomuser.me/api/portraits/women/31.jpg"
+            alt="User"
+            class="w-full h-full object-cover" />
+        </div>
+        <span>{{ userName }}</span>
+      </div>
+
+      <!-- Dropdown menu aligned relative to above container -->
+      <div
+        *ngIf="menuOpen"
+        class="absolute right-0 mt-2 w-96 bg-white border rounded shadow-lg z-50"
+        (click)="$event.stopPropagation()">
+        <div class="bg-white rounded-lg  p-6 shadow-lg relative w-full">
+          <!-- Close button -->
+          <button aria-label="Close" class="absolute top-4 right-4 text-black hover:text-gray-700">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
+          <!-- Email -->
+          <p class="text-center font-semibold mb-4 truncate text-black">{{email}}</p>
+
+          <!-- Profile image -->
+          <div class="flex justify-center mb-4 relative">
+            <img
+              src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&auto=format&fit=crop&w=64&q=80"
+              alt="Profile"
+              class="w-16 h-16 rounded-full object-cover" />
+            
+          </div>
+
+          <!-- Greeting -->
+          <h2 class="text-center text-xl font-semibold mb-4 text-black">Hi, {{ userName }}!</h2>
+
+          <!-- Manage Account Button -->
+          <button class="w-full border border-gray-400 rounded-full py-2 mb-6 text-black hover:bg-gray-100 transition">
+            Manage your Google Account
+          </button>
+
+          <!-- Actions -->
+          <div class="flex space-x-2">
+            <button
+              class="flex-1 bg-white border border-gray-300 rounded-full py-2 text-black hover:bg-gray-100 transition flex items-center justify-center space-x-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              <span>Add account</span>
+            </button>
+            <button (click)="logout()"
+              class="flex-1 bg-white border border-gray-300 rounded-full py-2 text-black hover:bg-gray-100 transition flex items-center justify-center space-x-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7" />
+              </svg>
+              <span>Sign out</span>
+            </button>
+          </div>
+
+          <!-- Footer -->
+          <p class="text-center text-xs text-gray-500 mt-6">
+            Privacy policy &middot; Terms of Service
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </nav>
+
+  <div class="patients-workspace">
+    <router-outlet></router-outlet>
+  </div>
+
+</div>

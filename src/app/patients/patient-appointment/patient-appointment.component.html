@@ -1,0 +1,87 @@
+  <!-- Appointment Section -->
+ <section
+  class="py-16 px-8 text-white flex flex-col items-center justify-center"
+  style="background: linear-gradient(to right, #FFA157, #FF9A3D);"
+>
+  <h1 class="text-3xl font-light text-center">
+    Book an <span class="font-semibold">appointment</span>
+  </h1>
+
+  <!-- Search Bar -->
+  <div
+    class="flex mt-6 rounded-lg overflow-hidden max-w-3xl shadow-lg"
+    style="background-color: #FFFFFF;"
+  >
+    <!-- Location -->
+    <select
+      class="px-4 py-3 text-gray-700 focus:outline-none"
+      style="color:#333;"
+    >
+      <option>Fresno</option>
+      <option>New York</option>
+      <option>Los Angeles</option>
+    </select>
+    <!-- Search -->
+    <input
+      type="text"
+      placeholder="Search doctors, clinics"
+      class="flex-grow px-4 py-3 focus:outline-none"
+      style="color:#333;"
+    />
+    <button
+      class="px-6 py-3 font-medium hover:opacity-90 transition"
+      style="background-color: #FFA157; color: white;"
+    >
+      Search
+    </button>
+  </div>
+
+  <!-- Chips -->
+  <div class="mt-4 text-sm" style="color: #FFF8F5;">
+    You may be looking for:
+    <span class="px-3 py-1 rounded-full text-xs ml-2" style="background-color: #E6933B;"
+      >Dermatologist</span
+    >
+    <span class="px-3 py-1 rounded-full text-xs ml-2" style="background-color: #E6933B;"
+      >Urologist</span
+    >
+  </div>
+</section>
+
+
+  <!-- Articles Section -->
+  <section class="px-8 py-12" style="background-color: #F9F4F1;">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-2xl font-semibold" style="color: #333333;">Top Articles from Health Experts</h2>
+      <a href="#" class="border px-4 py-2 rounded hover:bg-[#FFF5E5] transition" style="border-color: #FFA157; color: #FFA157;">
+        See all articles
+      </a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Article Card -->
+      <div class="rounded-lg overflow-hidden shadow" style="background-color: #FFFFFF;">
+        <img [src]="image" alt="Article" class="w-full h-40 object-cover" />
+        <div class="p-4">
+          <p class="text-xs uppercase font-semibold" style="color: #FFA157;">Vitamins and Supplements</p>
+          <h3 class="mt-1 font-medium" style="color: #333333;">
+            Eating Right to Build Immunity Against Cold and Viral Infections
+          </h3>
+        </div>
+      </div>
+      <!-- Article Card -->
+      <div class="rounded-lg overflow-hidden shadow" style="background-color: #FFFFFF;">
+        <img src="https://randomuser.me/api/portraits/women/31.jpg" alt="Article" class="w-full h-40 object-cover" />
+        <div class="p-4">
+          <p class="text-xs uppercase font-semibold" style="color: #FFA157;">Coronavirus</p>
+          <h3 class="mt-1 font-medium" style="color: #333333;">
+            12 Coronavirus Myths and Facts That You Should Be Aware Of
+          </h3>
+        </div>
+      </div>
+      <!-- Extra Placeholder Card -->
+      <div class="rounded-lg overflow-hidden shadow flex items-center justify-center" style="background-color: #FFFFFF; color: #AAA;">
+        More articles...
+      </div>
+    </div>
+  </section>

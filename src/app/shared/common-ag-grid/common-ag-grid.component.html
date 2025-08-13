@@ -1,0 +1,61 @@
+
+<div *ngIf="gridtable">
+<ag-grid-angular
+  class="ag-theme-alpine w-full"
+  [rowData]="rowData"
+  [columnDefs]="columnDefs"
+  [defaultColDef]="defaultColDef"
+  [gridOptions]="gridOptions"
+  [paginationPageSize]="paginationPageSize"
+  (cellClicked)="onCellClicked($event)"
+  (gridReady)="onGridReady($event)"
+  [style.height]="tableHeight"
+  style="width: 100%;">
+</ag-grid-angular>
+</div>
+
+
+<div *ngIf="IsshowPagination">
+<div class="bg-white rounded-b-xl border-t-0 border border-gray-200 shadow-sm">
+  <div class="flex flex-col md:flex-row justify-between items-center gap-4 px-4 py-3 border-t border-gray-200 text-sm text-gray-700">
+    <div class="flex flex-col md:flex-row items-center gap-4">
+      <div class="flex items-center gap-2">
+        <label for="pageSize" class="font-medium">Page Size:</label>
+        <select id="pageSize"
+                [(ngModel)]="paginationPageSize"
+                (change)="onPageSizeChanged(paginationPageSize)"
+                class="border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-orange-500">
+          <option *ngFor="let size of paginationPageSizeSelector" [value]="size">{{ size }}</option>
+        </select>
+      </div>
+
+      <div>
+        Showing <span class="font-semibold">{{ pageStart }}</span> to
+        <span class="font-semibold">{{ pageEnd }}</span> of
+        <span class="font-semibold">{{ totalCount }}</span> records
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2 ml-auto">
+      <button (click)="goToPreviousPage()"
+              [disabled]="currentPage === 1"
+              class="px-4 py-1.5 rounded bg-orange-500 text-white disabled:bg-gray-300 disabled:cursor-not-allowed">
+        Previous
+      </button>
+
+      <span>
+        Page <span class="font-semibold">{{ currentPage }}</span> of
+        <span class="font-semibold">{{ totalPages }}</span>
+      </span>
+
+      <button (click)="goToNextPage()"
+              [disabled]="currentPage === totalPages"
+              class="px-4 py-1.5 rounded bg-orange-500 text-white disabled:bg-gray-300 disabled:cursor-not-allowed">
+        Next
+      </button>
+    </div>
+
+  </div>
+</div>
+</div>
+

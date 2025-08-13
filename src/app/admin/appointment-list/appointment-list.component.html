@@ -1,0 +1,551 @@
+
+
+<div class="dashboard-container">
+<div class="container mx-auto p-1">
+<h4 class="text-2xl font-semibold  text-primary-border-color">Appointment List</h4>
+
+
+<!-- 
+<div class="w-full flex justify-end">
+<div class="mb-2">
+    <div class="relative flex items-center">
+      <input
+        type="text"
+        id="searchInput"
+        class="w-full px-4 m-2 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-[#3863A7] focus:border-transparent"
+        [(ngModel)]="searchValue"
+        (input)="onQuickFilterChanged()"
+        placeholder="Search patients...">
+      <button
+        class="px-4 py-2 bg-gray-100 text-gray-600 border border-l-0 border-gray-300 rounded-r-lg hover:bg-[#3863A7] hover:text-white transition-colors"
+        *ngIf="searchValue"
+        (click)="searchValue=''; onQuickFilterChanged()">
+        Clear
+      </button>
+    </div>
+  </div>
+
+   </div>
+<ag-grid-angular
+    class="ag-theme-alpine custom-grid-theme"
+    style="width: 100%; height: 300px;"
+    [columnDefs]="columnDefs"
+    [rowData]="rowData"
+    [pagination]="true"
+   [paginationPageSize]="paginationPageSize"
+  [paginationPageSizeSelector]="paginationPageSizeSelector"
+    (gridReady)="onGridReady($event)"
+    [quickFilterText]="searchValue"
+>
+</ag-grid-angular>
+ -->
+
+ <div class=" mt-1">
+   <div class="mt-4 rounded-xl bg-white">
+     <div class="flex gap-2 justify-between mb-3">
+      <div class="relative flex items-center">
+      <input
+        type="text"
+        id="searchInput"
+        class="w-full px-4 m-2 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-primary-border-color focus:border-transparent"
+        [(ngModel)]="searchValue"
+        (input)="onQuickFilterChanged()"
+        placeholder="Search patients...">
+      <button
+        class="px-4 py-2 bg-gray-100 text-gray-600 border border-l-0 border-gray-300 rounded-r-lg hover:bg-primary-border-color hover:text-white transition-colors"
+        *ngIf="searchValue"
+        (click)="searchValue=''; onQuickFilterChanged()">
+        Clear
+      </button>
+    </div>
+    
+ <button 
+  class="flex items-center gap-2 px-2.5 py-1 border border-green-600 text-green-600 rounded-md text-sm hover:bg-green-600 hover:text-white transition"
+  (click)="onExportClick()"
+>
+  <i class="fas fa-file-excel text-sm"></i>
+  <span>Export Excel</span>
+</button>
+
+</div>
+
+  
+
+<ag-grid-angular
+  class="ag-theme-alpine ag-theme-custom"
+  [gridOptions]="gridOptions"
+  [rowData]="rowData"
+  [columnDefs]="columnDefs"
+  [defaultColDef]="defaultColDef"
+  [pagination]="true"
+  [paginationPageSize]="paginationPageSize"
+  (cellClicked)="onCellClicked($event)"
+  style="width: 100%; height: 500px;">
+</ag-grid-angular>
+
+
+</div>
+
+  </div>
+
+</div>
+</div>
+
+
+
+
+<div
+  *ngIf="show"
+  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+  (click)="onBackdropClick($event)"
+>
+  <!-- Modal Content -->
+  <div
+    class="bg-white shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border"
+    style="border: 2px solid #FFA157; border-radius: 0 1rem 1rem 0;"
+    (click)="$event.stopPropagation()"
+  >
+    <!-- Modal Header -->
+    <div class="flex justify-between items-center p-6 border-b">
+      <h2 class="text-xl font-semibold text-gray-900">Create Appointment</h2>
+      <button
+        (click)="closeModal()"
+        class="text-gray-400 hover:text-gray-600 text-2xl font-bold"
+      >
+        ×
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="p-6">
+      <!-- Animated Tabs -->
+    <div class="animated-tabs w-full relative">
+  <!-- Slider -->
+  <div
+    class="slider absolute bottom-0 h-1 bg-[#FFA157] transition-all duration-300"
+    [style.width]="'50%'"
+    [style.left]="selectedTab === 'schedule' ? '0%' : '50%'"
+  ></div>
+
+  <!-- Tabs -->
+  <div class="flex w-full border-b border-gray-300">
+    <div
+      class="w-1/2 text-center py-3 font-medium cursor-pointer transition-all duration-300 backdrop-blur-md"
+      [ngClass]="{
+        'text-primary-table bg-[#FFA157]/10': selectedTab === 'schedule',
+        'text-gray-600': selectedTab !== 'schedule'
+      }"
+      (click)="setTab('schedule')"
+    >
+      <span>Schedule</span>
+    </div>
+    <div
+      class="w-1/2 text-center py-3 font-medium cursor-pointer transition-all duration-300 backdrop-blur-md"
+      [ngClass]="{
+        'text-primary-table bg-[#FFA157]/10': selectedTab === 'transactions',
+        'text-gray-600': selectedTab !== 'transactions'
+      }"
+      (click)="setTab('transactions')"
+    >
+      <span>Transactions</span>
+    </div>
+  </div>
+</div>
+
+      <!-- Schedule Tab Content -->
+      <div *ngIf="selectedTab === 'schedule'">
+        <form [formGroup]="appointmentForm">
+          <div class="row mt-4">
+            <!-- Therapist -->
+            <div class="col-md-4 col-sm-6">
+              <label class="fw-medium">Therapist *</label>
+              <select
+                class="form-select mt-1"
+                formControlName="therapistInput"
+                (change)="generateTimeSlotsForSelectedTherapist()"
+              >
+<option selected disabled value="">Select therapist</option>                <option
+                  *ngFor="let therapist of therapistList"
+                  [value]="therapist.id"
+                >
+                  {{ therapist.firstName }} {{therapist.lastName}}
+                </option>
+              </select>
+              <div
+                *ngIf="
+                  appointmentForm.get('therapistInput')?.invalid &&
+                  appointmentForm.get('therapistInput')?.touched
+                "
+                class="text-red-500 text-sm mt-1"
+              >
+                Therapist is required
+              </div>
+            </div>
+
+            <!-- Appointment Type -->
+            <div class="col-md-4 col-sm-6">
+              <label class="fw-medium">Appointment Type *</label>
+              <select
+                class="form-select mt-1"
+                formControlName="appointmentTypeInput"
+              >
+                <option value="" disabled selected>Select</option>
+                <option
+                  *ngFor="let item of appointmentTypeOptions"
+                  [value]="item.id"
+                >
+                  {{ item.value }}
+                </option>
+              </select>
+              <div
+                *ngIf="
+                  appointmentForm.get('appointmentTypeInput')?.invalid &&
+                  appointmentForm.get('appointmentTypeInput')?.touched
+                "
+                class="text-red-500 text-sm mt-1"
+              >
+                Appointment type is required
+              </div>
+            </div>
+
+            <!-- Patient -->
+         <div class="col-md-4 col-sm-6">
+      <label class="fw-medium">Patients *</label>
+      <select class="form-select" formControlName="patientId">
+        <option value="" disabled selected>Select</option>
+ <option *ngFor="let item of PatientsListOptions" [value]="item.id">
+    {{ item.firstName}} {{item.lastName}}
+  </option>      </select>
+    </div>
+          </div>
+
+          <div class="row mt-3">
+            <!-- Date -->
+            <div class="col-md-4 col-sm-6">
+              <label class="fw-medium">Date *</label>
+              <input
+                type="date"
+                class="form-control mt-1"
+                formControlName="date"
+              />
+              <div
+                *ngIf="
+                  appointmentForm.get('date')?.invalid &&
+                  appointmentForm.get('date')?.touched
+                "
+                class="text-red-500 text-sm mt-1"
+              >
+                Date is required
+              </div>
+            </div>
+
+
+
+            <!-- Time Dropdowns -->
+            <div class="col-md-4 col-sm-6">
+              <label class="fw-medium">Time *</label>
+              <div class="d-flex gap-2 mt-1">
+               <select class="form-select" formControlName="startTime" (change)="onStartTimeChange()">
+  <option value="" disabled>start time</option>
+  <option *ngFor="let time of availableStartTimes" [value]="time">{{ time }}</option>
+</select>
+
+                <span class="align-self-center">-</span>
+        <input required class="form-control" type="text" [attr.list]="'endTimesList'" formControlName="endTime" readonly (mousedown)="$event.preventDefault()" />
+
+<datalist id="endTimesList">
+  <option *ngFor="let time of availableEndTimes" [value]="time"></option>
+</datalist>
+
+
+              </div>
+              <div
+                *ngIf="
+                  (appointmentForm.get('startTime')?.invalid &&
+                    appointmentForm.get('startTime')?.touched) ||
+                  (appointmentForm.get('endTime')?.invalid &&
+                    appointmentForm.get('endTime')?.touched)
+                "
+                class="text-red-500 text-sm mt-1"
+              >
+                Time is required
+              </div>
+            </div>
+
+            <!-- Meeting Type -->
+            <div class="col-md-4 col-sm-6">
+              <label class="fw-medium">Meeting Type *</label>
+              <select
+                class="form-select mt-1"
+                formControlName="meetingTypeInput"
+              >
+                <option value="" disabled selected>Select</option>
+                <option
+                  *ngFor="let item of meetingTypeOptions"
+                  [value]="item.id"
+                >
+                  {{ item.value }}
+                </option>
+              </select>
+              <div
+                *ngIf="
+                  appointmentForm.get('meetingTypeInput')?.invalid &&
+                  appointmentForm.get('meetingTypeInput')?.touched
+                "
+                class="text-red-500 text-sm mt-1"
+              >
+                Meeting type is required
+              </div>
+            </div>
+          </div>
+
+          <!-- Repeat Options -->
+          <div class="mt-4 p-3 border rounded bg-light">
+            <div class="row g-3 mt-2">
+              <div class="col-md-4">
+                <label class="mb-2">Repeat Every</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  formControlName="repeatEvery"
+                  min="1"
+                />
+              </div>
+              <div class="col-md-4">
+                <label class="mb-2">Repeat Period</label>
+                <select class="form-select ms-2" formControlName="repeatPeriod">
+                  <option value="Day">Day</option>
+                  <option value="Week">Week</option>
+                  <option value="Month">Month</option>
+                </select>
+              </div>
+
+              <div class="col-md-4">
+                <label class="mb-2">End date</label>
+                <input
+                  type="date"
+                  class="form-control"
+                  formControlName="endDate"
+                />
+              </div>
+            </div>
+
+            <div class="row mt-3">
+              <label class="mb-2">Repeat Day</label>
+              <div class="col-4 flex flex-wrap gap-2 items-center">
+                <button
+                  *ngFor="let day of weekDays"
+                  type="button"
+                  class="px-3 py-1 rounded-common-border-radius text-sm font-medium"
+                  [ngClass]="{
+                    'bg-[#FFA157] text-white': isDaySelected(day),
+                    'border border-primary-border-color text-[#FFA157] bg-white':
+                      !isDaySelected(day)
+                  }"
+                  (click)="toggleRepeatDay(day)"
+                >
+                  {{ day.charAt(0) }}
+                </button>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-12">
+                <div class="mt-3">
+                  <input
+                    class="m-2"
+                    type="checkbox"
+                    id="repeat"
+                    formControlName="repeat"
+                  />
+                  <label class="form-check-label" for="repeat">Repeat</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Notes -->
+          <div class="mt-3">
+            <label class="fw-medium">Appointment Notes</label>
+            <textarea
+              class="form-control mt-1"
+              rows="3"
+              formControlName="notes"
+            ></textarea>
+          </div>
+        </form>
+      </div>
+
+      <!-- Transactions Tab Content -->
+      <div *ngIf="selectedTab === 'transactions'">
+        
+        <div class="row mt-4">
+          <div class="col-6">
+          <div class="mb-3">
+          <label class="fw-medium">Total Amount</label>
+          <input
+            type="number"
+            class="form-control"
+            [(ngModel)]="totalAmount"
+            name="totalAmount"
+            placeholder="Enter total amount"
+            (ngModelChange)="recalculateInsuranceClaim()"
+          />
+        </div>
+          </div>
+
+           <div class="col-6">
+ <div *ngIf="slidingScalesList.length > 0" class="mb-3">
+          <label class="fw-medium">Apply Sliding Scale</label>
+          <select
+            class="form-select"
+            [(ngModel)]="selectedSlidingScaleId"
+            name="slidingScale"
+            (ngModelChange)="recalculateInsuranceClaim()"
+          >
+            <option value="" disabled>Select Sliding Scale</option>
+            <option *ngFor="let scale of slidingScalesList" [value]="scale.id">
+              {{ scale.discountPercentage }}% Discount (Income:
+              {{ scale.minIncome }} - {{ scale.maxIncome }})
+            </option>
+          </select>
+        </div>
+      </div>
+
+        
+        </div>
+        
+     <div class="row">   
+        <div class="form-check form-switch mb-3">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            id="useInsurance"
+            [(ngModel)]="useInsurance"
+            (change)="onInsuranceToggle($event)"
+          />
+          <label class="form-check-label fw-medium" for="useInsurance"
+            >Use Insurance</label
+          >
+        </div>
+     </div>
+ 
+     <div class="row">
+       <div class="col-6">
+          <div *ngIf="useInsurance && insuranceList.length > 0" class="mb-3">
+          <label class="fw-medium">Insurance Provider</label>
+          <select 
+              class="form-select"
+              [(ngModel)]="selectedInsuranceId" 
+              name="selectedInsurance"
+              (change)="onInsuranceChange($event)">
+          <option value="" disabled>Select Insurance</option>
+          <option *ngFor="let insurance of insuranceList" [value]="insurance.id">
+
+                {{ insurance.insuranceCarrierName }}
+          </option>
+          </select>
+          </div>
+          </div>
+
+      <div class="col-6">
+ <div *ngIf="useInsurance" class="mb-3">
+          <label class="fw-medium">Copay</label>
+          <input
+            type="number"
+            class="form-control"
+            [(ngModel)]="copayAmount"
+            name="copayAmount"
+            placeholder="Enter copay amount"
+            (ngModelChange)="recalculateInsuranceClaim()"
+          />
+        </div>
+      </div>
+     </div>
+       
+
+     <div class="row">
+      <div class="col-6">
+  <div *ngIf="!useInsurance" class="mb-3">
+          <label class="fw-medium">Patient Pays</label>
+          <input
+            type="number"
+            class="form-control"
+            [(ngModel)]="patientPaysAmount"
+            name="patientPaysAmount"
+            placeholder="Enter amount patient pays"
+          />
+        </div>
+      </div>
+    
+      
+     </div>
+
+     <div class="row">
+        <div class="col-6">
+         <div *ngIf="useInsurance" class="mb-3">
+          <label class="fw-medium">Insurance Claim (auto-calculated)</label>
+          <input
+            type="number"
+            class="form-control"
+            [value]="insuranceClaimAmount"
+            readonly
+          />
+        </div>
+      </div>
+     </div>
+        <!-- Copay -->
+       
+
+        <!-- Auto-calculated Insurance Claim -->
+       
+
+        <!-- Patient Pays -->
+      
+
+        <!-- Notes -->
+        <div class="mb-3">
+          <label class="fw-medium">Notes</label>
+          <textarea
+            class="form-control"
+            [(ngModel)]="transactionNotes"
+            name="transactionNotes"
+            rows="2"
+            placeholder="Optional notes..."
+          ></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="flex justify-end space-x-3 p-6 border-t bg-gray-50">
+      <button type="button" class="customBtn" (click)="closeModal()">
+        Cancel
+      </button>
+
+      <!-- Show Next on Schedule -->
+      <button
+        *ngIf="selectedTab === 'schedule'"
+        type="button"
+        (click)="setTab('transactions')"
+        class="customBtn-secondary"
+      
+        [disabled]="appointmentForm.invalid"
+      >
+        Next
+      </button>
+
+      <!-- Show Create Appointment on Transactions -->
+      <button
+        *ngIf="selectedTab === 'transactions'"
+        type="button"
+        (click)="onSubmit()"
+        class="px-4 py-2 text-white rounded-md font-medium"
+        style="background-color: #FFA157;"
+        [disabled]="appointmentForm.invalid"
+      >
+        Update Appointment
+      </button>
+    </div>
+  </div>
+</div>

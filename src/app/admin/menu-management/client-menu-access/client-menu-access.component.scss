@@ -1,0 +1,15 @@
+/* Custom ng-select styling */
+.custom-ng-select .ng-select-container {
+  min-height: 38px;
+  border: 1px solid #d1d5db; /* gray-300 */
+  background-color: white;
+}
+
+.custom-ng-select .ng-dropdown-panel {
+  background-color: white;
+  border: 1px solid #d1d5db;
+}
+
+.custom-ng-select .ng-option {
+  padding: 8px 12px;
+}

@@ -1,0 +1,26 @@
+.animated-tabs .slider{
+  width: 40%;
+}
+
+/* Status colors */
+.text-success { color: #10b981; }
+.text-danger { color: #ef4444; }
+.text-warning { color: #f59e0b; }
+.text-muted { color: #6b7280; }
+ 
+.bg-success-100 { background-color: #dcfce7; }
+.text-success-800 { color: #166534; }
+ 
+.bg-warning-100 { background-color: #fef3c7; }
+.text-warning-800 { color: #92400e; }
+ 
+.bg-danger-100 { background-color: #fee2e2; }
+.text-danger-800 { color: #991b1b; }
+ 
+.bg-info-100 { background-color: #dbeafe; }
+.text-info-800 { color: #1e40af; }
+ 
+/* Interactive elements */
+.hover\:bg-primary:hover { background-color: #2563eb; }
+.hover\:bg-primary-dark:hover { background-color: #1d4ed8; }
+.transition-colors { transition: background-color 0.2s ease; }
