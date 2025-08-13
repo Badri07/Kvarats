@@ -69,7 +69,7 @@
                 formControlName="therapistInput"
                 (change)="generateTimeSlotsForSelectedTherapist()"
               >
-<option selected disabled value="">Select therapist</option>                <option
+<option selected  value="">Select therapist</option>                <option
                   *ngFor="let therapist of therapistList"
                   [value]="therapist.id"
                 >
@@ -94,7 +94,7 @@
                 class="form-select mt-1"
                 formControlName="appointmentTypeInput"
               >
-                <option value="" disabled selected>Select</option>
+                <option value=""  selected>Select</option>
                 <option
                   *ngFor="let item of appointmentTypeOptions"
                   [value]="item.id"
@@ -117,7 +117,7 @@
          <div class="col-md-4 col-sm-6">
       <label class="fw-medium">Patients *</label>
       <select class="form-select" formControlName="patientId">
-        <option value="" disabled selected>Select</option>
+        <option value=""  selected>Select</option>
  <option *ngFor="let item of PatientsListOptions" [value]="item.id">
     {{ item.firstName}} {{item.lastName}}
   </option>      </select>
@@ -151,7 +151,7 @@
               <label class="fw-medium">Time *</label>
               <div class="d-flex gap-2 mt-1">
                <select class="form-select" formControlName="startTime" (change)="onStartTimeChange()">
-  <option value="" disabled>start time</option>
+  <option value="" >start time</option>
   <option *ngFor="let time of availableStartTimes" [value]="time">{{ time }}</option>
 </select>
 
@@ -184,7 +184,7 @@
                 class="form-select mt-1"
                 formControlName="meetingTypeInput"
               >
-                <option value="" disabled selected>Select</option>
+                <option value=""  selected>Select</option>
                 <option
                   *ngFor="let item of meetingTypeOptions"
                   [value]="item.id"
@@ -203,9 +203,31 @@
               </div>
             </div>
           </div>
-
+ <div class="row mt-2">
+  <div class="col-12">
+    <div class="mt-3 flex items-center">
+      <label class="relative inline-flex items-center cursor-pointer">
+        <input 
+          type="checkbox" 
+          formControlName="repeat"
+          class="sr-only peer" 
+        />
+        <div 
+          class="w-11 h-6 bg-gray-200 rounded-full 
+                 peer peer-checked:bg-orange-500 
+                 peer-focus:ring-2 peer-focus:ring-orange-400 
+                 after:content-[''] after:absolute after:top-[2px] after:left-[2px] 
+                 after:bg-white after:border-gray-300 after:border 
+                 after:rounded-full after:h-5 after:w-5 after:transition-all 
+                 peer-checked:after:translate-x-full">
+        </div>
+      </label>
+      <span class="ml-3 text-gray-700 font-medium">Repeat</span>
+    </div>
+  </div>
+</div>
           <!-- Repeat Options -->
-          <div class="mt-4 p-3 border rounded bg-light">
+          <div class="mt-4 p-3 border rounded bg-light" *ngIf="appointmentForm.get('repeat')?.value">
             <div class="row g-3 mt-2">
               <div class="col-md-4">
                 <label class="mb-2">Repeat Every</label>
@@ -254,19 +276,10 @@
               </div>
             </div>
 
-            <div class="row">
-              <div class="col-12">
-                <div class="mt-3">
-                  <input
-                    class="m-2"
-                    type="checkbox"
-                    id="repeat"
-                    formControlName="repeat"
-                  />
-                  <label class="form-check-label" for="repeat">Repeat</label>
-                </div>
-              </div>
-            </div>
+           
+
+
+            
           </div>
 
           <!-- Notes -->
@@ -308,7 +321,7 @@
             name="slidingScale"
             (ngModelChange)="recalculateInsuranceClaim()"
           >
-            <option value="" disabled>Select Sliding Scale</option>
+            <option value="" >Select Sliding Scale</option>
             <option *ngFor="let scale of slidingScalesList" [value]="scale.id">
               {{ scale.discountPercentage }}% Discount (Income:
               {{ scale.minIncome }} - {{ scale.maxIncome }})
@@ -344,7 +357,7 @@
               [(ngModel)]="selectedInsuranceId" 
               name="selectedInsurance"
               (change)="onInsuranceChange($event)">
-          <option value="" disabled>Select Insurance</option>
+          <option value="" >Select Insurance</option>
           <option *ngFor="let insurance of insuranceList" [value]="insurance.id">
 
                 {{ insurance.insuranceCarrierName }}
@@ -430,15 +443,15 @@
 
       <!-- Show Next on Schedule -->
       <button
-        *ngIf="selectedTab === 'schedule'"
-        type="button"
-        (click)="setTab('transactions')"
-        class="customBtn-secondary"
-      
-        [disabled]="appointmentForm.invalid"
-      >
-        Next
-      </button>
+  *ngIf="selectedTab === 'schedule'"
+  type="button"
+  (click)="setTab('transactions')"
+  class="customBtn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
+  [disabled]="appointmentForm.invalid"
+>
+  Next
+</button>
+
 
       <!-- Show Create Appointment on Transactions -->
       <button

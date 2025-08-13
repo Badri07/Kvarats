@@ -22,6 +22,10 @@ export class AuthGuard implements CanActivate {
       if (role === 'SuperAdmin' ||role === 'Admin' || role === 'Therapist') {
         return true;
       }
+       const patientToken = localStorage.getItem('tokenPatients');
+        if (patientToken) {
+          return this.router.parseUrl('/patient/dashboard');
+        }
     }
 
     // redirect to login if token is missing, expired, or role is invalid

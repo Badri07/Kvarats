@@ -6,10 +6,10 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        "primary-border-color": "#F97316",
+        "primary-border-color": "#ffa157",
         "primary-grey-50": "rgba(44, 44, 44, 0.86)",
         "secondary-grey-100": "#2C2C2C",
-        "primary-orange": "#F97316",
+        "primary-orange": "#ffa157",
         "primary-white": "#ffff",
         "primary-table": "#f5f5f5",
         "secondary-table": "#eee",
@@ -20,7 +20,7 @@ module.exports = {
         'status-busy': '#EF4444',
         'status-away': '#F59E0B',
         'status-offline': '#6B7280',
-        'text-orange':'#F97316'
+        'text-orange':'#ffa157'
         // 'primary-border-color': '#D1D5DB'
       },
       gridTemplateColumns: {

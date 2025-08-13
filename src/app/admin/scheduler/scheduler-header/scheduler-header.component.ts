@@ -83,7 +83,7 @@ export class SchedulerHeaderComponent {
   // Transaction tab properties
   totalAmount: number = 0;
   useInsurance: boolean = false;
-  selectedInsuranceId: any = '';
+  selectedInsuranceId: any = null;
   selectedSlidingScaleId: string = '';
   copayAmount: number = 0;
   insuranceClaimAmount: number = 0;
@@ -94,8 +94,7 @@ export class SchedulerHeaderComponent {
    selectedInsurance: any = null;
 
    slidingScalesList:any=[];
-   selectedPatient:any;
-
+   selectedPatient:any
   public _service = inject(AdminService);
   public toastr = inject(TosterService);
   constructor(
@@ -186,6 +185,11 @@ this._service.getSlidingScales().subscribe(data => this.slidingScalesList = data
     this.selectedTab = tab;
   }
 
+  onNext(){
+    debugger
+    this.selectedTab = 'transactions'
+  }
+
   // ngOnChanges(changes: SimpleChanges) {
   //   if (changes['schedulerEvent'] && this.schedulerEvent?.date) {
   //     this.fetchTherapistsByDate(new Date(this.schedulerEvent.date)).then(() =>
@@ -221,8 +225,9 @@ this._service.getSlidingScales().subscribe(data => this.slidingScalesList = data
   }
 
   fetchAllPatients(): void {
-    this.schedulerService.getAllPatientsList().subscribe((patients) => {
-      this.PatientsListOptions = patients;
+    this.schedulerService.getAllPatientsList().subscribe((patients:any) => {
+      this.PatientsListOptions = patients.data;
+      console.log("PatientsListOptionsPatientsListOptionsPatientsListOptions",this.PatientsListOptions);      
       this.appointmentForm.get('patientId');
     });
   }

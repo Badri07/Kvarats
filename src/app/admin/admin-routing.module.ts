@@ -26,6 +26,12 @@ import { InvoiceComponent } from './Billing/invoice/invoice.component';
 import { InvoiceDetailsComponent } from './Billing/invoice/invoice-details/invoice-details.component';
 import { SuperbillsComponent } from './superbills/superbills.component';
 import { SlidingscaleComponent } from './slidingscale/slidingscale.component';
+import { PatientInsurancesComponent } from './patient-insurances/patient-insurances.component';
+import { MenuManagementComponent } from './menu-management/menu-management.component';
+import { MenuListComponent } from './menu-management/menu-list/menu-list.component';
+import { ClientMenuAccessComponent } from './menu-management/client-menu-access/client-menu-access.component';
+import { MenuModalComponent } from './menu-management/menu-modal/menu-modal.component';
+import { AppointmentListComponent } from './appointment-list/appointment-list.component';
 
 
 const routes: Routes = [
@@ -44,12 +50,14 @@ const routes: Routes = [
       { path: 'patients/add-patients', component: AddPatientsComponent, canActivate: [AuthGuard] },
       { path: 'patients/add-patients/:id', component: AddPatientsComponent, canActivate: [AuthGuard] },
       { path: 'patients/patient-assessments', component: ListPatientAssessmentsComponent, canActivate: [AuthGuard] },
-      { path: 'patients/assessment/:id', component: PatientsComponent },
+      { path: 'patients/assessment/:patientId/:id', component: PatientsComponent,canActivate: [AuthGuard] },
       { path: 'patients/patient-assessments/assessment-versions/:patientId', component: AssessmentVersionsComponent, canActivate: [AuthGuard] },
+      { path: 'patients/insurances', component: PatientInsurancesComponent, canActivate: [AuthGuard] },
 
       // Appointments
       { path: 'appointments/availability', component: AvailabilityComponent, canActivate: [AuthGuard] },
       { path: 'appointments/add', component: CalendarSchedulerComponent, canActivate: [AuthGuard] },
+      { path: 'appointments/list', component: AppointmentListComponent, canActivate: [AuthGuard] },
 
       // Transactions
       { path: 'transactions', component: TransactionsComponent, canActivate: [AuthGuard] },
@@ -77,6 +85,12 @@ const routes: Routes = [
       { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] },
       { path: 'quicks-books', component: QuicksbooksConnectionComponent, canActivate: [AuthGuard] },
       { path: 'clients/add', component: AddClientsComponent, canActivate: [AuthGuard] },
+
+      //Menu-management
+      {path:'menu-management',component:MenuManagementComponent,canActivate:[AuthGuard]},
+      {path:'menu-management/menu-list',component:MenuListComponent, canActivate:[AuthGuard]},
+      {path:'menu-management/client-menu-access',component:ClientMenuAccessComponent, canActivate:[AuthGuard]},
+      {path:'menu-management/menu-modal',component:MenuModalComponent,canActivate:[AuthGuard]},
     ]
   },
 ];

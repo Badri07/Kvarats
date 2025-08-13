@@ -5,6 +5,7 @@ import { TosterService } from '../../../service/toaster/tostr.service';
 import { PopupService } from '../../../service/popup/popup-service';
 import { AuthService } from '../../../service/auth/auth.service';
 import { LoginResponse } from '../../../models/user-model';
+import { PatientService } from '../../../service/patient/patients-service';
 
 @Component({
   selector: 'app-patient-login',
@@ -20,7 +21,7 @@ export class PatientLoginComponent {
   loginSubmitted:boolean =false;
 
 
-    imageList: string[] = [
+   imageList: string[] = [
   'images/undraw_doctor_aum1.svg',
   '/images/undraw_doctors_djoj.svg',
   '/images/undraw_medical-care_7m9g.svg',
@@ -30,9 +31,10 @@ export class PatientLoginComponent {
   intervalId: any; 
 
 
-  public _authservice = inject(AuthService);
+  public _patientService = inject(PatientService);
   public router = inject(Router);
   public toastr = inject(TosterService);
+  public authservice = inject(AuthService);
 
   constructor(private _loader:PopupService
   ){
@@ -108,14 +110,37 @@ onFileSelected(event: Event): void {
     return
   }
   else{
-       this.showInitialPopup = true
-       if(this.userChoice = 'uploadPdf'){
-        this.showPdfUploadPopup = true;
-       }
-       else{
-        // this.ass = true;
-       }
-  }
+ const data: any = {
+      usernameOrEmail: this.patientsLoginForm.get('usernameOrEmail')?.value,
+      password: this.patientsLoginForm.get('password')?.value
+    };
+
+    this._patientService.patientLogIn(data).subscribe({
+      next: (res: any) => {
+        // console.log("res",res.message);
+         this._loader.hide();
+        let getToken = res.data.token;
+        const user: any = res.user;
+        this.toastr.success(res.message);
+        localStorage.setItem('tokenPatients', getToken!);
+        var getUserRole = this.authservice.getPatientRole();
+        if (getUserRole === 'Patient') {
+          this.router.navigate(['/patient/dashboard']);
+        }
+      },
+      error: ((err:any) => {
+         this._loader.hide();
+        if (err.status === 401) {
+          const errorMessage = err.error?.message;
+          this.toastr.error(errorMessage);
+        } else {
+          const errorMessage = err.error?.message;
+          this.toastr.error(errorMessage);
+        }
+      })
+    });
+
+}
 }
   prevImage() {
   this.currentIndex = (this.currentIndex - 1 + this.imageList.length) % this.imageList.length;
@@ -129,4 +154,17 @@ nextImage() {
 get loginUser():{[key:string]:AbstractControl}{
     return this.patientsLoginForm.controls
   }
+
+  showPassword: boolean = false;
+
+togglePasswordVisibility() {
+  this.showPassword = !this.showPassword;
+}
+
+PasswordValue: any = '';
+
+onPasswordInput(){
+  const control = this.patientsLoginForm.get('password');
+  this.PasswordValue = control?.value || '';
+}
 }

@@ -38,7 +38,11 @@ ChartJS.register(
   styleUrl: './dashboard.component.scss'
 })
 export class DashboardComponent {
+//  userName: string = 'Sarah';
+  currentDate: Date = new Date();
 
+  IsshowPagination:boolean = false;
+  tableHeight:string = '300px';
 
   public _authService = inject(AuthService);
   public breadcrumbService = inject(BreadcrumbService);
@@ -169,10 +173,191 @@ ngDestroy(){
 
 
   getUserName(){
-    
+    debugger
     this.userName = this._authService.getUsername();
     console.log();
     
   }
+users = [
+  {
+    doctor: {
+      name: 'Dr. John Smith',
+      specialization: 'Neurosurgeon',
+      avatar: 'https://randomuser.me/api/portraits/men/11.jpg',
+    },
+    patient: {
+      name: 'Jesus Adams',
+      phone: '+1 41254 45214',
+    },
+    dateTime: '28 May 2025 - 11:15 AM',
+    mode: 'Online',
+    status: 'Confirmed',
+  },
+  {
+    doctor: {
+      name: 'Dr. Lisa White',
+      specialization: 'Oncologist',
+      avatar: 'https://randomuser.me/api/portraits/women/45.jpg',
+    },
+    patient: {
+      name: 'Ezra Belcher',
+      phone: '+1 65895 41247',
+    },
+    dateTime: '29 May 2025 - 11:30 AM',
+    mode: 'In-Person',
+    status: 'Cancelled',
+  },
+  {
+    doctor: {
+      name: 'Dr. Patricia Brown',
+      specialization: 'Pulmonologist',
+      avatar: 'https://randomuser.me/api/portraits/women/68.jpg',
+    },
+    patient: {
+      name: 'Glen Lentz',
+      phone: '+1 62458 45845',
+    },
+    dateTime: '30 May 2025 - 09:30 AM',
+    mode: 'Online',
+    status: 'Confirmed',
+  },
+  {
+    doctor: {
+      name: 'Dr. Rachel Green',
+      specialization: 'Urologist',
+      avatar: 'https://randomuser.me/api/portraits/women/25.jpg',
+    },
+    patient: {
+      name: 'Bernard Griffith',
+      phone: '+1 61422 45214',
+    },
+    dateTime: '30 May 2025 - 10:00 AM',
+    mode: 'Online',
+    status: 'Checked Out',
+  },
+  {
+    doctor: {
+      name: 'Dr. Michael Smith',
+      specialization: 'Cardiologist',
+      avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
+    },
+    patient: {
+      name: 'John Elsass',
+      phone: '+1 47851 26371',
+    },
+    dateTime: '30 May 2025 - 11:00 AM',
+    mode: 'Online',
+    status: 'Schedule',
+  }
+];
+
+
+columnDefs: any = [
+  {
+    headerCheckboxSelection: true,
+    checkboxSelection: true,
+    field: 'checkbox',
+    width: 40,
+    pinned: 'left',
+    cellClass: 'no-focus-style'
+  },
+  {
+    headerName: 'Doctor',
+    field: 'doctor.name',
+    flex: 1.5,
+    cellRenderer: (params: any) => {
+      const doctor = params.data.doctor;
+      return `
+        <div class="flex items-center gap-2">
+          <img src="${doctor.avatar}" class="rounded-full w-8 h-8" />
+          <div>
+            <div class="">${doctor.name}</div>
+            <div class="text-xs text-gray-500">${doctor.specialization}</div>
+          </div>
+        </div>
+      `;
+    },
+  },
+  {
+    headerName: 'Patient',
+    field: 'patient.name',
+    flex: 1.2,
+    cellRenderer: (params: any) => {
+      const patient = params.data.patient;
+      return `
+        <div>
+          <div class="">${patient.name}</div>
+          <div class="text-xs text-gray-500">${patient.phone}</div>
+        </div>
+      `;
+    },
+  },
+  {
+    headerName: 'Date & Time',
+    field: 'dateTime',
+    flex: 1,
+  },
+  {
+    headerName: 'Mode',
+    field: 'mode',
+    flex: 0.8,
+  },
+  {
+  headerName: 'Status',
+  field: 'status',
+  flex: 1,
+  cellRenderer: (params: any) => {
+    const status = params.value;
+
+    const statusStyles: Record<string, string> = {
+      'Confirmed': 'text-green-700 border-green-600 bg-green-100',
+      'Cancelled': 'text-red-700 border-red-600 bg-red-100',
+      'Checked Out': 'text-cyan-700 border-cyan-600 bg-cyan-100',
+      'Schedule': 'text-blue-700 border-blue-600 bg-blue-100',
+    };
+
+    const styles = statusStyles[status] || 'text-gray-700 border-gray-500 bg-gray-100';
+
+    return `
+      <span class="px-3 py-1 rounded-md text-sm font-medium border ${styles}">
+        ${status}
+      </span>
+    `;
+  },
+}
+
+,
+  {
+    headerName: 'Actions',
+    field: 'actions',
+    flex: 0.8,
+    pinned: 'right',
+    cellRenderer: () => {
+      return `
+        <div class="flex gap-2">
+          <button class="text-orange-600 hover:underline" data-action="edit">
+            <i class="fa fa-edit"></i>
+          </button>
+          <button class="text-orange-600 hover:underline" data-action="delete">
+            <i class="fa fa-trash"></i>
+          </button>
+        </div>
+      `;
+    },
+  }
+];
+
+
+
+
+  editUser(id:string){
+
+  }
+  
+  onDelete(id:string){
+
+  }
+
+
 
 }

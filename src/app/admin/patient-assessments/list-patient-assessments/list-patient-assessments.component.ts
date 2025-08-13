@@ -14,23 +14,29 @@ import { BreadcrumbService } from '../../../shared/breadcrumb/breadcrumb.service
   standalone: false
 })
 export class ListPatientAssessmentsComponent {
+
+  defaultColDef = {
+    sortable: true,
+    filter: false,
+    resizable: true,
+  };
+
   columnDefs: ColDef[] = [
-    { field: 'fullName', headerName: 'Name', sortable: true, filter: true },
-    { field: 'phoneNumber', headerName: 'Phone', sortable: true, filter: true },
-    { field: 'email', headerName: 'Email', sortable: true, filter: true },
+    { field: 'fullName', headerName: 'Name', sortable: true },
+    { field: 'phoneNumber', headerName: 'Phone', sortable: true },
+    { field: 'email', headerName: 'Email', sortable: true },
+     { field: 'gender', headerName: 'Gender', sortable: true },
     {
-      headerName: 'DOB / Gender',
+      headerName: 'DOB',
       valueGetter: (params) => {
         const dob = this.formatDate(params.data.dateOfBirth);
-        const gender = params.data.gender || '';
-        return `${dob} / ${gender}`;
+        return `${dob}`;
       },
-      sortable: true,
-      filter: true
+      sortable: true
     },
     {
   headerName: 'Assessment Versions',
- cellRenderer: (params: ICellRendererParams) => {
+  cellRenderer: (params: ICellRendererParams) => {
   const id = params.data.id;
   setTimeout(() => {
     const btn = document.getElementById(`view-btn-${id}`);
@@ -62,8 +68,7 @@ export class ListPatientAssessmentsComponent {
 }
 ,
   cellStyle: { display: 'flex', justifyContent: 'center', alignItems: 'center' },
-  sortable: false,
-  filter: false
+  sortable: false
 }
 
   ];
@@ -101,26 +106,17 @@ export class ListPatientAssessmentsComponent {
   }
 
   onCellClicked(event: any): void {
-    
   const target = event.event?.target as HTMLElement;
   if (!target) return;
-
   const versionsBtn = target.closest('.assessment-versions-btn');
   if (versionsBtn) {
-    
-    // const assessmentId = event.data.assessmentId;
-
     const patientId = event.data.id
     // console.log('Assessment Versions button clicked for Patient ID:', assessmentId);
-
-    // Navigate to full URL path
   this.router.navigate([
       '/admin/patients/patient-assessments/assessment-versions',
       patientId
     ]);
-
     // console.log("routerlink",k);
-    
   }
 }
 
@@ -140,22 +136,16 @@ gridOptions:any = {
   loadPatients(): void {
     this.adminService.getPatientsWithCompletedAssessment().subscribe({
       next: (data) => {
-        this.rowData = data;
+        this.rowData = data.data;
         console.log(this.rowData);
-        
+        //this.toastr.success(data.message);   
       },
       error: (err) => {
-        console.error('Failed to fetch patients', err);
-        this.toastr.error('Failed to load patient list.');
+      const errorMessage = err.error?.message;
+      this.toastr.error(errorMessage);   
       }
     });
   }
-
-   defaultColDef = {
-    sortable: true,
-    filter: true,
-    resizable: true,
-  };
   
   onQuickFilterChanged(): void {
     if (this.gridApi) {

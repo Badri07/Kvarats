@@ -1,4 +1,5 @@
 import { NgModule } from '@angular/core';
+import { NgSelectModule } from '@ng-select/ng-select';
 import { CommonModule } from '@angular/common';
 import { AdminRoutingModule } from './admin-routing.module';
 import { DashboardComponent } from './dashboard/dashboard/dashboard.component';
@@ -32,6 +33,14 @@ import { SuperbillsComponent } from './superbills/superbills.component';
 import { SlidingscaleComponent } from './slidingscale/slidingscale.component';
 import { BaseChartDirective } from 'ng2-charts';
 import { SettingModule } from '../shared/settings/settings.module';
+import { CommonAgGridComponent } from '../shared/common-ag-grid/common-ag-grid.component';
+import { PatientInsurancesComponent } from './patient-insurances/patient-insurances.component';
+import { MenuManagementComponent } from './menu-management/menu-management.component';
+import { MenuListComponent } from './menu-management/menu-list/menu-list.component';
+import { MenuModalComponent } from './menu-management/menu-modal/menu-modal.component';
+import { ClientMenuAccessComponent } from './menu-management/client-menu-access/client-menu-access.component';
+import { AppointmentListComponent } from './appointment-list/appointment-list.component';
+
 @NgModule({
   declarations: [
     DashboardComponent,
@@ -57,8 +66,13 @@ import { SettingModule } from '../shared/settings/settings.module';
     InvoiceComponent, 
     SuperbillsComponent, 
     SlidingscaleComponent,
-    
-
+    CommonAgGridComponent,
+    PatientInsurancesComponent,
+    MenuManagementComponent,
+    MenuListComponent,
+    MenuModalComponent,
+    ClientMenuAccessComponent,
+    AppointmentListComponent
   ],
   imports: [
     CommonModule,
@@ -69,8 +83,9 @@ import { SettingModule } from '../shared/settings/settings.module';
     SettingModule,
     MaterialModule,
     AgGridModule,
-BaseChartDirective, FormsModule
-
+    BaseChartDirective,
+    FormsModule,
+    NgSelectModule
   ]
 })
 export class AdminModule { }

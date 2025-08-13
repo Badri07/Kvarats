@@ -1,7 +1,7 @@
 <div class="min-h-screen flex items-center justify-center p-4">
   <div class="flex flex-col md:flex-row bg-white shadow-md rounded-md overflow-hidden w-full max-w-5xl">
     
-    <div class="w-full md:w-1/2 bg-orange-500 flex items-center justify-center p-6 sm:p-8">
+    <div class="w-full md:w-1/2 bg-orange-400 flex items-center justify-center p-6 sm:p-8">
       <div class="relative w-full max-w-xs overflow-hidden rounded-lg">
         <div
           #sliderRef
@@ -29,72 +29,78 @@
         Sign in to your account
       </h2>
 
-      <form [formGroup]="loginForm" (ngSubmit)="onloginSubmit()" class="space-y-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-          <input
-            type="email"
-            placeholder="Enter your email"
-            name="usernameOrEmail"
-            formControlName="usernameOrEmail"
-            class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-text-orange"
-            [ngClass]="{
+      <form class="space-y-5" [formGroup]="loginForm" (ngSubmit)="onloginSubmit()" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+            <input type="email" placeholder="Enter your email" formControlName="usernameOrEmail"
+                   class="form-control"
+              
+              [ngClass]="{
               'border-red-500': loginSubmitted && loginUser['usernameOrEmail'].invalid,
               'border-green-500': loginSubmitted && loginUser['usernameOrEmail'].valid
             }"
-          />
-          <div *ngIf="loginSubmitted && loginUser['usernameOrEmail'].errors" class="text-sm text-red-500 mt-1">
-            <div *ngIf="loginUser['usernameOrEmail'].errors['required']">Email is required</div>
-            <div *ngIf="loginUser['usernameOrEmail'].errors['email']">Email is invalid</div>
+                   >
+
+           <div *ngIf="loginSubmitted && loginUser['usernameOrEmail'].errors" class="text-sm text-red-500 mt-1">
+  <div *ngIf="loginUser['usernameOrEmail'].errors['required']">Email is required</div>
+  <div *ngIf="loginUser['usernameOrEmail'].errors['invalidComEmail']">Enter valid email</div>
+</div>
+
           </div>
-        </div>
 
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
-          <input
-            type="password"
-            placeholder="Enter your password"
-            name="password"
-            formControlName="password"
-            class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-            [ngClass]="{
-              'border-red-500': loginSubmitted && loginUser['password'].invalid,
-              'border-green-500': loginSubmitted && loginUser['password'].valid
-            }"
-          />
-          <div *ngIf="loginSubmitted && loginUser['password']['errors']" class="text-sm text-red-500 mt-1">
-            <div *ngIf="loginUser['password']['errors']['required']">Password is required</div>
+         <div>
+  <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+  <div class="relative">
+    <input
+      [type]="showPassword ? 'text' : 'password'"
+      placeholder="Enter your password"
+      formControlName="password"
+      class="form-control"
+      (input)="onPasswordInput()"
+      [ngClass]="{
+        'border-red-500': loginSubmitted && loginUser['password'].invalid,
+        'border-green-500': loginSubmitted && loginUser['password'].valid
+      }"
+    />
+    <div *ngIf="PasswordValue?.length > 0"
+      class="absolute inset-y-0 right-3 flex items-center text-gray-400 cursor-pointer"
+      (click)="togglePasswordVisibility()"
+    >
+      <i [class]="showPassword ? 'fas fa-eye' : 'fas fa-eye-slash'"></i>
+    </div>
+
+    <div *ngIf="loginSubmitted && loginUser['password']['errors']" class="text-sm text-red-500 mt-1">
+      <div *ngIf="loginUser['password']['errors']['required']">Password is required</div>
+    </div>
+  </div>
+</div>
+
+
+          <div class="flex items-center justify-between text-sm">
+            <label class="flex items-center space-x-2">
+              <input type="checkbox" class="rounded border-gray-300">
+              <span class="text-gray-600">Remember me</span>
+            </label>
+            <a  [routerLink]="['/forgot-password']" class="text-orange-500 hover:text-primary-orange cursor-pointer">Forgot password?</a>
           </div>
-        </div>
 
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between text-sm text-gray-600 gap-2">
-          <label class="inline-flex items-center">
-            <input type="checkbox" class="form-checkbox text-text-orange" />
-            <span class="ml-2">Remember me for 30 days</span>
-          </label>
-          <a
-            [routerLink]="['/forgot-password']"
-            class="text-text-orange hover:text-orange-500 transition duration-150 ease-in-out"
-          >
-            Forgot Password?
-          </a>
-        </div>
+          <button type="submit"
+                  class="w-full bg-orange-400 text-white py-2 rounded-md font-semibold hover:bg-orange-500 transition">
+            Sign In<i class="fas fa-arrow-right ml-3"></i>
+          </button>
 
-        <button type="submit" class="w-full customBtn">
-          Log In
-        </button>
+          <p class="text-center text-sm text-gray-600 cursor-pointer"  [routerLink]="['/register']">
+            Don’t have an account?
+            <a class="text-orange-500 hover:text-primary-orange">Sign up</a>
+          </p>
+        </form>
 
-   
-        <div class="text-center text-sm mt-4">
-          Don’t have an account?
-          <a
-            [routerLink]="['/register']"
-            class="text-text-orange hover:text-orange-500 transition duration-150 ease-in-out"
-          >
-            Sign up
-          </a>
-        </div>
-      </form>
+        <p class="text-xs text-center text-gray-400 mt-6 ">
+          By signing in, you agree to our
+          <a  class="text-orange-500 hover:text-primary-orange cursor-pointer">Terms of Service</a>
+          and
+          <a  class="text-orange-500 hover:text-primary-orange cursor-pointer">Privacy Policy</a>.
+        </p>
     </div>
   </div>
 </div>

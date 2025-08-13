@@ -6,7 +6,18 @@ import { Billing, Client, DropdownModel } from '../../models/useradmin-model';
 import { environment } from '../../../environments/environments';
 import { LeaveRequest } from '../../models/user-model';
 import { ToastrService } from 'ngx-toastr';
-import { retry, timeout } from 'rxjs/operators';
+import { PatientInsurance } from '../../models/patients-interface';
+
+export interface MenuRoleDto {
+  menuId: string;
+  roleIds: string[];  // array of role IDs assigned to this menu
+}
+
+export interface ClientMenuRoleAssignDto {
+  clientId: string;
+  menus: MenuRoleDto[];  // list of menus along with their role assignments
+}
+
 
 
 @Injectable({
@@ -134,7 +145,7 @@ saveAdduser(data: any): Observable<any> {
 AddPatients(data:Client):Observable<any>{
   return this.http.post(`${environment.apidev}/Patients`,data).pipe(
     map((response: any) => {
-      return response?.data || response;
+      return response;
     }),
     catchError(error => {
       console.error('Error during getting user list:', error);
@@ -145,7 +156,7 @@ AddPatients(data:Client):Observable<any>{
 updatepatient(data:Client):Observable<any>{
   return this.http.put(`${environment.apidev}/Patients`,data).pipe(
     map((response: any) => {
-      return response?.data || response;
+      return response;
     }),
     catchError(error => {
       console.error('Error during getting user list:', error);
@@ -197,9 +208,6 @@ deleteUser(userId: string): Observable<any> {
   );
 }
 
-
-
-
 AddUserLeave(data:LeaveRequest):Observable<any>{
 
   return this.http.post(`${environment.apidev}/UserLeavesAndAvailability/AddOrUpdateLeave`,data).pipe(
@@ -235,6 +243,18 @@ getLeavesByUser(userId: string): Observable<any[]> {
         return throwError(() => error);
       })
     );
+}
+
+addOrUpdateAvailability(data: any): Observable<any> {
+    return this.http.post(`${environment.apidev}/UserLeavesAndAvailability/AddOrUpdateMultipleAvailability`, data).pipe(
+    map((response: any) => {
+      return response?.data || response;
+    }),
+    catchError(error => {
+      console.error('Error during getting user list:', error);
+      return throwError(() => error);
+    })
+  );
 }
 
 getExistingList():Observable<any>{
@@ -345,6 +365,17 @@ getMedicationdata(): Observable<any> {
   );
 }
 
+getChiefComplaintdata(): Observable<any> {
+
+  return this.http.get(`${environment.apidev}/Dropdowns/GetChiefComplaints`).pipe(
+    map((response: any) => response?.data || response),
+    catchError(error => {
+      console.error('Error fetching dropdown data:', error);
+      return throwError(() => error);
+    })
+  );
+}
+
 
 getPatientsList(): Observable<any> {
     if (!this.patientsCache$) {
@@ -383,87 +414,10 @@ getAllUserAppointments(): Observable<any> {
 }
 
 savePatientAssessment(data: any): Observable<any> {
-  return this.http.post(`${environment.apidev}/PatientAssessment/AddPatientAssessment`, data, {
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  }).pipe(
-    timeout(30000), // 30 second timeout
-    retry(2), // Retry up to 2 times on failure
-    map((response: any) => response?.data || response),
+
+  return this.http.post(`${environment.apidev}/PatientAssessment/AddPatientAssessment`, data).pipe(
     catchError(error => {
       console.error('Error saving assessment:', error);
-      
-      // Provide more specific error messages
-      let errorMessage = 'Failed to save assessment';
-      if (error.status === 0) {
-        errorMessage = 'Network error - please check your connection';
-      } else if (error.status >= 500) {
-        errorMessage = 'Server error - please try again later';
-      } else if (error.status === 413) {
-        errorMessage = 'Assessment data too large - please reduce file sizes';
-      }
-      
-      return throwError(() => ({ ...error, userMessage: errorMessage }));
-    })
-  );
-}
-
-// Add a method for quick validation before saving
-validateAssessmentData(data: any): { isValid: boolean; errors: string[] } {
-  const errors: string[] = [];
-  
-  if (!data.patientId) {
-    errors.push('Patient ID is required');
-  }
-  
-  // Validate vital signs ranges
-  if (data.systolic && (data.systolic < 50 || data.systolic > 300)) {
-    errors.push('Systolic pressure must be between 50-300 mmHg');
-  }
-  
-  if (data.diastolic && (data.diastolic < 30 || data.diastolic > 200)) {
-    errors.push('Diastolic pressure must be between 30-200 mmHg');
-  }
-  
-  if (data.heartRate && (data.heartRate < 30 || data.heartRate > 250)) {
-    errors.push('Heart rate must be between 30-250 bpm');
-  }
-  
-  // Validate pain scales
-  if (data.chiefComplaints) {
-    data.chiefComplaints.forEach((complaint: any, index: number) => {
-      if (complaint.painScale !== null && (complaint.painScale < 0 || complaint.painScale > 10)) {
-        errors.push(`Pain scale for complaint ${index + 1} must be between 0-10`);
-      }
-    });
-  }
-  
-  return {
-    isValid: errors.length === 0,
-    errors
-  };
-}
-
-// Optimized method for auto-save with minimal data
-autoSaveAssessment(data: any): Observable<any> {
-  // Create a lightweight version for auto-save
-  const autoSaveData = {
-    ...data,
-    isAutoSave: true // Flag to indicate this is an auto-save
-  };
-  
-  return this.http.post(`${environment.apidev}/PatientAssessment/AddPatientAssessment`, autoSaveData, {
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Auto-Save': 'true'
-    }
-  }).pipe(
-    timeout(15000), // Shorter timeout for auto-save
-    map((response: any) => response?.data || response),
-    catchError(error => {
-      // Don't throw errors for auto-save failures, just log them
-      console.warn('Auto-save failed:', error);
       return throwError(() => error);
     })
   );
@@ -519,7 +473,7 @@ getPatientsWithCompletedAssessment(): Observable<any> {
   
   return this.http.get(`${environment.apidev}/PatientAssessment/PatientsWithCompletedAssessment`).pipe(
     map((response: any) => {
-      return response?.data || response;
+      return response;
     }),
     catchError(error => {
       console.error('Error during getting patients with completed assessment:', error);
@@ -623,7 +577,7 @@ getAssesmentFilesById(assessmentId: number): Observable<any> {
 
 deletePatient(patientId: string): Observable<any> {
   return this.http.delete(`${environment.apidev}/Patients/${patientId}`).pipe(
-    map((response: any) => response?.data || response),
+    map((response: any) => response),
     catchError(error => {
       console.error('Error deleting patient:', error);
       return throwError(() => error);
@@ -637,7 +591,7 @@ deletePatient(patientId: string): Observable<any> {
 getSlidingScale(): Observable<any> {
   return this.http.get(`${environment.apidev}/Billing/GetSlidingScales`).pipe(
     map((response: any) => {
-      return response?.data || response;
+      return response;
     }),
     catchError(error => {
       console.error('Error during getting patients with completed assessment:', error);
@@ -678,5 +632,111 @@ deleteSlidingScale(patientId: string): Observable<any> {
   );
 }
 
+  // Get all menus (SuperAdmin gets all, Client gets assigned)
+  getMenus(): Observable<any> {
+    return this.http.get(`${environment.apidev}/Menus/GetMenus`).pipe(
+      map((response: any) => response?.data || response),
+      catchError((error) => {
+        console.error('Error during getting menus:', error);
+        return throwError(() => error);
+      })
+    );
+  } 
 
+  getClientMenusWithRoles(clientId: string): Observable<any> {
+    return this.http.get(`${environment.apidev}/Client/GetClientMenusWithRoles/${clientId}`).pipe(
+      map((response: any) => response?.data || response),
+      catchError((error) => {
+        console.error('Error fetching client menus:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  // Assign menus to a client (bulk replace)
+  assignMenusToClient(dto: ClientMenuRoleAssignDto): Observable<any> {
+    return this.http.post(`${environment.apidev}/Client/AssignMenusWithRoles`, dto).pipe(
+      map((response: any) => response), // ApiResponseHelper returns { success, message, data, errors }
+      catchError((error) => {
+        console.error('Error assigning menus to client:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  // patients-insurances
+  AddMultipleInsurances(data: PatientInsurance[]): Observable<any> {
+    return this.http.post(`${environment.apidev}/Patients/AddOrUpdateMultipleInsurances`, data).pipe(
+      map((response: any) => response), 
+      catchError((error) => {
+        console.error('Error AddMultipleInsurances:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+    GetInsuranceByPatientId(dto: any): Observable<any> {
+    return this.http.get(`${environment.apidev}/GetInsuranceByPatientId`, dto).pipe(
+      map((response: any) => response), 
+      catchError((error) => {
+        console.error('Error GetInsuranceByPatientId:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+
+    GetInsurance(dto: any): Observable<any> {
+    return this.http.post(`${environment.apidev}/Patients/GetInsurance`, dto).pipe(
+      map((response: any) => response), 
+      catchError((error) => {
+        console.error('Error AddMultipleInsurances:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+    UpadteInsurance(dto: any): Observable<any> {
+    return this.http.post(`${environment.apidev}/Patients/UpadteInsurance`, dto).pipe(
+      map((response: any) => response), 
+      catchError((error) => {
+        console.error('Error AddMultipleInsurances:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+    DeleteInsurance(dto: any): Observable<any> {
+    return this.http.post(`${environment.apidev}/Patients/UpadteInsurance`, dto).pipe(
+      map((response: any) => response), 
+      catchError((error) => {
+        console.error('Error AddMultipleInsurances:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+
+
+   GetAppointments(): Observable<any> {
+    return this.http.get(`${environment.apidev}/Appointment/GetAppointments`).pipe(
+      map((response: any) => response), 
+      catchError((error) => {
+        console.error('Error GetInsuranceByPatientId:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+    GetAppointmentsById(id?: string): Observable<any> {
+  return this.http.get(`${environment.apidev}/Appointment/GetAppointmentWithTransactionById/${id}`).pipe(
+    map((response: any) => {
+      return response?.data || response;
+    }),
+    catchError(error => {
+      console.error('Error during getting user list:', error);
+      return throwError(() => error);
+    })
+  );
+}
 }

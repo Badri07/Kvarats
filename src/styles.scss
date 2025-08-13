@@ -10,9 +10,13 @@
 * {
   font-family: 'Poppins', sans-serif;
 }
+html {
+  scroll-behavior: smooth;
+}
+
 
 body{
-  background: var(--common-border-color);
+  background: var(--common-white);
 }
 
 
@@ -21,9 +25,10 @@ body{
   --common-border-color:#F9F4F1;
   --common-background-color:#F9F4F1;
   --common-black-color:#0000;
-  --common-toggle-color:#F97316;
+  --common-toggle-color:#FFA157;
   --common-white-color:#ffff;
   --common-input-border:#CED4DA;
+  --common-white:#ffffff;
 }
 
 .workspace-content{
@@ -33,8 +38,8 @@ body{
 
 
 .dashboard-container {
-  // border: 3px solid var(--common-border-color) !important;
-  background: var(--common-white-color);
+  margin-top: 20px;
+box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 5px 0px, rgba(0, 0, 0, 0.1) 0px 0px 1px 0px;  background: var(--common-white-color);
   padding: 20px !important;
   border-radius: var(--common-border-radius) !important;
 }
@@ -180,76 +185,17 @@ textarea.form-control {
   border-radius: var(--common-border-radius);
 }
 
-.is-invalid{
-  border: 1px solid #DF4655 !important;
-}
-.is-valid{
-  border: 1px solid #198754 !important;
-}
+// .is-invalid{
+//   border: 1px solid #DF4655 !important;
+// }
+// .is-valid{
+//   border: 1px solid #198754 !important;
+// }
 
 .hr-line{
   border: 1px solid var(--common-toggle-color);
 }
 
-.mat-column-actions .mat-icon {
-  font-size: 16px !important;
-  width: 16px !important;
-  height: 16px !important;
-  line-height: 16px !important;
-  background: transparent !important;
-
-}.mat-mdc-table {
-  width: 100%;
-  border-collapse: collapse;
-  border-radius: var(--common-border-radius) !important;
-}
-
-.mat-mdc-header-cell,
-.mat-mdc-cell {
-  padding: 8px 16px !important;
-  vertical-align:middle;
-  text-align: left;
-}
-
-.mat-mdc-header-cell {
-  font-weight: 600;
-  border-bottom: 1px solid #ccc;
-}
-.mat-mdc-header-cell{
-  border-bottom: 3px solid get-color("primary-border-color") !important;
-}
-.mat-mdc-cell {
-  border-bottom: 2px solid get-color("primary-border-color") !important;
-}
-.col-doctor {
-  width: 150px;
-  min-width: 150px;
-  max-width: 150px;
-}
-
-.col-date {
-  width: 120px;
-  min-width: 120px;
-  max-width: 120px;
-}
-
-.col-time {
-  width: 100px;
-  min-width: 100px;
-  max-width: 100px;
-}
-
-.col-type {
-  width: 120px;
-  min-width: 120px;
-  max-width: 120px;
-}
-
-.col-action {
-  width: 80px;
-  min-width: 80px;
-  max-width: 80px;
-}
 
 input{
   padding: 8px 16px !important;
@@ -345,35 +291,7 @@ label{
 .animated-tabs .slider{
   width: 50%;
 }
-::ng-deep .ag-theme-custom {
-  border-radius: 12px;
 
-  .ag-header {
-    background-color: #f3f4f6;
-    font-weight: 600;
-    font-size: 14px;
-  }
-
-  .ag-row {
-    font-size: 14px;
-    border-bottom: 1px solid #e5e7eb;
-  }
-
-  .ag-cell {
-    display: flex;
-    align-items: center;
-    padding: 8px;
-  }
-
-  img {
-    object-fit: cover;
-  }
-}
-
-::ng-deep .ag-theme-alpine :where(.ag-checkbox-input-wrapper.ag-checked) {
-  background-color: #FFA157 !important;
-  border-color: #FFA157 !important;
-}
 
 // .btn-primary {
 //   @apply bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200;
@@ -500,4 +418,81 @@ label{
   .profile-info .text-gray-500 {
     color: #aaa !important;
   }
+}
+.mdc-text-field--filled:not(.mdc-text-field--disabled) {
+  background-color: #fff !important;
+}
+
+
+/* Outline appearance border color on focus */
+.mat-mdc-form-field.mat-focused .mdc-notched-outline__leading,
+.mat-mdc-form-field.mat-focused .mdc-notched-outline__trailing,
+.mat-mdc-form-field.mat-focused .mdc-notched-outline__notch {
+  border-color: #FFA157 !important;
+}
+
+/* Underline ripple color for fill appearance */
+.mat-mdc-form-field.mat-focused .mdc-line-ripple {
+  background-color: #FFA157 !important;
+}
+
+/* Floating label color on focus */
+.mat-mdc-form-field.mat-focused .mat-mdc-floating-label {
+  color: #FFA157 !important;
+}
+/* Change label color on focus */
+.mat-mdc-form-field.mat-focused .mat-mdc-floating-label {
+  color: #FFA157 !important;
+}
+
+
+/* Force the underline to always be orange and active */
+.mdc-line-ripple,
+.mdc-line-ripple::before,
+.mdc-line-ripple::after {
+  background-color: #FFA157 !important;
+}
+
+/* If you only want it for a specific form field */
+::ng-dep.my-orange-underline .mdc-line-ripple,
+::ng-dep.my-orange-underline .mdc-line-ripple::before,
+::ng-dep.my-orange-underline .mdc-line-ripple::after {
+  background-color: #FFA157 !important;
+}
+
+/* Change underline color on focus */
+::ng-dep.mat-mdc-form-field.mat-focused .mdc-line-ripple {
+  background-color: #FFA157 !important;
+}
+
+/* Change underline color when filled but not focused */
+::ng-dep.mat-mdc-form-field.mat-form-field-has-value .mdc-line-ripple {
+  background-color: #FFA157 !important;
+}
+/* All states */
+::ng-dep.mdc-line-ripple {
+  background-color: #FFA157 !important;
+}
+
+.actionBtn {
+  background-color: #FFA157;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 0px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.actionBtn i {
+  font-size: 16px;
+}
+
+.actionBtn:hover {
+  background-color: #f88a36;
 }

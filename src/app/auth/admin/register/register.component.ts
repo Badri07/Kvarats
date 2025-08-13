@@ -5,6 +5,14 @@ import { registerModel } from '../../../models/user-model';
 import { TosterService } from '../../../service/toaster/tostr.service';
 import { Router } from '@angular/router';
 
+export function emailWithComValidator(control: AbstractControl): ValidationErrors | null {
+  const email = control.value;
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+  if (!email) return null;
+
+  return emailRegex.test(email) ? null : { invalidComEmail: true };
+}
 
 export function strongPasswordValidator(): ValidatorFn {
   return (control: AbstractControl) => {
@@ -97,7 +105,7 @@ currentIndex = 0;
   city: new FormControl('',Validators.required),
   adminFirstName: new FormControl("", Validators.required),
   adminLastName: new FormControl("", Validators.required),
-  adminEmail: new FormControl("", Validators.required),
+  adminEmail: new FormControl("",[Validators.required,Validators.email,emailWithComValidator]),
   phoneCode: new FormControl(""),
   adminPassword: new FormControl("", [
     Validators.required,
@@ -211,12 +219,13 @@ else{
     this.authservice.signIn(data).subscribe({
       next: (res) => {
         this.registerForm.reset();
-        this.toastr.success('Registration successful');
+        this.toastr.success(res.message);
         this.routes.navigate(['/login']);
         console.log("res", res);
       },
       error: (err) => {
-        this.toastr.error('Registration failed. Please try again.');
+        const errorMessage = err.error?.message;
+        this.toastr.error(errorMessage);
         console.error("Registration Error:", err);
       }
     }); 
@@ -319,4 +328,34 @@ get passwordControl() {
   return this.registerForm.get('adminPassword');
 }
 
+
+preventAbove(event: KeyboardEvent): void {
+  const input = event.target as HTMLInputElement;
+  const value = input.value;
+
+  const allowedKeys = ['Backspace', 'ArrowLeft', 'ArrowRight', 'Tab', 'Delete'];
+  if (allowedKeys.includes(event.key)) return;
+
+  if (!/^\d$/.test(event.key)) {
+    event.preventDefault();
+    return;
+  }
+
+  const nextValue = value + event.key;
+  if (nextValue.length > 17) {
+    event.preventDefault();
+  }
+}
+showPassword: boolean = false;
+
+togglePasswordVisibility() {
+  this.showPassword = !this.showPassword;
+}
+
+PasswordValue: any = '';
+
+onPasswordInput(){
+  const control = this.registerForm.get('adminPassword');
+  this.PasswordValue = control?.value || '';
+}
 }

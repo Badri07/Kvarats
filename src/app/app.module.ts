@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-
+import { NgSelectModule } from '@ng-select/ng-select';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { LoginComponent } from './auth/admin/login/login.component';
@@ -18,6 +18,7 @@ import { authInterceptor } from './interceptors/auth.interceptor';
 import { MenusComponent } from './shared/menu/menus.component';
 import { BreadcrumbComponent } from './shared/breadcrumb/breadcrumb.component';
 import { PatientLoginComponent } from './auth/patients/patient-login/patient-login.component';
+import { PatientsComponent } from './patients/patients.component';
 
 @NgModule({
   declarations: [
@@ -25,11 +26,11 @@ import { PatientLoginComponent } from './auth/patients/patient-login/patient-log
     LoginComponent,
     RegisterComponent,
     AdminComponent,
+    PatientsComponent,
    LoaderComponent,
    MenusComponent,
    BreadcrumbComponent,
-   PatientLoginComponent
-
+   PatientLoginComponent,
   ],
   imports: [
     CommonModule,
@@ -38,18 +39,19 @@ import { PatientLoginComponent } from './auth/patients/patient-login/patient-log
     AppRoutingModule,
     ReactiveFormsModule,
     FormsModule,
+    NgSelectModule,
     ToastrModule.forRoot({
   timeOut: 3000,
   positionClass: 'toast-top-right',
   preventDuplicates: true,
   closeButton: false,
   progressBar: true,
-  toastClass: 'custom-toastr', // default (success)
+  toastClass: 'custom-toastr', 
   iconClasses: {
     error: 'custom-toastr-error',
     success: 'custom-toastr',
-    info: 'custom-toastr',       // Optional: reuse same style
-    warning: 'custom-toastr',    // Optional: reuse same style
+    info: 'custom-toastr',       
+    warning: 'custom-toastr',    
   }
 }),
   ],

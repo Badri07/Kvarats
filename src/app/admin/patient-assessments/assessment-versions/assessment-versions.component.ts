@@ -3,7 +3,6 @@ import { ActivatedRoute } from '@angular/router';
 import { AdminService } from '../../../service/admin/admin.service';
 import { ToastrService } from 'ngx-toastr';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
- 
 import { UploadedFile } from '../../../models/useradmin-model';
 @Component({
   selector: 'app-assessment-versions',
@@ -16,7 +15,7 @@ export class AssessmentVersionsComponent implements OnInit {
 
   public selectedTab: 'assessment' | 'previous' | 'Patientfiles' ='assessment';
 
-  patientDetails: any = null;
+  patientDetails: any = [];
   isLoading = true;
   activeTab: string = 'assessment';
   uploadedFiles: UploadedFile[]=[];
@@ -106,21 +105,21 @@ isshowpdf:boolean = false
   assesmentId!:string
 
   fetchPatientDetails(patientId: string): void {
-    debugger
-    this.adminService.getPatientById(patientId).subscribe({
-      next: (data:any) => {
-        this.patientDetails = data;
-        this.assesmentId = data.assessmentId
+  this.isLoading = true;
+  this.adminService.getPatientById(patientId).subscribe({
+    next: (response: any) => {
+      this.patientDetails = response.data;
+      this.assesmentId = response.data.assessmentId;
+      this.isLoading = false;
+    },
+    error: (err) => {
+      console.error('Failed to fetch patient details', err);
+      this.toastr.error('Failed to load patient details.', 'Error');
+      this.isLoading = false;
+    }
+  });
+}
 
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('Failed to fetch patient details', err);
-        this.toastr.error('Failed to load patient details.', 'Error');
-        this.isLoading = false;
-      }
-    });
-  }
 
 iframeUrl: SafeResourceUrl | null = null;
   iframeUrlPrevious: SafeResourceUrl | null = null;
@@ -266,8 +265,8 @@ onAssessmentClick(assessmentId: string): void {
       }
     },
     error: (err) => {
-      console.error('Failed to fetch patient assessment', err);
-      this.toastr.error('Failed to load patient assessment.', 'Error');
+       const errorMessage = err.error?.message;
+       this.toastr.error(errorMessage);  
     }
   });
 }
@@ -293,7 +292,7 @@ downloadPDF(): void {
  
   const opt = {
     margin:       0.5,
-    filename:     `Patient-Assessment-${new Date().toISOString().slice(0, 10)}.pdf`,
+    filename: `Patient-Assessment-${this.assessmentData.patientCode}-${new Date().toISOString().slice(0, 10)}.pdf`,
     image:        { type: 'jpeg', quality: 0.98 },
     html2canvas:  { scale: 2 },
     jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
@@ -302,6 +301,58 @@ downloadPDF(): void {
   html2pdf().set(opt).from(element).save();
 }
 
+//   // Create a clone of the content to modify for PDF
+//   const element = document.getElementById('pdf-content');
+//   const clone = element.cloneNode(true) as HTMLElement;
+  
+//   // Apply PDF-specific styles to the clone
+//   clone.style.width = '210mm';
+//   clone.style.padding = '15mm';
+//   clone.style.margin = '0';
+//   clone.style.boxSizing = 'border-box';
+//   clone.style.fontSize = '12pt';
+  
+//   // Hide elements that shouldn't be in PDF
+//   const buttons = clone.querySelectorAll('button');
+//   buttons.forEach(btn => btn.style.display = 'none');
+  
+//   // Temporary add to body
+//   clone.style.position = 'absolute';
+//   clone.style.left = '-9999px';
+//   document.body.appendChild(clone);
+
+//   const opt = {
+//     margin: 0,
+//     filename: `Patient-Assessment-${this.assessmentData.patientCode}-${new Date().toISOString().slice(0, 10)}.pdf`,
+//     image: { type: 'jpeg', quality: 0.98 },
+//     html2canvas: { 
+//       scale: 0.75, // Reduced scale for better fit
+//       width: 210 * 3.78, // 210mm in pixels (3.78px/mm)
+//       windowWidth: 210 * 3.78,
+//       useCORS: true,
+//       letterRendering: true,
+//       scrollX: 0,
+//       scrollY: 0
+//     },
+//     jsPDF: { 
+//       unit: 'mm', 
+//       format: 'a4', 
+//       orientation: 'portrait',
+//       hotfixes: ["px_scaling"] 
+//     },
+//     pagebreak: { mode: 'avoid-all', before: '.page-break' }
+//   };
+
+//   // Generate PDF
+//   html2pdf()
+//     .set(opt)
+//     .from(clone)
+//     .save()
+//     .finally(() => {
+//       // Clean up
+//       document.body.removeChild(clone);
+//     });
+// }
 
 // tab
 setTab(tab: 'assessment' | 'previous' | 'Patientfiles') {

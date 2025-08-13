@@ -1,8 +1,8 @@
 .sidebar {
   // box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
-  width: 280px;
+  width: 290px;
   height: 100vh;
-  background-color: #ffffff;
+  background-color: #F9F4F1;
   display: flex;
   flex-direction: column;
   position: fixed;
@@ -272,7 +272,7 @@
   width: calc(100% - 280px);
   overflow-y: auto;
   transition: margin-left 0.3s, width 0.3s;
-
+  background: #ffff;
 }
 
 .main-content {

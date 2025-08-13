@@ -255,20 +255,21 @@ onSignin() {
     this.authservice.forgotPassword(data).subscribe({
       next: (res: any) => {
          if (res.success === true) {
-          this.toastr.success('Password reset link sent to your email');
-          this.isshowForm = false;
-          this.isshowotpSection = true;
+        this.toastr.success(res.message);
+        this.isshowForm = false;
+        this.isshowotpSection = true;
         } else {
-          this.toastr.error(res.message || 'Unexpected error occurred');
+          this.toastr.error(res.message);
         }
       },
       error: (err) => {
-        this.toastr.error('Password reset failed. Please try again.');
-        console.error("Forgot Password Error:", err);
+         const errorMessage = err.error?.message;
+         this.toastr.error(errorMessage);
+        // console.error("Forgot Password Error:", err);
       }
     });
   } else {
-    console.warn("Form is invalid");
+    // console.warn("Form is invalid");
     this.registerSubmitted = true;
     return;
   }
@@ -282,16 +283,16 @@ resendMail() {
   this.authservice.forgotPassword(payload).subscribe({
     next: (res: any) => {
       if (res.success === true) {
-        this.toastr.success('A password reset link has been successfully sent to your registered email address.');
+        this.toastr.success(res.message);
         this.isshowForm = false;
         this.isshowotpSection = true;
       } else {
-        this.toastr.error(res.message || 'An unexpected error occurred. Please try again.');
+        this.toastr.error(res.message);
       }
     },
     error: (err) => {
-      this.toastr.error('Failed to send password reset email. Please try again later.');
-      console.error("Forgot Password Error:", err);
+      const errorMessage = err.error?.message;
+      this.toastr.error(errorMessage);
     }
   });
 }
@@ -304,16 +305,16 @@ isVerify() {
   this.authservice.verifyPassword(payload).subscribe({
     next: (res: any) => {
       if (res.success === true) {
-        this.toastr.success('OTP Verified');
+         this.toastr.success(res.message);
         this.isshowotpSection = false;
         this.isshowonextForm = true;
       } else {
-        this.toastr.error(res.message || 'Invalid or expired OTP');
+        this.toastr.error(res.message);
       }
     },
     error: (err) => {
-      this.toastr.error('OTP verification failed');
-      console.error('OTP Error:', err);
+      const errorMessage = err.error?.message;
+      this.toastr.error(errorMessage);
     }
   });
 }
@@ -330,18 +331,18 @@ updatePassword() {
     this.authservice.resetPassword(payload).subscribe({
       next: (res: any) => {
         if (res.success === true) {
-          this.toastr.success('Password changed successfully');
+         this.toastr.success(res.message);
           this.registerNextForm.reset();
           this.registerSubmitted = false;
           this.router.navigate(['/login']);
  
         } else {
-          this.toastr.error(res.message || 'Something went wrong');
+        this.toastr.error(res.message);
         }
       },
       error: (err) => {
-        this.toastr.error('Password update failed');
-        console.error('Reset Error:', err);
+      const errorMessage = err.error?.message;
+      this.toastr.error(errorMessage);
       }
     });
   } else {

@@ -1,166 +1,37 @@
-<!-- Enhanced Patient Assessment Form with Modern Design -->
 <div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-4">
   <div class="max-w-7xl mx-auto">
     
-    <!-- Header Section -->
-    <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 mb-6">
-      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        
-        <!-- Patient Info -->
-        <div class="flex items-center space-x-4">
-          <div class="w-16 h-16 bg-gradient-to-br from-primary-orange to-orange-600 rounded-full flex items-center justify-center text-white text-xl font-bold shadow-lg">
-            {{ getPatientInitials() }}
-          </div>
-          <div>
-            <h1 class="text-2xl font-bold text-gray-900">Patient Assessment</h1>
-            <p class="text-gray-600">Complete medical evaluation form</p>
-          </div>
-        </div>
-
-        <!-- Action Buttons & Status -->
-        <div class="flex items-center space-x-4">
-          <!-- Auto-save Status -->
-          <div class="flex items-center space-x-2 px-4 py-2 rounded-full border" 
-               [ngClass]="{
-                 'bg-green-50 border-green-200 text-green-700': saveStatus === 'saved',
-                 'bg-yellow-50 border-yellow-200 text-yellow-700': saveStatus === 'saving',
-                 'bg-red-50 border-red-200 text-red-700': saveStatus === 'unsaved'
-               }">
-            <div class="w-2 h-2 rounded-full" 
-                 [ngClass]="{
-                   'bg-green-500': saveStatus === 'saved',
-                   'bg-yellow-500 animate-pulse': saveStatus === 'saving',
-                   'bg-red-500': saveStatus === 'unsaved'
-                 }"></div>
-            <span class="text-sm font-medium">
-              {{ saveStatus === 'saved' ? 'All changes saved' : 
-                 saveStatus === 'saving' ? 'Saving...' : 
-                 'Unsaved changes' }}
-            </span>
-          </div>
-
-          <!-- Action Buttons -->
-          <div class="flex space-x-3">
-            <button type="button" 
-                    (click)="resetForm()"
-                    class="px-4 py-2 text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all duration-200 flex items-center space-x-2">
-              <i class="fas fa-undo text-sm"></i>
-              <span>Reset</span>
-            </button>
-            
-            <button type="button" 
-                    (click)="saveAssessment()"
-                    [disabled]="isSaving"
-                    class="px-6 py-2 bg-gradient-to-r from-primary-orange to-orange-600 text-white rounded-lg hover:from-orange-600 hover:to-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center space-x-2 shadow-lg">
-              <i class="fas" [ngClass]="isSaving ? 'fa-spinner fa-spin' : 'fa-save'"></i>
-              <span>{{ getSaveButtonText() }}</span>
-            </button>
-          </div>
-        </div>
-      </div>
+    <!-- Header Section -->      
+    <div class="mb-3">
+        <h1 class="text-2xl font-bold text-gray-900">Patient Assessment</h1>
+        <p class="text-gray-600">Complete medical evaluation form</p>
     </div>
 
+      
+    
     <!-- Main Form Container -->
     <div class="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
       
       <!-- Progress Indicator -->
-      <div class="bg-gradient-to-r from-primary-orange to-orange-600 h-1">
-        <div class="h-full bg-white bg-opacity-30 transition-all duration-500" 
+      <div class="bg-gradient-to-r from-red-500 to-red-600 h-1">
+        <div class="h-full bg-green-500  transition-all duration-500" 
              [style.width.%]="getFormCompletionPercentage()"></div>
       </div>
 
       <!-- Form Content -->
       <div class="p-8">
-        <form [formGroup]="assessmentForm" class="space-y-8">
+        <form #form="ngForm" class="space-y-8">
 
-          <!-- Chief Complaints Section -->
-          <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
-            <div class="flex items-center space-x-3 mb-6">
-              <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
-                <i class="fas fa-notes-medical text-white"></i>
-              </div>
-              <div>
-                <h2 class="text-xl font-bold text-gray-900">Chief Complaints</h2>
-                <p class="text-gray-600 text-sm">Primary symptoms and concerns</p>
-              </div>
+          <!-- Draft Status Banner -->
+          <div *ngIf="patientData.isDraft" class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-lg flex items-start" role="alert">
+            <i class="fas fa-exclamation-circle mt-1 mr-3"></i>
+            <div>
+              <strong class="block">Draft Version</strong>
+              <p class="text-sm mt-1">This is an unsaved draft. Please submit when complete.</p>
             </div>
-
-            <div formArrayName="chiefComplaints" class="space-y-4">
-              <div *ngFor="let complaint of chiefComplaintsArray.controls; let i = index" 
-                   [formGroupName]="i"
-                   class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200">
-                
-                <div class="flex items-start justify-between mb-4">
-                  <h3 class="text-lg font-semibold text-gray-800">Complaint {{ i + 1 }}</h3>
-                  <button type="button" 
-                          (click)="removeChiefComplaint(i)"
-                          *ngIf="chiefComplaintsArray.length > 1"
-                          class="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-all duration-200">
-                    <i class="fas fa-trash"></i>
-                  </button>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                  <div class="lg:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                      <i class="fas fa-comment-medical mr-2 text-blue-500"></i>
-                      Complaint Description
-                    </label>
-                    <textarea formControlName="complaint"
-                              (input)="onFormChange()"
-                              placeholder="Describe the main complaint or symptom..."
-                              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all duration-200"
-                              rows="3"></textarea>
-                  </div>
-
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                      <i class="fas fa-thermometer-half mr-2 text-red-500"></i>
-                      Pain Scale (0-10)
-                    </label>
-                    <div class="relative">
-                      <input type="number" 
-                             formControlName="painScale"
-                             (input)="onFormChange()"
-                             min="0" max="10"
-                             placeholder="0-10"
-                             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">
-                      <div class="absolute inset-y-0 right-0 flex items-center pr-3">
-                        <div class="w-3 h-3 rounded-full" 
-                             [ngClass]="{
-                               'bg-green-400': complaint.get('painScale')?.value <= 3,
-                               'bg-yellow-400': complaint.get('painScale')?.value > 3 && complaint.get('painScale')?.value <= 6,
-                               'bg-red-400': complaint.get('painScale')?.value > 6,
-                               'bg-gray-300': !complaint.get('painScale')?.value
-                             }"></div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="lg:col-span-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                      <i class="fas fa-sticky-note mr-2 text-yellow-500"></i>
-                      Additional Notes
-                    </label>
-                    <textarea formControlName="notes"
-                              (input)="onFormChange()"
-                              placeholder="Any additional details or observations..."
-                              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all duration-200"
-                              rows="2"></textarea>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <button type="button" 
-                    (click)="addChiefComplaint()"
-                    class="mt-4 w-full py-3 border-2 border-dashed border-blue-300 text-blue-600 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 flex items-center justify-center space-x-2">
-              <i class="fas fa-plus"></i>
-              <span>Add Another Complaint</span>
-            </button>
           </div>
 
-          <!-- Vital Signs Section -->
+          <!-- Vitals Section (Mandatory) -->
           <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
             <div class="flex items-center space-x-3 mb-6">
               <div class="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
@@ -175,26 +46,25 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <!-- Blood Pressure -->
               <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
-                <label class="block text-sm font-medium text-gray-700 mb-3">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
                   <i class="fas fa-tint mr-2 text-red-500"></i>
-                  Blood Pressure
+                  Blood Pressure <span class="text-red-500">*</span>
                 </label>
-                <div class="flex space-x-2">
+                <div class="flex items-center gap-2">
                   <div class="flex-1">
-                    <input type="number" 
-                           formControlName="systolic"
-                           (input)="onFormChange(); validateBloodPressure()"
-                           placeholder="120"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200">
+                    <input type="number" min="0" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200" 
+                           placeholder="Systolic" [(ngModel)]="patientData.systolic" name="systolic" 
+                           (input)="onBpInputChange(); markFieldChanged('systolic')" 
+                           [ngClass]="getBpClass('systolic')" />
                     <span class="text-xs text-gray-500 mt-1 block">Systolic</span>
                   </div>
-                  <div class="flex items-center text-gray-400 font-bold">/</div>
+                  <span class="font-bold text-gray-400">/</span>
                   <div class="flex-1">
-                    <input type="number" 
-                           formControlName="diastolic"
-                           (input)="onFormChange(); validateBloodPressure()"
-                           placeholder="80"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200">
+                    <input type="number" min="0" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200" 
+                           placeholder="Diastolic" [(ngModel)]="patientData.diastolic" name="diastolic" 
+                           [disabled]="!isDiastolicEnabled" 
+                           (input)="onBpInputChange(); markFieldChanged('diastolic')" 
+                           [ngClass]="getBpClass('diastolic')" />
                     <span class="text-xs text-gray-500 mt-1 block">Diastolic</span>
                   </div>
                 </div>
@@ -203,150 +73,278 @@
 
               <!-- Heart Rate -->
               <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
-                <label class="block text-sm font-medium text-gray-700 mb-3">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
                   <i class="fas fa-heartbeat mr-2 text-red-500"></i>
-                  Heart Rate
+                  Heart Rate <span class="text-red-500">*</span>
                 </label>
-                <input type="number" 
-                       formControlName="heartRate"
-                       (input)="onFormChange()"
-                       placeholder="72"
-                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200">
+                <input type="number" min="0" required 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                       [(ngModel)]="patientData.heartRate" name="heartRate" 
+                       (input)="markFieldChanged('heartRate')" 
+                       [ngClass]="getVitalClass('heartRate')" />
                 <span class="text-xs text-gray-500 mt-2 block">bpm</span>
               </div>
 
-              <!-- Temperature -->
+              <!-- Pulse -->
               <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
-                <label class="block text-sm font-medium text-gray-700 mb-3">
-                  <i class="fas fa-thermometer-half mr-2 text-orange-500"></i>
-                  Temperature
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  <i class="fas fa-heart-pulse mr-2 text-red-500"></i>
+                  Pulse <span class="text-red-500">*</span>
                 </label>
-                <input type="number" 
-                       formControlName="temperature"
-                       (input)="onFormChange()"
-                       step="0.1"
-                       placeholder="98.6"
-                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200">
-                <span class="text-xs text-gray-500 mt-2 block">°F</span>
+                <input type="number" min="0" required 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                       [(ngModel)]="patientData.pulse" name="pulse" 
+                       (input)="markFieldChanged('pulse')" 
+                       [ngClass]="getVitalClass('pulse')" />
+                <span class="text-xs text-gray-500 mt-2 block">bpm</span>
               </div>
 
               <!-- Respiratory Rate -->
               <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
-                <label class="block text-sm font-medium text-gray-700 mb-3">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
                   <i class="fas fa-lungs mr-2 text-blue-500"></i>
                   Respiratory Rate
                 </label>
-                <input type="number" 
-                       formControlName="respiratoryRate"
-                       (input)="onFormChange()"
-                       placeholder="16"
-                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200">
+                <input type="number" min="0" 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                       [(ngModel)]="patientData.respiratoryRate" name="respiratoryRate" 
+                       (input)="markFieldChanged('respiratoryRate')" />
                 <span class="text-xs text-gray-500 mt-2 block">breaths/min</span>
               </div>
 
-              <!-- Additional Vitals Row -->
+              <!-- Temperature -->
               <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
-                <label class="block text-sm font-medium text-gray-700 mb-3">
-                  <i class="fas fa-eye mr-2 text-purple-500"></i>
-                  Pulse
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  <i class="fas fa-thermometer-half mr-2 text-orange-500"></i>
+                  Temperature (°C)
                 </label>
-                <input type="number" 
-                       formControlName="pulse"
-                       (input)="onFormChange()"
-                       placeholder="72"
-                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200">
-                <span class="text-xs text-gray-500 mt-2 block">bpm</span>
+                <input type="number" min="0" 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                       [(ngModel)]="patientData.temperature" name="temperature" 
+                       (input)="markFieldChanged('temperature')" />
               </div>
 
+              <!-- Blood Sugar -->
               <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
-                <label class="block text-sm font-medium text-gray-700 mb-3">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
                   <i class="fas fa-tint mr-2 text-red-600"></i>
-                  Blood Sugar
+                  Blood Sugar <span class="text-red-500">*</span>
                 </label>
-                <input type="number" 
-                       formControlName="bloodSugar"
-                       (input)="onFormChange()"
-                       placeholder="100"
-                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200">
+                <input type="number" min="0" required 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                       [(ngModel)]="patientData.bloodSugar" name="bloodSugar" 
+                       (input)="markFieldChanged('bloodSugar')" 
+                       [ngClass]="getVitalClass('bloodSugar')" />
                 <span class="text-xs text-gray-500 mt-2 block">mg/dL</span>
               </div>
 
+              <!-- SpO₂ -->
               <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
-                <label class="block text-sm font-medium text-gray-700 mb-3">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
                   <i class="fas fa-percentage mr-2 text-blue-600"></i>
-                  SpO₂
+                  SpO₂ (%)
                 </label>
-                <input type="number" 
-                       formControlName="spO2"
-                       (input)="onFormChange()"
-                       placeholder="98"
-                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200">
-                <span class="text-xs text-gray-500 mt-2 block">%</span>
+                <input type="number" min="0" 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                       [(ngModel)]="patientData.spO2" name="spo2" 
+                       (input)="markFieldChanged('spO2')" />
               </div>
 
+              <!-- Weight -->
               <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
-                <label class="block text-sm font-medium text-gray-700 mb-3">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
                   <i class="fas fa-weight mr-2 text-indigo-500"></i>
-                  Weight
+                  Weight (kg) <span class="text-red-500">*</span>
                 </label>
-                <input type="number" 
-                       formControlName="weight"
-                       (input)="onFormChange(); calculateBMI()"
-                       step="0.1"
-                       placeholder="70"
-                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200">
-                <span class="text-xs text-gray-500 mt-2 block">kg</span>
+                <input type="number" min="0" required 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                       [(ngModel)]="patientData.weight" name="weight" 
+                       (input)="calculateBMI(); markFieldChanged('weight')" />
               </div>
-            </div>
 
-            <!-- Height and BMI Row -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+              <!-- Height -->
               <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
-                <label class="block text-sm font-medium text-gray-700 mb-3">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
                   <i class="fas fa-ruler-vertical mr-2 text-purple-500"></i>
-                  Height
+                  Height (cm) <span class="text-red-500">*</span>
                 </label>
-                <input type="number" 
-                       formControlName="height"
-                       (input)="onFormChange(); calculateBMI()"
-                       step="0.1"
-                       placeholder="170"
-                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200">
-                <span class="text-xs text-gray-500 mt-2 block">cm</span>
+                <input type="number" min="0" required 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                       [(ngModel)]="patientData.height" name="height" 
+                       (input)="calculateBMI(); markFieldChanged('height')" />
               </div>
 
+              <!-- BMI -->
               <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
-                <label class="block text-sm font-medium text-gray-700 mb-3">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
                   <i class="fas fa-calculator mr-2 text-green-500"></i>
-                  BMI (Auto-calculated)
+                  BMI <span class="text-red-500">*</span>
                 </label>
-                <input type="number" 
-                       formControlName="bmi"
-                       readonly
-                       placeholder="Calculated automatically"
-                       class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg transition-all duration-200">
-                <span class="text-xs text-gray-500 mt-2 block">kg/m²</span>
+                <input type="text" required readonly 
+                       class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg transition-all duration-200"
+                       [value]="patientData.bmi" 
+                       [ngClass]="getVitalClass('bmi')" 
+                       name="bmi" 
+                       (ngModelChange)="markFieldChanged('vitals')" />
               </div>
 
-              <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm flex items-center justify-center">
-                <div class="text-center">
-                  <div class="w-16 h-16 mx-auto mb-2 rounded-full border-4 flex items-center justify-center"
-                       [ngClass]="{
-                         'border-blue-400 text-blue-600': getBMICategory() === 'Underweight',
-                         'border-green-400 text-green-600': getBMICategory() === 'Normal',
-                         'border-yellow-400 text-yellow-600': getBMICategory() === 'Overweight',
-                         'border-red-400 text-red-600': getBMICategory() === 'Obese',
-                         'border-gray-400 text-gray-600': !getBMICategory()
-                       }">
-                    <i class="fas fa-user text-2xl"></i>
+              <!-- Blood Group Dropdown -->
+              <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  <i class="fas fa-tint mr-2 text-red-700"></i>
+                  Blood Group
+                </label>
+                <div class="relative">
+                  <input type="text" 
+                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                         placeholder="Search blood group"
+                         [(ngModel)]="searchInputs.bloodgroup" 
+                         name="bloodGroupSearch"
+                         (input)="filterOptions('bloodgroup', searchInputs.bloodgroup)"
+                         (focus)="openDropdown()"
+                         (blur)="closeDropdown('bloodgroup')" 
+                         autocomplete="off"
+                         [value]="patientData.bloodGroupId ? getOptionLabel('bloodgroup', patientData.bloodGroupId) : ''"
+                         (ngModelChange)="markFieldChanged('bloodGroupId'); triggerAutoSave()" />
+                  
+                  <!-- Dropdown -->
+                  <div class="absolute z-10 w-full mt-1 bg-white shadow-lg rounded-md border border-gray-300"
+                      *ngIf="isDropdownOpen.bloodgroup && filteredOptions.bloodgroup.length">
+                    <ul class="py-1 max-h-60 overflow-y-auto">
+                      <li class="px-3 py-2 hover:bg-gray-100 cursor-pointer flex justify-between items-center"
+                          *ngFor="let option of filteredOptions.bloodgroup"
+                          (mousedown)="selectOption('bloodgroup', option)">
+                        {{ option.value }}
+                        <i *ngIf="patientData.bloodGroupId === option.id" class="fas fa-check text-green-500"></i>
+                      </li>
+                    </ul>
                   </div>
-                  <p class="text-sm font-medium text-gray-700">{{ getBMICategory() || 'Enter height & weight' }}</p>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Medical History Section -->
+          <!-- SYMPTOMS & CHIEF COMPLAINT (Mandatory) -->
+          <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
+            <div class="flex items-center space-x-3 mb-6">
+              <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+                <i class="fas fa-notes-medical text-white"></i>
+              </div>
+              <div>
+                <h2 class="text-xl font-bold text-gray-900">Symptoms & Chief Complaint</h2>
+                <p class="text-gray-600 text-sm">Primary symptoms and concerns</p>
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <!-- Chief Complaint Search -->
+              <div class="relative">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  <i class="fas fa-comment-medical mr-2 text-blue-500"></i>
+                  Chief Complaint <span class="text-red-500">*</span>
+                </label>
+                <div class="flex gap-2 mb-2">
+                  <input type="text" 
+                         class="flex-grow px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                         placeholder="Search complaint..."
+                         [(ngModel)]="searchInputs.complaint" 
+                         name="chiefComplaintSearch"
+                         (input)="filterOptions('complaint', searchInputs.complaint); markFieldChanged('chiefComplaints')"
+                         (focus)="filterOptions('complaint', searchInputs.complaint)"
+                         (blur)="closeDropdown('complaint')" 
+                         autocomplete="off" 
+                         required
+                         (ngModelChange)="markFieldChanged('chiefComplaints')" />
+                  <button class="px-3 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
+                          type="button"
+                          (click)="addNewItem('complaint'); markFieldChanged('chiefComplaints')"
+                          *ngIf="showAddButtons.complaint">
+                    Add
+                  </button>
+                </div>
+
+                <!-- Dropdown -->
+                <div class="absolute z-10 w-full mt-1 bg-white shadow-lg rounded-md border border-gray-300"
+                    *ngIf="isDropdownOpen.complaint && filteredOptions.complaint.length">
+                  <ul class="py-1 max-h-60 overflow-y-auto">
+                    <li class="px-3 py-2 hover:bg-blue-50 cursor-pointer flex justify-between items-center"
+                        *ngFor="let option of filteredOptions.complaint"
+                        (click)="selectComplaint(option); markFieldChanged('chiefComplaints')">
+                      {{ option.name }}
+                      <i *ngIf="isComplaintSelected(option)" class="fas fa-check text-green-500"></i>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- Selected Complaints -->
+              <div *ngIf="patientData.chiefComplaints?.length" class="space-y-3">
+                <div *ngFor="let item of patientData.chiefComplaints; let i = index" 
+                     class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                  <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-lg font-semibold text-gray-800">{{ item.complaint }}</h3>
+                    <button type="button" 
+                            class="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-all"
+                            (click)="removeItem('chiefComplaints', i); markFieldChanged('chiefComplaints')">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Pain Scale -->
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">
+                        <i class="fas fa-thermometer-half mr-2 text-red-500"></i>
+                        Pain Scale (0-10)
+                      </label>
+                      <input type="number" 
+                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                             min="0" max="10"
+                             [(ngModel)]="item.painScale" 
+                             [name]="'painScale' + i"
+                             (input)="validatePainScale($event, i); markFieldChanged('chiefComplaints')"
+                             (keydown)="preventInvalidInput($event)"
+                             (ngModelChange)="markFieldChanged('chiefComplaints'); triggerAutoSave()" />
+                      <div *ngIf="painScaleErrors[i]" class="text-red-500 text-xs mt-1">
+                        Pain scale must be between 0 and 10
+                      </div>
+                    </div>
+
+                    <!-- Onset Date -->
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">
+                        <i class="fas fa-calendar mr-2 text-blue-500"></i>
+                        Onset Date
+                      </label>
+                      <input type="date" 
+                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                             [(ngModel)]="item.onsetDate" 
+                             [name]="'onsetDate' + i"
+                             (input)="markFieldChanged('chiefComplaints')"
+                             (ngModelChange)="markFieldChanged('chiefComplaints'); triggerAutoSave()" />
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="md:col-span-3">
+                      <label class="block text-sm font-medium text-gray-700 mb-1">
+                        <i class="fas fa-sticky-note mr-2 text-yellow-500"></i>
+                        Notes
+                      </label>
+                      <textarea 
+                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                             rows="2"
+                             [(ngModel)]="item.notes" 
+                             [name]="'notes' + i"
+                             (input)="markFieldChanged('chiefComplaints')"
+                             (ngModelChange)="markFieldChanged('chiefComplaints'); triggerAutoSave()"></textarea>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- MEDICAL HISTORY (Optional) -->
           <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 border border-purple-200">
             <div class="flex items-center space-x-3 mb-6">
               <div class="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center">
@@ -358,73 +356,488 @@
               </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <!-- Allergies -->
+            <div class="space-y-6">
+              <!-- ALLERGIES -->
               <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
                 <label class="block text-sm font-medium text-gray-700 mb-3">
                   <i class="fas fa-exclamation-triangle mr-2 text-red-500"></i>
                   Allergies
                 </label>
-                <div class="space-y-2 max-h-40 overflow-y-auto">
-                  <div *ngFor="let allergy of allergyOptions" class="flex items-center">
-                    <input type="checkbox" 
-                           [id]="'allergy-' + allergy.id"
-                           [checked]="isAllergySelected(allergy)"
-                           (change)="toggleAllergy(allergy.value)"
-                           class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500">
-                    <label [for]="'allergy-' + allergy.id" 
-                           class="ml-2 text-sm text-gray-700 cursor-pointer hover:text-purple-600 transition-colors duration-200">
-                      {{ allergy.value }}
-                    </label>
+                
+                <!-- Add Allergy Form -->
+                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 mb-4">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Category Dropdown -->
+                    <div class="relative">
+                      <label class="block text-xs font-medium text-gray-500 mb-1">Category</label>
+                      <div class="flex gap-2">
+                        <input type="text" 
+                               class="flex-grow px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-sm"
+                               placeholder="Search category"
+                               [(ngModel)]="searchInputs.allergycategory" 
+                               name="allergyCategorySearch"
+                               (input)="filterOptions('allergycategory', searchInputs.allergycategory)"
+                               (focus)="filterOptions('allergycategory', searchInputs.allergycategory)"
+                               (blur)="closeDropdown('allergycategory')" 
+                               autocomplete="off"
+                               (ngModelChange)="markFieldChanged('allergySeverities')" />
+                        <button class="px-3 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors text-sm"
+                                type="button"
+                                (click)="addNewItem('allergycategory')"
+                                *ngIf="showAddButtons.allergycategory">
+                          Add
+                        </button>
+                      </div>
+
+                      <!-- Dropdown -->
+                      <div class="absolute z-10 w-full mt-1 bg-white shadow-lg rounded-md border border-gray-300"
+                          *ngIf="isDropdownOpen.allergycategory && filteredOptions.allergycategory.length">
+                        <ul class="py-1 max-h-60 overflow-y-auto">
+                          <li class="px-3 py-2 hover:bg-purple-50 cursor-pointer flex justify-between items-center"
+                              *ngFor="let option of filteredOptions.allergycategory"
+                              (click)="selectAllergyCategory(option)">
+                            {{ option.value }}
+                            <i *ngIf="isAllergyCategorySelected(option)" class="fas fa-check text-green-500"></i>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+
+                    <!-- Allergy Dropdown -->
+                    <div class="relative">
+                      <label class="block text-xs font-medium text-gray-500 mb-1">Allergy</label>
+                      <div class="flex gap-2">
+                        <input type="text" 
+                               class="flex-grow px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-sm"
+                               placeholder="Search allergy"
+                               [(ngModel)]="searchInputs.allergy" 
+                               name="allergySearch"
+                               (input)="filterOptions('allergy', searchInputs.allergy)"
+                               (focus)="onAllergyFocus()"
+                               (blur)="closeDropdown('allergy')" 
+                               autocomplete="off"
+                               [disabled]="!newAllergy.allergyCategoryId"
+                               (ngModelChange)="markFieldChanged('allergySeverities')" />
+                        <button class="px-3 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors text-sm"
+                                type="button"
+                                (click)="addNewItem('allergy')"
+                                *ngIf="showAddButtons.allergy"
+                                [disabled]="!newAllergy.allergyCategoryId">
+                          Add
+                        </button>
+                      </div>
+
+                      <!-- Dropdown -->
+                      <div class="absolute z-10 w-full mt-1 bg-white shadow-lg rounded-md border border-gray-300"
+                          *ngIf="isDropdownOpen.allergy && filteredOptions.allergy.length">
+                        <ul class="py-1 max-h-60 overflow-y-auto">
+                          <li class="px-3 py-2 hover:bg-purple-50 cursor-pointer flex justify-between items-center"
+                              *ngFor="let option of filteredOptions.allergy"
+                              (click)="selectAllergy(option)">
+                            {{ option.value }}
+                            <i *ngIf="isAllergySelected(option)" class="fas fa-check text-green-500"></i>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+
+                    <!-- Severity Dropdown -->
+                    <div class="relative">
+                      <label class="block text-xs font-medium text-gray-500 mb-1">Severity</label>
+                      <div class="flex gap-2">
+                        <input type="text" 
+                               class="flex-grow px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-sm"
+                               placeholder="Search severity"
+                               [(ngModel)]="searchInputs.severity" 
+                               name="severitySearch"
+                               (input)="filterOptions('severity', searchInputs.severity)"
+                               (focus)="filterOptions('severity', searchInputs.severity)"
+                               (blur)="closeDropdown('severity')" 
+                               autocomplete="off"
+                               (ngModelChange)="markFieldChanged('allergySeverities')" />
+                        <button class="px-3 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors text-sm"
+                                type="button"
+                                (click)="addNewItem('severity')"
+                                *ngIf="showAddButtons.severity">
+                          Add
+                        </button>
+                      </div>
+
+                      <!-- Dropdown -->
+                      <div class="absolute z-10 w-full mt-1 bg-white shadow-lg rounded-md border border-gray-300"
+                          *ngIf="isDropdownOpen.severity && filteredOptions.severity.length">
+                        <ul class="py-1 max-h-60 overflow-y-auto">
+                          <li class="px-3 py-2 hover:bg-purple-50 cursor-pointer flex justify-between items-center"
+                              *ngFor="let option of filteredOptions.severity"
+                              (click)="selectSeverity(option)">
+                            {{ option.value }}
+                            <i *ngIf="isSeveritySelected(option)" class="fas fa-check text-green-500"></i>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+
+                    <!-- Reaction Details -->
+                    <div class="md:col-span-2">
+                      <label class="block text-xs font-medium text-gray-500 mb-1">Reaction Details</label>
+                      <textarea 
+                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-sm"
+                             rows="2" 
+                             placeholder="Details of allergic reaction"
+                             [(ngModel)]="newAllergy.reactionDetails" 
+                             name="reactionDetails" 
+                             maxlength="500"
+                             (ngModelChange)="markFieldChanged('allergySeverities')"></textarea>
+                    </div>
+
+                    <!-- First Observed Date -->
+                    <div>
+                      <label class="block text-xs font-medium text-gray-500 mb-1">First Observed</label>
+                      <input type="date" 
+                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-sm"
+                             [(ngModel)]="newAllergy.firstObserved" 
+                             name="firstObserved"
+                             (ngModelChange)="markFieldChanged('allergySeverities')" />
+                    </div>
+
+                    <!-- Last Observed Date -->
+                    <div>
+                      <label class="block text-xs font-medium text-gray-500 mb-1">Last Observed</label>
+                      <input type="date" 
+                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-sm"
+                             [(ngModel)]="newAllergy.lastObserved" 
+                             name="lastObserved"
+                             (ngModelChange)="markFieldChanged('allergySeverities')" />
+                    </div>
+                  </div>
+
+                  <!-- Add Button -->
+                  <div class="flex justify-end mt-3">
+                    <button class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm"
+                            type="button"
+                            [disabled]="!newAllergy.allergyId || !newAllergy.allergyCategoryId"
+                            (click)="addAllergy(); markFieldChanged('allergySeverities')">
+                      Add Allergy
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Display Selected Allergies -->
+                <div *ngIf="patientData.allergySeverities?.length" class="space-y-3">
+                  <div *ngFor="let allergy of patientData.allergySeverities; let i = index" 
+                       class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+                    <div class="flex justify-between items-start">
+                      <div>
+                        <div class="flex items-baseline">
+  <strong>{{ allergy.allergyName || getOptionLabel('allergy', allergy.allergyId) }}</strong>
+  <span class="text-xs text-gray-500 ml-2">
+    ({{ allergy.allergyCategoryName || getOptionLabel('allergycategory', allergy.allergyCategoryId) }})
+  </span>
+</div>
+<div *ngIf="allergy.severityId" class="text-sm text-gray-600 mt-1">
+  Severity: {{ allergy.severityName || getOptionLabel('severity', allergy.severityId) }}
+</div>
+                        
+                        <div *ngIf="allergy.reactionDetails" class="text-sm mt-1">
+                          <strong>Reaction:</strong> {{ allergy.reactionDetails }}
+                        </div>
+                        
+                        <div class="text-xs text-gray-500 mt-1">
+                          <span *ngIf="allergy.firstObserved">First Observed: {{ allergy.firstObserved | date:'shortDate' }}</span>
+                          <span *ngIf="allergy.lastObserved"> • Last Observed: {{ allergy.lastObserved | date:'shortDate' }}</span>
+                        </div>
+                      </div>
+                      <button type="button" 
+                              class="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-all"
+                              (click)="removeItem('allergySeverities', i); markFieldChanged('allergySeverities')">
+                        <i class="fas fa-trash-alt"></i>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <!-- Medications -->
+              <!-- CURRENT MEDICATIONS -->
               <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
                 <label class="block text-sm font-medium text-gray-700 mb-3">
                   <i class="fas fa-pills mr-2 text-green-500"></i>
                   Current Medications
                 </label>
-                <div class="space-y-2 max-h-40 overflow-y-auto">
-                  <div *ngFor="let medication of medicationOptions" class="flex items-center">
-                    <input type="checkbox" 
-                           [id]="'medication-' + medication.id"
-                           [checked]="isMedicationSelected(medication.name)"
-                           (change)="toggleMedication(medication.name || '')"
-                           class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500">
-                    <label [for]="'medication-' + medication.id" 
-                           class="ml-2 text-sm text-gray-700 cursor-pointer hover:text-purple-600 transition-colors duration-200">
-                      {{ medication.name }}
-                    </label>
+                
+                <!-- Add Medication Form -->
+                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 mb-4">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Medication Dropdown -->
+                    <div class="relative">
+                      <label class="block text-xs font-medium text-gray-500 mb-1">Medication</label>
+                      <div class="flex gap-2">
+                        <input type="text" 
+                               class="flex-grow px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-sm"
+                               placeholder="Search medication..."
+                               [(ngModel)]="searchInputs.medication" 
+                               name="medicationSearch"
+                               (input)="filterOptions('medication', searchInputs.medication)"
+                               (focus)="filterOptions('medication', searchInputs.medication)"
+                               (blur)="closeDropdown('medication')" 
+                               autocomplete="off" />
+                        <button class="px-3 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors text-sm"
+                                type="button"
+                                (click)="addNewItem('medication')"
+                                *ngIf="showAddButtons.medication">
+                          Add
+                        </button>
+                      </div>
+
+                      <!-- Dropdown -->
+                      <div class="absolute z-10 w-full mt-1 bg-white shadow-lg rounded-md border border-gray-300"
+                          *ngIf="isDropdownOpen.medication && filteredOptions.medication.length">
+                        <ul class="py-1 max-h-60 overflow-y-auto">
+                          <li class="px-3 py-2 hover:bg-purple-50 cursor-pointer flex justify-between items-center"
+                              *ngFor="let option of filteredOptions.medication"
+                              (click)="selectMedication(option)">
+                            {{ option.value }}
+                            <i *ngIf="isMedicationSelected(option)" class="fas fa-check text-green-500"></i>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                    
+                    <!-- Dosage -->
+                    <div>
+                      <label class="block text-xs font-medium text-gray-500 mb-1">Dosage</label>
+                      <input type="text" 
+                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-sm"
+                             placeholder="e.g. 500mg"
+                             [(ngModel)]="newMedication.dosage" 
+                             name="dosage" 
+                             maxlength="100" />
+                    </div>
+                    
+                    <!-- Frequency Dropdown -->
+                    <div class="relative">
+                      <label class="block text-xs font-medium text-gray-500 mb-1">Frequency</label>
+                      <div class="flex gap-2">
+                        <input type="text" 
+                               class="flex-grow px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-sm"
+                               placeholder="Search frequency..."
+                               [(ngModel)]="searchInputs.medicationfrequency" 
+                               name="frequencySearch"
+                               (input)="filterOptions('medicationfrequency', searchInputs.medicationfrequency)"
+                               (focus)="filterOptions('medicationfrequency', searchInputs.medicationfrequency)"
+                               (blur)="closeDropdown('medicationfrequency')" 
+                               autocomplete="off" />
+                        <button class="px-3 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors text-sm"
+                                type="button"
+                                (click)="addNewItem('medicationfrequency')"
+                                *ngIf="showAddButtons.medicationfrequency">
+                          Add
+                        </button>
+                      </div>
+
+                      <!-- Dropdown -->
+                      <div class="absolute z-10 w-full mt-1 bg-white shadow-lg rounded-md border border-gray-300"
+                          *ngIf="isDropdownOpen.medicationfrequency && filteredOptions.medicationfrequency.length">
+                        <ul class="py-1 max-h-60 overflow-y-auto">
+                          <li class="px-3 py-2 hover:bg-purple-50 cursor-pointer flex justify-between items-center"
+                              *ngFor="let option of filteredOptions.medicationfrequency"
+                              (click)="selectFrequency(option, 'medication')">
+                            {{ option.value }}
+                            <i *ngIf="isFrequencySelected(option, 'medication')" class="fas fa-check text-green-500"></i>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                    
+                    <!-- Start Date -->
+                    <div>
+                      <label class="block text-xs font-medium text-gray-500 mb-1">Start Date</label>
+                      <input type="date" 
+                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-sm"
+                             [(ngModel)]="newMedication.startDate" 
+                             name="startDate" />
+                    </div>
+                    
+                    <!-- End Date -->
+                    <div>
+                      <label class="block text-xs font-medium text-gray-500 mb-1">End Date</label>
+                      <input type="date" 
+                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-sm"
+                             [(ngModel)]="newMedication.endDate" 
+                             name="endDate" />
+                    </div>
+                    
+                    <!-- Reason -->
+                    <div class="md:col-span-2">
+                      <label class="block text-xs font-medium text-gray-500 mb-1">Reason</label>
+                      <textarea 
+                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-sm"
+                             rows="2" 
+                             placeholder="Reason for medication"
+                             [(ngModel)]="newMedication.reason" 
+                             name="reason" 
+                             maxlength="500"></textarea>
+                    </div>
+                  </div>
+                  
+                  <!-- Add Button -->
+                  <div class="flex justify-end mt-3">
+                    <button class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm"
+                            type="button"
+                            [disabled]="!newMedication.medicationId"
+                            (click)="addMedication(); markFieldChanged('medications')">
+                      Add Medication
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Display Selected Medications -->
+                <div *ngIf="patientData.medications?.length" class="space-y-3">
+                  <div *ngFor="let med of patientData.medications; let i = index" 
+                       class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+                    <div class="flex justify-between items-start">
+                      <div>
+                        <strong>{{ getOptionLabel('medication', med.medicationId) }}</strong>
+                        <div class="text-sm text-gray-600 mt-1">
+                          <span *ngIf="med.dosage">{{ med.dosage }}</span>
+                          <span *ngIf="med.frequency"> • {{ med.frequency }}</span>
+                        </div>
+                        <div class="text-xs text-gray-500 mt-1">
+                          <span *ngIf="med.startDate">Start: {{ med.startDate | date:'shortDate' }}</span>
+                          <span *ngIf="med.endDate"> • End: {{ med.endDate | date:'shortDate' }}</span>
+                        </div>
+                        <div *ngIf="med.reason" class="text-xs mt-1">
+                          <strong>Reason:</strong> {{ med.reason }}
+                        </div>
+                      </div>
+                      <button type="button" 
+                              class="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-all"
+                              (click)="removeItem('medications', i); markFieldChanged('medications')">
+                        <i class="fas fa-trash-alt"></i>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <!-- Chronic Conditions -->
+              <!-- CHRONIC CONDITIONS -->
               <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
                 <label class="block text-sm font-medium text-gray-700 mb-3">
                   <i class="fas fa-procedures mr-2 text-orange-500"></i>
                   Chronic Conditions
                 </label>
-                <div class="space-y-2 max-h-40 overflow-y-auto">
-                  <div *ngFor="let condition of chronicConditionOptions" class="flex items-center">
-                    <input type="checkbox" 
-                           [id]="'condition-' + condition.id"
-                           [checked]="isConditionSelected(condition)"
-                           (change)="toggleChronicCondition(condition.value)"
-                           class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500">
-                    <label [for]="'condition-' + condition.id" 
-                           class="ml-2 text-sm text-gray-700 cursor-pointer hover:text-purple-600 transition-colors duration-200">
-                      {{ condition.value }}
-                    </label>
+                
+                <!-- Add Condition Form -->
+                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 mb-4">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Condition Dropdown -->
+                    <div class="relative">
+                      <label class="block text-xs font-medium text-gray-500 mb-1">Condition</label>
+                      <div class="flex gap-2">
+                        <input type="text" 
+                               class="flex-grow px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-sm"
+                               placeholder="Search condition"
+                               [(ngModel)]="searchInputs.condition" 
+                               name="conditionSearch"
+                               (input)="filterOptions('condition', searchInputs.condition)"
+                               (focus)="filterOptions('condition', searchInputs.condition)"
+                               (blur)="closeDropdown('condition')" 
+                               autocomplete="off" />
+                        <button class="px-3 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors text-sm"
+                                type="button"
+                                (click)="addNewItem('condition')"
+                                *ngIf="showAddButtons.condition">
+                          Add
+                        </button>
+                      </div>
+
+                      <!-- Dropdown -->
+                      <div class="absolute z-10 w-full mt-1 bg-white shadow-lg rounded-md border border-gray-300"
+                          *ngIf="isDropdownOpen.condition && filteredOptions.condition.length">
+                        <ul class="py-1 max-h-60 overflow-y-auto">
+                          <li class="px-3 py-2 hover:bg-purple-50 cursor-pointer flex justify-between items-center"
+                              *ngFor="let option of filteredOptions.condition"
+                              (click)="selectCondition(option)">
+                            {{ option.value }}
+                            <i *ngIf="isConditionSelected(option)" class="fas fa-check text-green-500"></i>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+
+                    <!-- Diagnosis Date -->
+                    <div>
+                      <label class="block text-xs font-medium text-gray-500 mb-1">Diagnosis Date</label>
+                      <input type="date" 
+                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-sm"
+                             [(ngModel)]="newCondition.diagnosisDate" 
+                             name="diagnosisDate" />
+                    </div>
+
+                    <!-- Treatment Details -->
+                    <div class="md:col-span-2">
+                      <label class="block text-xs font-medium text-gray-500 mb-1">Treatment Details</label>
+                      <textarea 
+                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-sm"
+                             rows="2" 
+                             placeholder="Treatment details"
+                             [(ngModel)]="newCondition.treatmentDetails" 
+                             name="treatmentDetails" 
+                             maxlength="500"></textarea>
+                    </div>
+
+                    <!-- Is Controlled -->
+                    <div>
+                      <label class="block text-xs font-medium text-gray-500 mb-1">Is Controlled?</label>
+                      <select 
+                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-sm"
+                             [(ngModel)]="newCondition.isControlled" 
+                             name="isControlled">
+                        <option [ngValue]="null">Not Specified</option>
+                        <option [ngValue]="true">Yes</option>
+                        <option [ngValue]="false">No</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- Add Button -->
+                  <div class="flex justify-end mt-3">
+                    <button class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm"
+                            type="button"
+                            [disabled]="!newCondition.conditionId"
+                            (click)="addCondition(); markFieldChanged('chronicConditions')">
+                      Add Condition
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Display Selected Conditions -->
+                <div *ngIf="patientData.chronicConditions?.length" class="space-y-3">
+                  <div *ngFor="let condition of patientData.chronicConditions; let i = index" 
+                       class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+                    <div class="flex justify-between items-start">
+                      <div>
+                        <strong>{{ getOptionLabel('condition', condition.conditionId) }}</strong>
+                        <div class="text-sm text-gray-600 mt-1">
+                          <span *ngIf="condition.diagnosisDate">Diagnosed: {{ condition.diagnosisDate | date:'shortDate' }}</span>
+                          <span *ngIf="condition.treatmentDetails"> • Treatment: {{ condition.treatmentDetails }}</span>
+                        </div>
+                        <div *ngIf="condition.isControlled !== null" class="text-xs mt-1">
+                          <strong>Status:</strong> {{ condition.isControlled ? 'Controlled' : 'Not Controlled' }}
+                        </div>
+                      </div>
+                      <button type="button" 
+                              class="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-all"
+                              (click)="removeItem('chronicConditions', i); markFieldChanged('chronicConditions')">
+                        <i class="fas fa-trash-alt"></i>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Surgical History Section -->
+          <!-- SURGICAL HISTORY -->
           <div class="bg-gradient-to-r from-red-50 to-pink-50 rounded-xl p-6 border border-red-200">
             <div class="flex items-center space-x-3 mb-6">
               <div class="w-10 h-10 bg-red-500 rounded-lg flex items-center justify-center">
@@ -436,69 +849,172 @@
               </div>
             </div>
 
-            <div formArrayName="surgicalHistory" class="space-y-4">
-              <div *ngFor="let surgery of surgicalHistoryArray.controls; let i = index" 
-                   [formGroupName]="i"
-                   class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200">
+            <!-- Add Surgery Form -->
+            <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm mb-6">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Procedure Name -->
+                <div class="md:col-span-2">
+                  <label class="block text-sm font-medium text-gray-700 mb-1">
+                    <i class="fas fa-scalpel mr-2 text-red-500"></i>
+                    Procedure Name
+                  </label>
+                  <input type="text" 
+                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
+                         placeholder="Enter procedure name"
+                         [(ngModel)]="newSurgery.procedure" 
+                         name="procedure" />
+                </div>
                 
-                <div class="flex items-start justify-between mb-4">
-                  <h3 class="text-lg font-semibold text-gray-800">Surgery {{ i + 1 }}</h3>
-                  <button type="button" 
-                          (click)="removeSurgicalHistory(i)"
-                          *ngIf="surgicalHistoryArray.length > 1"
-                          class="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-all duration-200">
-                    <i class="fas fa-trash"></i>
-                  </button>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                      <i class="fas fa-scalpel mr-2 text-red-500"></i>
-                      Procedure
-                    </label>
+                <!-- Surgery Type Dropdown -->
+                <div class="relative">
+                  <label class="block text-sm font-medium text-gray-700 mb-1">
+                    <i class="fas fa-procedures mr-2 text-red-500"></i>
+                    Surgery Type
+                  </label>
+                  <div class="flex gap-2">
                     <input type="text" 
-                           formControlName="procedure"
-                           (input)="onFormChange()"
-                           placeholder="e.g., Appendectomy"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200">
+                           class="flex-grow px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
+                           placeholder="Search surgery type..."
+                           [(ngModel)]="searchInputs.surgerytype" 
+                           name="surgeryTypeSearch"
+                           (input)="filterOptions('surgerytype', searchInputs.surgerytype)"
+                           (focus)="filterOptions('surgerytype', searchInputs.surgerytype)"
+                           (blur)="closeDropdown('surgerytype')" 
+                           autocomplete="off" />
+                    <button class="px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
+                            type="button"
+                            (click)="addNewItem('surgerytype')"
+                            *ngIf="showAddButtons.surgerytype">
+                      Add
+                    </button>
                   </div>
 
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                      <i class="fas fa-calendar mr-2 text-blue-500"></i>
-                      Surgery Date
-                    </label>
-                    <input type="date" 
-                           formControlName="surgeryDate"
-                           (input)="onFormChange()"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200">
-                  </div>
-
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                      <i class="fas fa-hospital mr-2 text-green-500"></i>
-                      Hospital/Clinic
-                    </label>
-                    <input type="text" 
-                           formControlName="hospital"
-                           (input)="onFormChange()"
-                           placeholder="e.g., City General Hospital"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200">
+                  <!-- Dropdown -->
+                  <div class="absolute z-10 w-full mt-1 bg-white shadow-lg rounded-md border border-gray-300"
+                      *ngIf="isDropdownOpen.surgerytype && filteredOptions.surgerytype.length">
+                    <ul class="py-1 max-h-60 overflow-y-auto">
+                      <li class="px-3 py-2 hover:bg-red-50 cursor-pointer flex justify-between items-center"
+                          *ngFor="let option of filteredOptions.surgerytype"
+                          (click)="selectSurgeryType(option)">
+                        {{ option.value }}
+                        <i *ngIf="isSurgeryTypeSelected(option)" class="fas fa-check text-green-500"></i>
+                      </li>
+                    </ul>
                   </div>
                 </div>
+                
+                <!-- Surgery Date -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">
+                    <i class="fas fa-calendar mr-2 text-blue-500"></i>
+                    Surgery Date
+                  </label>
+                  <input type="date" 
+                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
+                         [(ngModel)]="newSurgery.date" 
+                         name="surgeryDate" />
+                </div>
+                
+                <!-- Hospital -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">
+                    <i class="fas fa-hospital mr-2 text-green-500"></i>
+                    Hospital
+                  </label>
+                  <input type="text" 
+                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
+                         placeholder="Hospital name"
+                         [(ngModel)]="newSurgery.hospital" 
+                         name="hospital" 
+                         maxlength="255" />
+                </div>
+                
+                <!-- Surgeon Name -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">
+                    <i class="fas fa-user-md mr-2 text-blue-600"></i>
+                    Surgeon Name
+                  </label>
+                  <input type="text" 
+                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
+                         placeholder="Surgeon's name"
+                         [(ngModel)]="newSurgery.surgeonName" 
+                         name="surgeonName" 
+                         maxlength="100" />
+                </div>
+                
+                <!-- Had Complications -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">
+                    <i class="fas fa-exclamation-triangle mr-2 text-yellow-500"></i>
+                    Had Complications?
+                  </label>
+                  <select 
+                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
+                         [(ngModel)]="newSurgery.hadComplications" 
+                         name="hadComplications">
+                    <option [ngValue]="null">Not Specified</option>
+                    <option [ngValue]="true">Yes</option>
+                    <option [ngValue]="false">No</option>
+                  </select>
+                </div>
+                
+                <!-- Complication Details (shown only if hadComplications is true) -->
+                <div *ngIf="newSurgery.hadComplications" class="md:col-span-2">
+                  <label class="block text-sm font-medium text-gray-700 mb-1">
+                    <i class="fas fa-info-circle mr-2 text-blue-500"></i>
+                    Complication Details
+                  </label>
+                  <textarea 
+                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
+                         rows="2" 
+                         placeholder="Details about complications"
+                         [(ngModel)]="newSurgery.complicationDetails" 
+                         name="complicationDetails" 
+                         maxlength="500"></textarea>
+                </div>
+              </div>
+              
+              <!-- Add Button -->
+              <div class="flex justify-end mt-3">
+                <button class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                        type="button"
+                        [disabled]="!newSurgery.procedure"
+                        (click)="addSurgery(); markFieldChanged('surgicalHistory')">
+                  Add Surgery
+                </button>
               </div>
             </div>
 
-            <button type="button" 
-                    (click)="addSurgicalHistory()"
-                    class="mt-4 w-full py-3 border-2 border-dashed border-red-300 text-red-600 rounded-lg hover:border-red-400 hover:bg-red-50 transition-all duration-200 flex items-center justify-center space-x-2">
-              <i class="fas fa-plus"></i>
-              <span>Add Surgery Record</span>
-            </button>
+            <!-- Display Selected Surgeries -->
+            <div *ngIf="patientData.surgicalHistory?.length" class="space-y-3">
+              <div *ngFor="let surgery of patientData.surgicalHistory; let i = index" 
+                   class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <strong>{{ surgery.procedure }}</strong>
+                    <div class="text-sm text-gray-600 mt-1">
+                      <span *ngIf="surgery.date">Date: {{ surgery.date | date:'shortDate' }}</span>
+                      <span *ngIf="surgery.hospital"> • {{ surgery.hospital }}</span>
+                      <span *ngIf="surgery.surgeonName"> • Dr. {{ surgery.surgeonName }}</span>
+                      <span *ngIf="surgery.surgeryTypeId"> • {{ getOptionLabel('surgerytype', surgery.surgeryTypeId) }}</span>
+                    </div>
+                    <div *ngIf="surgery.hadComplications !== null" class="text-xs mt-1">
+                      <strong>Complications:</strong> {{ surgery.hadComplications ? 'Yes' : 'No' }}
+                      <span *ngIf="surgery.hadComplications && surgery.complicationDetails"> - {{ surgery.complicationDetails }}</span>
+                    </div>
+                  </div>
+                  <button type="button" 
+                          class="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-all"
+                          (click)="removeItem('surgicalHistory', i); markFieldChanged('surgicalHistory')">
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-
-          <!-- Family History Section -->
+          
+          <!-- FAMILY HISTORY -->
           <div class="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl p-6 border border-yellow-200">
             <div class="flex items-center space-x-3 mb-6">
               <div class="w-10 h-10 bg-yellow-500 rounded-lg flex items-center justify-center">
@@ -510,24 +1026,144 @@
               </div>
             </div>
 
-            <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div *ngFor="let condition of familyHistoryOptions" class="flex items-center p-3 rounded-lg hover:bg-yellow-50 transition-colors duration-200">
-                  <input type="checkbox" 
-                         [id]="'family-' + condition.id"
-                         [checked]="isFamilyHistorySelected(+condition.value)"
-                         (change)="toggleFamilyHistory(+condition.value)"
-                         class="w-4 h-4 text-yellow-600 border-gray-300 rounded focus:ring-yellow-500">
-                  <label [for]="'family-' + condition.id" 
-                         class="ml-3 text-sm text-gray-700 cursor-pointer">
-                    {{ condition.value }}
+            <!-- Add Family History Form -->
+            <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm mb-6">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Condition Dropdown -->
+                <div class="relative md:col-span-2">
+                  <label class="block text-sm font-medium text-gray-700 mb-1">
+                    <i class="fas fa-dna mr-2 text-purple-500"></i>
+                    Condition
                   </label>
+                  <div class="flex gap-2">
+                    <input type="text" 
+                           class="flex-grow px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-200"
+                           placeholder="Search condition..."
+                           [(ngModel)]="searchInputs.medicalcondition" 
+                           name="medicalConditionSearch"
+                           (input)="filterOptions('medicalcondition', searchInputs.medicalcondition)"
+                           (focus)="isDropdownOpen.medicalcondition = true; filterOptions('medicalcondition', searchInputs.medicalcondition)"
+                           (blur)="closeDropdown('medicalcondition')" 
+                           autocomplete="off" />
+                    <button class="px-3 py-2 bg-yellow-100 text-yellow-700 rounded-lg hover:bg-yellow-200 transition-colors"
+                            type="button"
+                            (click)="addNewItem('medicalcondition')"
+                            *ngIf="showAddButtons.medicalcondition">
+                      Add
+                    </button>
+                  </div>
+
+                  <!-- Dropdown -->
+                  <div class="absolute z-10 w-full mt-1 bg-white shadow-lg rounded-md border border-gray-300"
+                      *ngIf="isDropdownOpen.medicalcondition && filteredOptions.medicalcondition.length">
+                    <ul class="py-1 max-h-60 overflow-y-auto">
+                      <li class="px-3 py-2 hover:bg-yellow-50 cursor-pointer flex justify-between items-center"
+                          *ngFor="let option of filteredOptions.medicalcondition"
+                          (click)="selectMedicalCondition(option)">
+                        {{option.value}}
+                        <i *ngIf="isMedicalConditionSelected(option)" class="fas fa-check text-green-500"></i>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                
+                <!-- Relationship -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">
+                    <i class="fas fa-user-friends mr-2 text-blue-500"></i>
+                    Relationship
+                  </label>
+                  <input type="text" 
+                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-200"
+                         placeholder="e.g. Mother, Father"
+                         [(ngModel)]="newFamilyHistory.relationship" 
+                         name="relationship" 
+                         maxlength="50" />
+                </div>
+                
+                <!-- Age at Diagnosis -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">
+                    <i class="fas fa-birthday-cake mr-2 text-pink-500"></i>
+                    Age at Diagnosis
+                  </label>
+                  <input type="number" 
+                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-200"
+                         placeholder="Age when diagnosed"
+                         [(ngModel)]="newFamilyHistory.ageAtDiagnosis" 
+                         name="ageAtDiagnosis" 
+                         min="0" max="120" />
+                </div>
+                
+                <!-- Is Deceased -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">
+                    <i class="fas fa-cross mr-2 text-gray-600"></i>
+                    Is Deceased?
+                  </label>
+                  <select 
+                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-200"
+                         [(ngModel)]="newFamilyHistory.isDeceased" 
+                         name="isDeceased">
+                    <option [ngValue]="null">Not Specified</option>
+                    <option [ngValue]="true">Yes</option>
+                    <option [ngValue]="false">No</option>
+                  </select>
+                </div>
+                
+                <!-- Cause of Death (shown only if isDeceased is true) -->
+                <div *ngIf="newFamilyHistory.isDeceased" class="md:col-span-2">
+                  <label class="block text-sm font-medium text-gray-700 mb-1">
+                    <i class="fas fa-skull mr-2 text-gray-700"></i>
+                    Cause of Death
+                  </label>
+                  <input type="text" 
+                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-200"
+                         placeholder="Cause of death"
+                         [(ngModel)]="newFamilyHistory.causeOfDeath" 
+                         name="causeOfDeath" 
+                         maxlength="100" />
+                </div>
+              </div>
+              
+              <!-- Add Button -->
+              <div class="flex justify-end mt-3">
+                <button class="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors"
+                        type="button"
+                        [disabled]="!newFamilyHistory.conditionId"
+                        (click)="addFamilyHistory(); markFieldChanged('familyHistoryConditions')">
+                  Add Family History
+                </button>
+              </div>
+            </div>
+
+            <!-- Display Selected Family History Items -->
+            <div *ngIf="patientData.familyHistoryConditions?.length" class="space-y-3">
+              <div *ngFor="let item of patientData.familyHistoryConditions; let i = index" 
+                   class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+                <div class="flex justify-between items-center">
+                  <div>
+                    <strong>{{ getOptionLabel('medicalcondition', item.conditionId) }}</strong>
+                    <div class="text-sm text-gray-600">
+                      {{ item.relationship }} 
+                      <span *ngIf="item.ageAtDiagnosis">(Diagnosed at {{ item.ageAtDiagnosis }})</span>
+                      <span *ngIf="item.isDeceased !== null"> • {{ item.isDeceased ? 'Deceased' : 'Living' }}</span>
+                    </div>
+                    <div *ngIf="item.isDeceased && item.causeOfDeath" class="text-xs text-gray-500">
+                      Cause: {{ item.causeOfDeath }}
+                    </div>
+                  </div>
+                  <button type="button" 
+                          class="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-all"
+                          (click)="removeItem('familyHistoryConditions', i); markFieldChanged('familyHistoryConditions')">
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Social Habits Section -->
+          <!-- SOCIAL HABITS (Optional) -->
           <div class="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl p-6 border border-indigo-200">
             <div class="flex items-center space-x-3 mb-6">
               <div class="w-10 h-10 bg-indigo-500 rounded-lg flex items-center justify-center">
@@ -539,141 +1175,246 @@
               </div>
             </div>
 
-            <div formArrayName="socialHabits" class="space-y-6">
-              <div *ngFor="let habit of socialHabitsArray.controls; let i = index; trackBy: trackByIndex" 
-                   [formGroupName]="i"
-                   class="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  <!-- Smoking Status -->
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                      <i class="fas fa-smoking mr-2 text-gray-600"></i>
-                      Smoking Status
-                    </label>
-                    <select formControlName="smokingStatusId"
-                            (change)="onFormChange()"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200">
-                      <option value="">Select status</option>
-                      <option *ngFor="let option of smokingOptions" [value]="option.id">
-                        {{ option.value }}
-                      </option>
-                    </select>
-                  </div>
+            <ng-container *ngIf="patientData.socialHabits.length === 0">
+              {{ ensureSocialHabitExists() }}
+            </ng-container>
 
-                  <!-- Cigarettes per day -->
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                      <i class="fas fa-calculator mr-2 text-orange-500"></i>
-                      Cigarettes/Day
-                    </label>
-                    <input type="number" 
-                           formControlName="cigarettesPerDay"
-                           (input)="onFormChange()"
-                           min="0"
-                           placeholder="0"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200">
-                  </div>
+            <!-- Smoking & Alcohol Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
 
-                  <!-- Alcohol Status -->
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                      <i class="fas fa-wine-glass mr-2 text-purple-600"></i>
-                      Alcohol Status
-                    </label>
-                    <select formControlName="alcoholStatusId"
-                            (change)="onFormChange()"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200">
-                      <option value="">Select status</option>
-                      <option *ngFor="let option of alcoholOptions" [value]="option.id">
-                        {{ option.value }}
-                      </option>
-                    </select>
-                  </div>
+              <!-- Smoking -->
+              <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  <i class="fas fa-smoking mr-2 text-gray-600"></i>
+                  Smoking Status
+                </label>
+                <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200" 
+                        [(ngModel)]="patientData.socialHabits[0].smokingStatusId"
+                        name="smokingStatus" 
+                        (change)="onSmokingStatusChange()">
+                  <option [ngValue]="null" disabled selected>Select option</option>
+                  <option *ngFor="let option of smokingOptions" [ngValue]="option.id">{{ option.value }}</option>
+                </select>
+              </div>
 
-                  <!-- Alcohol Frequency -->
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                      <i class="fas fa-clock mr-2 text-blue-500"></i>
-                      Frequency
-                    </label>
-                    <input type="text" 
-                           formControlName="alcoholFrequency"
-                           (input)="onFormChange()"
-                           placeholder="e.g., Weekly, Daily"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200">
-                  </div>
+              <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  <i class="fas fa-calculator mr-2 text-orange-500"></i>
+                  Cigarettes Per Day
+                </label>
+                <input type="number" 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+                       [(ngModel)]="patientData.socialHabits[0].cigarettesPerDay"
+                       name="cigarettesPerDay" 
+                       min="0" 
+                       max="100" 
+                       (change)="markFieldChanged('socialHabits')" 
+                       [disabled]="isNeverSmoker()"/>
+              </div>
 
-                  <!-- Beverage Status -->
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                      <i class="fas fa-coffee mr-2 text-brown-500"></i>
-                      Beverage Status
-                    </label>
-                    <select formControlName="beverageStatusId"
-                            (change)="onFormChange()"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200">
-                      <option value="">Select status</option>
-                      <option *ngFor="let option of beverageOptions" [value]="option.id">
-                        {{ option.value }}
-                      </option>
-                    </select>
-                  </div>
+              <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  <i class="fas fa-clock mr-2 text-blue-500"></i>
+                  Years Smoking
+                </label>
+                <input type="number" 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+                       [(ngModel)]="patientData.socialHabits[0].yearsSmoking"
+                       name="yearsSmoking" 
+                       min="0" 
+                       max="100" 
+                       (change)="markFieldChanged('socialHabits')" 
+                       [disabled]="isNeverSmoker()"/>
+              </div>
 
-                  <!-- Cups per day -->
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                      <i class="fas fa-mug-hot mr-2 text-brown-600"></i>
-                      Cups/Day
-                    </label>
-                    <input type="number" 
-                           formControlName="cupsPerDay"
-                           (input)="onFormChange()"
-                           min="0"
-                           placeholder="0"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200">
-                  </div>
+              <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  <i class="fas fa-check-circle mr-2 text-green-500"></i>
+                  Has Quit Smoking?
+                </label>
+                <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+                        [(ngModel)]="patientData.socialHabits[0].hasQuitSmoking"
+                        name="hasQuitSmoking" 
+                        (change)="markFieldChanged('socialHabits')" 
+                        [disabled]="isNeverSmoker()">
+                  <option [ngValue]="null" disabled selected>Select option</option>
+                  <option [ngValue]="true">Yes</option>
+                  <option [ngValue]="false">No</option>
+                </select>
+              </div>
 
-                  <!-- Drug Usage Status -->
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                      <i class="fas fa-prescription-bottle mr-2 text-red-600"></i>
-                      Drug Usage
-                    </label>
-                    <select formControlName="drugUsageStatusId"
-                            (change)="onFormChange()"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200">
-                      <option value="">Select status</option>
-                      <option *ngFor="let option of drugUsageOptions" [value]="option.id">
-                        {{ option.value }}
-                      </option>
-                    </select>
-                  </div>
+              <div class="md:col-span-4 bg-white rounded-lg p-4 border border-gray-200 shadow-sm" *ngIf="patientData.socialHabits[0]?.hasQuitSmoking && !isNeverSmoker()">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  <i class="fas fa-calendar-check mr-2 text-blue-500"></i>
+                  Quit Date
+                </label>
+                <input type="date" 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+                       [(ngModel)]="patientData.socialHabits[0].smokingQuitDate"
+                       name="smokingQuitDate" 
+                       (change)="markFieldChanged('socialHabits')"/>
+              </div>
 
-                  <!-- Drug Details -->
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                      <i class="fas fa-info-circle mr-2 text-blue-500"></i>
-                      Drug Details
-                    </label>
-                    <input type="text" 
-                           formControlName="drugDetails"
-                           (input)="onFormChange()"
-                           placeholder="Specify if applicable"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200">
-                  </div>
-                </div>
+              <!-- Alcohol -->
+              <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  <i class="fas fa-wine-glass mr-2 text-purple-600"></i>
+                  Alcohol Status
+                </label>
+                <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+                        [(ngModel)]="patientData.socialHabits[0].alcoholStatusId"
+                        name="alcoholStatus" 
+                        (change)="onAlcoholStatusChange()">
+                  <option [ngValue]="null" disabled selected>Select option</option>
+                  <option *ngFor="let option of alcoholOptions" [ngValue]="option.id">{{ option.value }}</option>
+                </select>
+              </div>
+
+              <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  <i class="fas fa-clock mr-2 text-blue-500"></i>
+                  Alcohol Frequency
+                </label>
+                <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+                        [(ngModel)]="patientData.socialHabits[0].alcoholFrequencyId"
+                        name="alcoholFrequency" 
+                        (change)="markFieldChanged('socialHabits')" 
+                        [disabled]="isNeverDrinker()">
+                  <option [ngValue]="null" disabled selected>Select frequency</option>
+                  <option *ngFor="let option of alcoholfrequencyOptions" [ngValue]="option.id">{{ option.value }}</option>
+                </select>
+              </div>
+
+              <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  <i class="fas fa-clock mr-2 text-blue-500"></i>
+                  Years Drinking
+                </label>
+                <input type="number" 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+                       [(ngModel)]="patientData.socialHabits[0].yearsDrinking"
+                       name="yearsDrinking" 
+                       min="0" 
+                       max="100" 
+                       (change)="markFieldChanged('socialHabits')" 
+                       [disabled]="isNeverDrinker()"/>
               </div>
             </div>
 
-            <button type="button" 
-                    (click)="addSocialHabit()"
-                    class="mt-4 w-full py-3 border-2 border-dashed border-indigo-300 text-indigo-600 rounded-lg hover:border-indigo-400 hover:bg-indigo-50 transition-all duration-200 flex items-center justify-center space-x-2">
-              <i class="fas fa-plus"></i>
-              <span>Add Social Habit Record</span>
-            </button>
+            <!-- Beverage Row (Full Width) -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
+              <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  <i class="fas fa-coffee mr-2 text-brown-500"></i>
+                  Beverage Status
+                </label>
+                <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+                        [(ngModel)]="patientData.socialHabits[0].beverageStatusId"
+                        name="beverageStatus" 
+                        (change)="onBeverageStatusChange()">
+                  <option [ngValue]="null" disabled selected>Select option</option>
+                  <option *ngFor="let option of beverageOptions" [ngValue]="option.id">{{ option.value }}</option>
+                </select>
+              </div>
+
+              <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  <i class="fas fa-mug-hot mr-2 text-brown-600"></i>
+                  Cups Per Day
+                </label>
+                <input type="number" 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+                       [(ngModel)]="patientData.socialHabits[0].cupsPerDay"
+                       name="cupsPerDay" 
+                       min="0" 
+                       max="50" 
+                       (change)="markFieldChanged('socialHabits')" 
+                       [disabled]="isNonBeverageConsumer()"/>
+              </div>
+            </div>
+
+            <!-- Drug Row (Full Width) -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
+              <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  <i class="fas fa-prescription-bottle mr-2 text-red-600"></i>
+                  Drug Usage Status
+                </label>
+                <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+                        [(ngModel)]="patientData.socialHabits[0].drugUsageStatusId"
+                        name="drugUsageStatus" 
+                        (change)="onDrugUsageStatusChange()">
+                  <option [ngValue]="null" disabled selected>Select option</option>
+                  <option *ngFor="let option of drugUsageOptions" [ngValue]="option.id">{{ option.value }}</option>
+                </select>
+              </div>
+
+              <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm md:col-span-3">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  <i class="fas fa-info-circle mr-2 text-blue-500"></i>
+                  Drug Details
+                </label>
+                <textarea 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+                       rows="2"
+                       [(ngModel)]="patientData.socialHabits[0].drugDetails"
+                       name="drugDetails" 
+                       placeholder="e.g. Cannabis (recreational), Painkillers (prescribed)"
+                       maxlength="500" 
+                       (change)="markFieldChanged('socialHabits')"
+                       [disabled]="isNeverDrugUser()">
+                </textarea>
+              </div>
+            </div>
           </div>
 
+          <!-- ACTION BUTTONS -->
+          <div class="flex flex-col md:flex-row justify-between items-center gap-4 pt-6">
+            <!-- Auto-save Status -->
+          <div class="flex items-center space-x-2 px-4 py-2 rounded-full border" 
+               [ngClass]="{
+                 'bg-green-50 border-green-200 text-green-700': !isDirty && !saveInProgress,
+                 'bg-yellow-50 border-yellow-200 text-yellow-700': isDirty && !saveInProgress,
+                 'bg-blue-50 border-blue-200 text-blue-700': saveInProgress
+               }">
+            <div class="w-2 h-2 rounded-full" 
+                 [ngClass]="{
+                   'bg-green-500': !isDirty && !saveInProgress,
+                   'bg-yellow-500': isDirty && !saveInProgress,
+                   'bg-blue-500 animate-pulse': saveInProgress
+                 }"></div>
+            <span class="text-sm font-medium">
+              {{ getAutoSaveStatus() }}
+            </span>
+          </div>
+            
+            <div class="flex flex-wrap gap-3 justify-end">
+              <button type="button" 
+                      class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors flex items-center"
+                      (click)="saveAssessment(true)"
+                      [disabled]="saveInProgress">
+                <i class="fas fa-save mr-2"></i>
+                Save Draft
+              </button>
+
+              <button type="button"
+                      class="px-4 py-2 bg-gradient-to-r from-primary-orange to-orange-600 text-white rounded-lg hover:from-orange-600 hover:to-orange-700 transition-colors flex items-center"
+                      (click)="saveAssessment(false)"
+                      [disabled]="isSaveDisabled()"
+                      [ngClass]="{'opacity-50 cursor-not-allowed': isSaveDisabled()}">
+                <i class="fas fa-check-circle mr-2"></i>
+                Submit Final
+              </button>
+
+              <button type="button" 
+                      (click)="resetForm(form)"
+                      [disabled]="!isDirty"
+                      class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors flex items-center disabled:opacity-50">
+                <i class="fas fa-undo mr-2"></i>
+                Reset
+              </button>
+            </div>
+          </div>
         </form>
       </div>
     </div>
@@ -681,13 +1422,12 @@
     <!-- Floating Action Button for Mobile -->
     <div class="fixed bottom-6 right-6 lg:hidden">
       <button type="button" 
-              (click)="saveAssessment()"
-              [disabled]="isSaving"
+              (click)="saveAssessment(false)"
+              [disabled]="isSaveDisabled()"
               class="w-14 h-14 bg-gradient-to-r from-primary-orange to-orange-600 text-white rounded-full shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center">
-        <i class="fas" [ngClass]="isSaving ? 'fa-spinner fa-spin' : 'fa-save'" class="text-xl"></i>
+        <i class="fas" [ngClass]="saveInProgress ? 'fa-spinner fa-spin' : 'fa-check-circle'" class="text-xl"></i>
       </button>
     </div>
-
   </div>
 </div>
 

@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, ViewChild } from '@angular/core';
 import { AuthService } from '../../../service/auth/auth.service';
-import { AbstractControl, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormControl, FormGroup, Validators,FormArray } from '@angular/forms';
 import { AvailabilityModel, LeaveRequest } from '../../../models/user-model';
 import { TosterService } from '../../../service/toaster/tostr.service';
 import { AdminService } from '../../../service/admin/admin.service';
@@ -31,6 +31,7 @@ export class AvailabilityComponent {
   availabilitySubmitted: boolean = false;
   leaveUserSubmitted: boolean = false;
   availabilityform!: FormGroup;
+  daysArray!: FormArray;
   Leaveform!: FormGroup;
   isEditMode = false;
 
@@ -84,23 +85,45 @@ export class AvailabilityComponent {
   }
 
   initializeForms() {
-    this.availabilityform = this.fb.group({
-      userId: ['', Validators.required],
-      daysOfWeek: [[], Validators.required],
-      startTime: ['', Validators.required],
-      endTime: ['', Validators.required],
-      isAvailable: [true]
-    });
+  this.availabilityform = this.fb.group({
+    userId: ['', Validators.required],
+    isAvailable: [true],
+    days: this.fb.array(
+      this.dayOfWeek.map(day => this.createDayGroup(day))
+    )
+  });
 
-    this.Leaveform = this.fb.group({
-      therapistName: ['', Validators.required],
-      leaveDate: ['', Validators.required],
-      startTime: [''],
-      endTime: [''],
-      isfullday: [false],
-      reason: ['', Validators.required]
-    });
-  }
+  this.daysArray = this.availabilityform.get('days') as FormArray;
+
+  // Initialize Leave form
+  this.Leaveform = this.fb.group({
+    therapistName: ['', Validators.required],
+    leaveDate: ['', Validators.required],
+    startTime: [''],
+    endTime: [''],
+    isfullday: [false],
+    reason: ['', Validators.required]
+  });
+}
+
+createDayGroup(day: any): FormGroup {
+  return this.fb.group({
+    id: [null],
+    dayId: [day.id],
+    dayName: [day.name],
+    enabled: [false],
+    isAvailable: [false],
+    startTime: [{value: '', disabled: true}, Validators.required],
+    endTime: [{value: '', disabled: true}, Validators.required],
+    hasLeave: [false],
+    leaveInfo: this.fb.group({
+      isFullDay: [false],
+      fromTime: [null],
+      toTime: [null],
+      reason: ['']
+    })
+  });
+}
 
   ngAfterViewInit(): void {
     setTimeout(() => this.setTab(this.selectedTab));
@@ -116,20 +139,32 @@ export class AvailabilityComponent {
   }
 
   clearAvailabilityForm(): void {
-  // Enable the control before resetting
-  this.availabilityform.get('daysOfWeek')?.enable();
-  
   this.availabilityform.reset({
     userId: '',
-    daysOfWeek: [],
-    startTime: '',
-    endTime: '',
     isAvailable: true
   });
-  this.selectedDays = [];
+  this.allDaysSelected = false;
+  
+  // Reset all day controls
+  this.daysArray.controls.forEach((dayGroup: AbstractControl) => {
+    const group = dayGroup as FormGroup;
+    group.reset({
+      dayId: group.value.dayId,
+      enabled: false,
+      isAvailable: true,
+      startTime: '',
+      endTime: '',
+      hasLeave: false
+    });
+    
+    group.get('startTime')?.disable();
+    group.get('endTime')?.disable();
+  });
+  
   this.availabilitySubmitted = false;
   this.isEditMode = false;
   this.availability_get_id = null;
+  this.allDaysSelected = false;
 }
 
 
@@ -175,19 +210,59 @@ export class AvailabilityComponent {
   this.isPopupOpen = tab === 'leave' || tab === 'availability';
 }
 
-toggleDay(dayId: number): void {
-  const index = this.selectedDays.indexOf(dayId);
-  if (index > -1) {
-    this.selectedDays.splice(index, 1);
-  } else {
-    this.selectedDays.push(dayId);
-  }
-
-  // Update the form control
-  this.availabilityform.get('daysOfWeek')?.setValue(this.selectedDays);
+getDayControl(index: number, controlName: string): AbstractControl | null {
+  const dayGroup = this.daysArray.at(index) as FormGroup;
+  return dayGroup.get(controlName);
 }
 
+toggleDay(dayId: number): void {
+  const dayIndex = this.dayOfWeek.findIndex(d => d.id === dayId);
+  if (dayIndex >= 0) {
+    const dayGroup = this.daysArray.at(dayIndex) as FormGroup;
+    const enabled = dayGroup.get('enabled')?.value;
+    
+    // Toggle availability when enabling a day
+    if (enabled) {
+      dayGroup.get('isAvailable')?.setValue(true);
+    }
+    
+    // Handle time controls
+    const startControl = dayGroup.get('startTime');
+    const endControl = dayGroup.get('endTime');
+    
+    if (enabled) {
+      startControl?.enable();
+      endControl?.enable();
+      
+      // Set default times if empty
+      if (!startControl?.value) startControl?.setValue('09:00');
+      if (!endControl?.value) endControl?.setValue('18:00');
+    } else {
+      startControl?.reset();
+      endControl?.reset();
+      startControl?.disable();
+      endControl?.disable();
+    }
+    
+    this.updateAllDaysSelectedState();
+  }
+}
 
+// Add this to handle when isAvailable changes
+onAvailabilityToggle(dayControl: AbstractControl) {
+  const dayGroup = dayControl as FormGroup;
+  const isAvailable = dayGroup.get('isAvailable')?.value;
+  const startControl = dayGroup.get('startTime');
+  const endControl = dayGroup.get('endTime');
+  
+  if (isAvailable) {
+    startControl?.enable();
+    endControl?.enable();
+  } else {
+    startControl?.disable();
+    endControl?.disable();
+  }
+}
 
 
   onSubmitLeave() {
@@ -306,38 +381,50 @@ convertToTimeSpan(time: string): string | null {
 onSubmit() {
   this.availabilitySubmitted = true;
 
-  // Always sync selectedDays to the form control
-  this.availabilityform.get('daysOfWeek')?.setValue(this.selectedDays);
-
   if (this.availabilityform.valid) {
-    const startTimeRaw = this.availabilityform.get('startTime')?.value;
-    const endTimeRaw = this.availabilityform.get('endTime')?.value;
+    const daysArray = this.availabilityform.get('days') as FormArray;
+    
+    const availabilityData = daysArray.controls
+      .filter((dayGroup: AbstractControl) => {
+        const group = dayGroup as FormGroup;
+        return group.get('enabled')?.value && !group.get('hasLeave')?.value;
+      })
+      .map((dayGroup: AbstractControl) => {
+        const group = dayGroup as FormGroup;
+        const dayId = group.get('dayId')?.value;
+        const startTime = group.get('startTime')?.value;
+        const endTime = group.get('endTime')?.value;
+        const isAvailable = group.get('isAvailable')?.value;
+        const id = group.get('id')?.value; // Get the existing ID for updates
 
-    const parseTimeStringToDate = (timeStr: string): Date => {
-      const [hours, minutes] = timeStr.split(':').map(Number);
-      const date = new Date();
-      date.setHours(hours, minutes, 0, 0);
-      return date;
-    };
+        if (!this.isValidTime(startTime) || !this.isValidTime(endTime)) {
+          const dayName = this.dayOfWeek.find(d => d.id === dayId)?.name || 'Unknown day';
+          this.toastr.error(`Invalid time format for ${dayName}`);
+          throw new Error('Invalid time format');
+        }
 
-    const startTimeDate = parseTimeStringToDate(startTimeRaw);
-    const endTimeDate = parseTimeStringToDate(endTimeRaw);
+        return {
+          id: id || 0, // Use existing ID or 0 for new entries
+          dayOfWeek: dayId,
+          isAvailable: isAvailable,
+          startTime: startTime,
+          endTime: endTime
+        };
+      });
 
-    const startTime = this.datePipe.transform(startTimeDate, 'HH:mm');
-    const endTime = this.datePipe.transform(endTimeDate, 'HH:mm');
+    if (availabilityData.length === 0) {
+      this.toastr.error('Please select at least one editable day');
+      return;
+    }
 
     const formData = {
-      id: this.availability_get_id,
       userId: this.availabilityform.get('userId')?.value,
-      daysOfWeek: [...this.selectedDays],
-      startTime: startTime,
-      endTime: endTime,
-      isAvailable: this.availabilityform.get('isAvailable')?.value
+      availabilities: availabilityData
     };
 
-    const observable = this.authservice.addAvailability(formData); // Same method for add/update
+    console.log("Submitting:", formData);
 
-    observable.subscribe({
+    this._service.addOrUpdateAvailability(formData).subscribe({
       next: (res) => {
         this.clearAvailabilityForm();
         this.toastr.success(`Availability ${this.isEditMode ? 'updated' : 'saved'} successfully`);
@@ -350,6 +437,15 @@ onSubmit() {
       }
     });
   }
+}
+
+
+
+// Helper method to validate time format
+private isValidTime(time: string): boolean {
+  if (!time) return false;
+  const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+  return timeRegex.test(time);
 }
 
 
@@ -421,24 +517,93 @@ onSubmit() {
     });
   }
 
-editAvailability(row: Availability): void {
+editAvailability(userId: string): void {
   this.isEditMode = true;
-  this.availability_get_id = row.id;
+  this.availability_get_id = userId;
 
-  const selectedDay = this.dayOfWeek.find(day => day.name === row.dayName)?.id ?? null;
-  const dayArray = selectedDay !== null ? [selectedDay] : [];
+  // Initialize forms first
+  this.initializeForms();
+   // First find the therapist in the therapistList
+  const therapist = this.therapistList.find(t => t.userId === userId);
+  
+  if (therapist) {
+    // Set the username in the form
+    this.availabilityform.patchValue({
+      userId: userId,
+      username: `${therapist.firstName} ${therapist.lastName}`
+    });
+  }
 
-  this.selectedDays = [...dayArray];
+  this._service.getAvailabilityByUser(userId).subscribe({
+    next: (availabilities: any[]) => {
+      // Clear existing form array
+      while (this.daysArray.length) {
+        this.daysArray.removeAt(0);
+      }
+      this.updateAllDaysSelectedState();
+      // Rebuild form array with received data
+      availabilities.forEach(availability => {
+        const dayGroup = this.createDayGroup({
+          id: availability.dayId,
+          name: availability.dayName
+        });
 
-  this.availabilityform.patchValue({
-    userId: row.userId,
-    daysOfWeek: dayArray,
-    startTime: this.formatTimeToHHmm(row.startTime),
-    endTime: this.formatTimeToHHmm(row.endTime),
-    isAvailable: row.isAvailable
+        dayGroup.patchValue({
+          id: availability.id,
+          enabled: availability.isAvailable,
+          isAvailable: availability.isAvailable,
+          startTime: availability.startTime,
+          endTime: availability.endTime,
+          hasLeave: availability.hasLeave
+        });
+
+        if (availability.hasLeave) {
+          // Disable all fields for this day, including checkbox (enabled)
+          dayGroup.get('enabled')?.disable();
+          dayGroup.get('startTime')?.disable();
+          dayGroup.get('endTime')?.disable();
+
+          dayGroup.patchValue({
+            leaveInfo: availability.leaveInfo
+          });
+        } else {
+          // Enable/disable time fields based on isAvailable
+          if (availability.isAvailable) {
+            dayGroup.get('startTime')?.enable();
+            dayGroup.get('endTime')?.enable();
+          } else {
+            dayGroup.get('startTime')?.disable();
+            dayGroup.get('endTime')?.disable();
+          }
+
+          // Make sure the checkbox remains enabled
+          dayGroup.get('enabled')?.enable();
+        }
+
+        this.daysArray.push(dayGroup);
+      });
+
+      this.setTab('availability');
+      this.cdRef.detectChanges();
+    },
+    error: (err) => {
+      this.toastr.error('Failed to load availability details');
+      console.error('Error loading availability:', err);
+    }
   });
+}
 
-  this.setTab('availability');
+
+
+
+  updateAllDaysSelectedState() {
+  const daysArray = this.availabilityform.get('days') as FormArray;
+  const editableDays = daysArray.controls.filter(
+    dayGroup => !(dayGroup as FormGroup).get('hasLeave')?.value
+  );
+  
+  this.allDaysSelected = editableDays.length > 0 && 
+    editableDays.every(dayGroup => (dayGroup as FormGroup).get('enabled')?.value);
 }
 
 
@@ -525,32 +690,19 @@ editAvailability(row: Availability): void {
     },
     {
       headerName: 'Therapist',
-      field: 'username',
+      field: 'username', // note: capital 'U'
       flex: 1.2,
       cellRenderer: (params: any) => {
-        return `
-          <div class="flex items-center gap-2">
-            <img src="${params.data.avatar}" class="rounded-full w-8 h-8" />
-            <span>${params.value}</span>
-          </div>
-        `;
+        // We don't have an avatar, so just show the username
+        return `<span>${params.value}</span>`;
       },
     },
     {
-      headerName: 'Day',
-      field: 'dayName',
+      headerName: 'Available Days',
+      field: 'schedule', // the Schedule string from the API
       flex: 1,
     },
-    {
-      headerName: 'StartTime',
-      field: 'startTime',
-      flex: 1,
-    },
-    {
-      headerName: 'EndTime',
-      field: 'endTime',
-      flex: 1,
-    },
+    // We are removing the StartTime and EndTime columns
     {
       headerName: 'Actions',
       field: 'actions',
@@ -665,7 +817,7 @@ editAvailability(row: Availability): void {
   onGridRowClicked(event: any): void {
     const action = event.event?.target?.closest('button')?.getAttribute('data-action');
     const rowData = event.data;
-
+    
     if (!action || !rowData) return;
 
     if (this.selectedTab === 'list-leave') {
@@ -680,7 +832,7 @@ editAvailability(row: Availability): void {
     } else if (this.selectedTab === 'existing-availability') {
       switch (action) {
         case 'edit':
-          this.editAvailability(rowData);
+          this.editAvailability(rowData.userId);
           break;
         case 'delete':
           this.deleteAvailability(rowData.id);
@@ -715,4 +867,54 @@ editAvailability(row: Availability): void {
       }
     });
   }
+
+  // In your component.ts
+allDaysSelected = false;
+
+toggleAllDays() {
+  this.allDaysSelected = !this.allDaysSelected;
+  const daysArray = this.availabilityform.get('days') as FormArray;
+
+  daysArray.controls.forEach((dayGroup: AbstractControl) => {
+    const group = dayGroup as FormGroup;
+    
+    // Skip leave days
+    if (group.get('hasLeave')?.value) return;
+
+    group.get('enabled')?.setValue(this.allDaysSelected);
+    
+    const startControl = group.get('startTime');
+    const endControl = group.get('endTime');
+    
+    if (this.allDaysSelected) {
+      startControl?.enable();
+      endControl?.enable();
+      group.get('isAvailable')?.setValue(true);
+      
+      // Set default times only if they're empty
+      if (!startControl?.value) startControl?.setValue('09:00');
+      if (!endControl?.value) endControl?.setValue('18:00');
+    } else {
+      startControl?.disable();
+      endControl?.disable();
+      startControl?.reset();
+      endControl?.reset();
+    }
+  });
+
+  // Update the select all state
+  this.updateAllDaysSelectedState();
+}
+
+// Initialize form controls for each day
+initializeDayControls() {
+  this.dayOfWeek.forEach(day => {
+    this.availabilityform.addControl(`startTime_${day.id}`, new FormControl('', Validators.required));
+    this.availabilityform.addControl(`endTime_${day.id}`, new FormControl('', Validators.required));
+  });
+}
+
+
+
+
 }

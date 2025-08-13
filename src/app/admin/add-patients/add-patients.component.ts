@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component } from '@angular/core';
-import { AbstractControl, FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormArray, FormBuilder, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 import { AdminService } from '../../service/admin/admin.service';
 import { Client, Billing } from '../../models/useradmin-model';
 import { TosterService } from '../../service/toaster/tostr.service';
@@ -11,7 +11,18 @@ import { of } from 'rxjs';
 import { ActivatedRoute, Route, Router } from '@angular/router';
 
 
-type PatientTab = 'patient-info' | 'insurance' | 'notification';
+type PatientTab = 'patient-info' | 'notification';
+
+
+export function emailWithComValidator(control: AbstractControl): ValidationErrors | null {
+  const email = control.value;
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+  if (!email) return null;
+
+  return emailRegex.test(email) ? null : { invalidComEmail: true };
+}
+
 
 @Component({
   selector: 'app-add-patients',
@@ -20,7 +31,7 @@ type PatientTab = 'patient-info' | 'insurance' | 'notification';
   styleUrl: './add-patients.component.scss'
 })
 export class AddPatientsComponent {
-  tabs: PatientTab[] = ['patient-info', 'insurance', 'notification'];
+  tabs: PatientTab[] = ['patient-info', 'notification'];
   selectedTab: PatientTab = 'patient-info';
 
   isshowpopup: boolean = false;
@@ -33,9 +44,10 @@ export class AddPatientsComponent {
   zipCodes: any[] = [];
   BillingCountry: string = '';
   billingStates: any[] = [];
-billingCities: any[] = [];
-billingZipCodes: any[] = [];
+  billingCities: any[] = [];
+  billingZipCodes: any[] = [];
 
+  get_CountryCode!:string;
   selectedCountry: string = '';
   selectedCountryCode: string = '';
   selectedStateCode!: string | null | undefined;
@@ -72,45 +84,37 @@ actionType: 'Add' | 'Update' = 'Add';
     if (this.patientId) {
       this.isEditMode = true;
       this.editPatient(this.patientId);
+      console.log("patientIdpatientIdpatientId",this.patientId);
+      
     }
       this.clientForm = this.fb.group({
         patientCode: [''],
         firstName: ['', Validators.required],
         lastName: ['', Validators.required],
-        email: ['', [Validators.required, Validators.email]],
-        phoneNumber: ['', Validators.required],
+        email: ['', [Validators.required, Validators.email,emailWithComValidator]],
+        phoneNumber: [null, [Validators.required]],
         dateOfBirth: ['', Validators.required],
         gender: ['', Validators.required],
-        socialSecurityNumber: ['', Validators.required],
+        socialSecurityNumber: [''],
         country: ['', Validators.required],
         state: ['', Validators.required],
         city: ['', Validators.required],
+        phoneCode: [''],
         postalCode: ['', Validators.required],
-        billingCountry: [''],
-        billingState: [''],
-        billingCity: [''],
-        billingPostalCode: [''],
+        billingCountry: ['',Validators.required],
+        billingState: ['',Validators.required],
+        billingCity: ['',Validators.required],
+        billingPostalCode: ['',Validators.required],
         address: ['', Validators.required],
-        countryDataId: [null, Validators.required],
-        billingAddress: [''],
+        countryDataId: [null],
+        billingAddress: ['',Validators.required],
         billingCountryId: [null],
         billingSameAsCurrent: [false],
         emailNotification: [false],
         textNotification: [false],
-        insurances: this.fb.array([
-          this.fb.group({
-            insuranceCarrierId: [null],
-            policyHolderName: [''],
-            relationship: [''],
-            policyHolderDob: [null],
-            memberId: [''],
-            groupNumber: ['']
-          })
-        ])
       });
   
       this.getCountries();
-      this.loadInsuranceCarriers();
       const isEdit = !!this.patientId;
   
     this.breadcrumbService.setBreadcrumbs([
@@ -153,9 +157,6 @@ onBillingSameToggle() {
   ];
 
   if (isSame) {
-    console.log('[2] Copying primary address to billing address...');
-
-    // 1. Get all current values
     const primaryValues = {
       address: this.clientForm.get('address')?.value,
       country: this.clientForm.get('country')?.value,
@@ -163,9 +164,6 @@ onBillingSameToggle() {
       city: this.clientForm.get('city')?.value,
       postalCode: this.clientForm.get('postalCode')?.value
     };
-    console.log('[3] Primary Address Values:', primaryValues);
-
-    // 2. Refresh ALL dropdown options (critical for matching)
     this.billingStates = [...this.states];
     this.billingCities = [...this.cities];
     this.billingZipCodes = [...this.zipCodes];
@@ -175,7 +173,6 @@ onBillingSameToggle() {
       zips: this.billingZipCodes.length
     });
 
-    // 3. Find matching OBJECTS in billing dropdowns
     const matchedValues = {
       country: this.countries.find(c => 
         c.country === primaryValues.country?.country || 
@@ -195,7 +192,6 @@ onBillingSameToggle() {
     };
     console.log('[5] Matched Objects:', matchedValues);
 
-    // 4. Patch values with PROPER OBJECT REFERENCES
     this.clientForm.patchValue({
       billingAddress: primaryValues.address,
       billingCountry: matchedValues.country || primaryValues.country,
@@ -204,7 +200,6 @@ onBillingSameToggle() {
       billingPostalCode: this.getPostalCodeValue(matchedValues.postal, primaryValues.postalCode)
     }, { emitEvent: false });
 
-    // 5. Force UI update for dropdowns
     this.cdRef.detectChanges();
     console.log('[6] Patched values:', {
       country: this.clientForm.get('billingCountry')?.value,
@@ -213,13 +208,11 @@ onBillingSameToggle() {
       postal: this.clientForm.get('billingPostalCode')?.value
     });
 
-    // 6. Disable billing fields
     billingFields.forEach(control => {
       this.clientForm.get(control)?.disable({ emitEvent: false });
     });
 
   } else {
-    // Clear billing fields
     billingFields.forEach(control => {
       this.clientForm.get(control)?.enable({ emitEvent: false });
     });
@@ -237,30 +230,24 @@ onBillingSameToggle() {
   }
 }
 
-// Add these helper methods to your component
 private findMatchingPostalCode(postalValue: any): any {
   if (!postalValue) return null;
   
-  // Handle string value
   if (typeof postalValue === 'string') {
     return this.billingZipCodes.find(z => z.zipCode === postalValue);
   }
   
-  // Handle object with zipCode property
   if (postalValue.zipCode) {
     return this.billingZipCodes.find(z => z.zipCode === postalValue.zipCode);
   }
   
-  // Handle other cases
   return this.billingZipCodes.find(z => z.zipCode === postalValue) || postalValue;
 }
 
 private getPostalCodeValue(matchedPostal: any, originalPostal: any): any {
-  // Return matched postal code if found
   if (matchedPostal?.zipCode) return matchedPostal.zipCode;
   if (matchedPostal) return matchedPostal;
   
-  // Fallback to original value
   if (typeof originalPostal === 'object') {
     return originalPostal?.zipCode || '';
   }
@@ -269,10 +256,13 @@ private getPostalCodeValue(matchedPostal: any, originalPostal: any): any {
 }
 
   onCountryChange() {
+    
     const selectedCountryObj: any = this.clientForm.value.billingCountry;
     if (selectedCountryObj) {
       this.selectedCountry = selectedCountryObj.country;
       this.selectedCountryCode = selectedCountryObj.mobilePrefixCode;
+        this.get_CountryCode = selectedCountryObj.mobilePrefixCode;
+      this.clientForm.get('phoneCode')?.setValue(this.get_CountryCode);
       this.getStates();
       this.cities = [];
       this.zipCodes = [];
@@ -280,10 +270,13 @@ private getPostalCodeValue(matchedPostal: any, originalPostal: any): any {
   }
 
   onAddressCountryChange() {
+    debugger
     const selectedCountryObj: any = this.clientForm.value.country;
     if (selectedCountryObj) {
       this.selectedCountry = selectedCountryObj.country;
       this.selectedCountryCode = selectedCountryObj.mobilePrefixCode;
+      this.get_CountryCode = selectedCountryObj.mobilePrefixCode;
+      this.clientForm.get('phoneCode')?.setValue(this.get_CountryCode);
       this.getStates();
       this.cities = [];
       this.zipCodes = [];
@@ -338,7 +331,7 @@ onBillingStateChange() {
   this._authservice.getCities(selectedCountry, selectedStateCode).subscribe(cities => {
     this.billingCities = cities;
     this.clientForm.get('billingCity')?.reset();
-    this.clientForm.get('billingPostalCode')?.reset(); // ✅ correct control name
+    this.clientForm.get('billingPostalCode')?.reset(); 
     this.billingZipCodes = [];
   });
 }
@@ -353,7 +346,7 @@ onBillingCityChange() {
   if (!countryName || !selectedStateCode || !selectedCity) return;
 
   this._authservice.getZipCodes(countryName, selectedStateCode, selectedCity).subscribe(zips => {
-    console.log('Billing zips:', zips); // ✅ DEBUG LINE
+    console.log('Billing zips:', zips); 
     this.billingZipCodes = zips;
     this.clientForm.get('billingPostalCode')?.reset();
   });
@@ -411,8 +404,7 @@ onBillingCityChange() {
     const tabElements = document.querySelectorAll('.tab');
     const tabIndex: Record<PatientTab, number> = {
       'patient-info': 0,
-      'insurance': 1,
-      'notification': 2
+      'notification': 1
     };
 
     if (slider && tabElements[tabIndex[tab]]) {
@@ -437,27 +429,25 @@ onBillingCityChange() {
     }
   }
 
-  saveForm() {
-  // const shouldUpdate = !!this.patientId; // If we have an ID, we should update
-  
-  
+  saveForm() { 
+    debugger
+    if(this.clientForm.invalid && this.patientId ==null){
+      this.clientFormSubmitted = true;
+      this.selectedTab ='patient-info';
+      return
+    }
   if (this.patientId != null || undefined) {
     console.log('Performing update');
     this.onUpdatePatient();
     return;
   }
-
   console.log('Performing create');
     const formValue = this.clientForm.getRawValue();
-
     const selectedZip = this.zipCodes.find(
-  (zip: any) => zip.zipCode === formValue.postalCode
-);
+  (zip: any) => zip.zipCode === formValue.postalCode);
 const selectedBillingZip = this.billingZipCodes.find(
   (zip: any) => zip.zipCode === formValue.billingPostalCode
 );
-
-
     const payload: any = {
       patientCode: formValue.patientCode || '',
       firstName: formValue.firstName,
@@ -476,32 +466,24 @@ const selectedBillingZip = this.billingZipCodes.find(
       socialSecurityNumber: formValue.socialSecurityNumber,
       emailNotification: formValue.emailNotification,
       textNotification: formValue.textNotification,
-      insurances: formValue.insurances.map((ins: any) => ({
-        policyHolderName: ins.policyHolderName,
-        relationship: ins.relationship,
-        policyHolderDob: ins.policyHolderDob || null,
-        memberId: ins.memberId,
-        groupNumber: ins.groupNumber,
-        insuranceCarrierId: ins.insuranceCarrierId ? Number(ins.insuranceCarrierId) : null
-
-      }))
     };
-
     delete payload.billingSameAsCurrent;
-
     this._loader.show();
-
     this._adminservice.AddPatients(payload).subscribe({
       next: (res: Client) => {
-        this._toastr.success('Patient added successfully');
+        this._toastr.success(res.message);
         this._loader.hide();
         this.clientForm.reset();
         this.clientFormSubmitted = false;
+        this.router.navigate([
+      '/admin/patients/list-patients'
+    ],{state: { reload: true }});
+         
       },
       error: (err: any) => {
-        console.error('Error while saving data:', err);
-        this._toastr.error('Something went wrong. Please try again.');
-        this._loader.hide();
+         const errorMessage = err.error?.message;
+          this._toastr.error(errorMessage);
+          this._loader.hide();
       }
     });
   }
@@ -509,10 +491,8 @@ const selectedBillingZip = this.billingZipCodes.find(
   updateSlider() {
     setTimeout(() => {
       const tabs = document.querySelectorAll('.tab');
-
       const slider = document.querySelector('.slider') as HTMLElement;
       const activeTab = Array.from(tabs).find(tab => tab.classList.contains('active')) as HTMLElement;
-
       if (activeTab && slider) {
         slider.style.left = `${activeTab.offsetLeft}px`;
         slider.style.width = `${activeTab.offsetWidth}px`;
@@ -528,46 +508,31 @@ const selectedBillingZip = this.billingZipCodes.find(
     return this.clientForm.get('insurances') as FormArray;
   }
 
-  addInsurance() {
-    this.insurances.push(this.createInsuranceFormGroup());
-  }
-
   removeInsurance(index: number) {
     this.insurances.removeAt(index);
   }
 
 
-  loadInsuranceCarriers() {
-    this._authservice.getInsuranceCarriers().subscribe({
-      next: (res) => {
-        this.insuranceCarriers = res;
-      },
-      error: (err) => console.error('Error loading insurance carriers:', err)
-    });
-  }
+  // loadInsuranceCarriers() {
+  //   this._authservice.getInsuranceCarriers().subscribe({
+  //     next: (res) => {
+  //       this.insuranceCarriers = res;
+  //     },
+  //     error: (err) => console.error('Error loading insurance carriers:', err)
+  //   });
+  // }
 
-  createInsuranceFormGroup() {
-    return this.fb.group({
-      insuranceCarrierId: [null, Validators.required],
-      policyHolderName: [''],
-      relationship: [''],
-      policyHolderDob: ['', Validators.required],
-      memberId: [''],
-      groupNumber: ['']
-    });
-  }
 
    editPatient(id: string): void {
+    debugger
     this.isEditMode = true;
     this.patientId = id;
     this.actionType = 'Update';
-
     console.log('EditPatient - Setting edit mode:', {
     isEditMode: this.isEditMode,
     patientId: this.patientId,
     actionType: this.actionType
   });
-    
     forkJoin([
       this._authservice.getCountries(),
       this._adminservice.getPatientById(id),
@@ -576,62 +541,55 @@ const selectedBillingZip = this.billingZipCodes.find(
         if (!patient) {
           throw new Error('Patient not found');
         }
- 
         this.countries = countries;
-        this.selectedCountry = patient.country;
-        
-        // SIMPLIFIED COUNTRY MATCHING - Only compare country names
+        this.selectedCountry = patient.data.country;
         const selectedCountry = countries.find((c: any) => 
-          c.country === patient.country // Only compare country names
+          c.country === patient.data.country
         );
         const billingCountry = this.countries.find((c: any) => 
-            c.country === (patient.billingCountry as string)
+            c.country === (patient.data.billingCountry as string)
           );
         
-        console.log('Patient billing country ID:', patient.billingCountryId);
-        console.log('Matched billing country:', billingCountry);
+        // console.log('Patient billing country ID:', patient.data.billingCountryId);
+        // console.log('Patient billing country IDPatient billing country IDPatient billing country ID', patient.data);
+        // console.log('Matched billing country:', billingCountry.data);
         
-        console.log('Patient country:', patient.country);
-        console.log('Available countries:', countries);
-        console.log('Selected country:', selectedCountry);
+        // console.log('Patient country:', patient.data.country);
+        // console.log('Available countries:', countries);
+        // console.log('Selected country:', selectedCountry);
 
-        const formattedDob = patient.dateOfBirth ? 
-          (patient.dateOfBirth as string).split('T')[0] : null;
-
-        // Initialize form with patient data
+        const formattedDob = patient.data.dateOfBirth ? 
+          (patient.data.dateOfBirth as string).split('T')[0] : null;
         const initialValues = {
-          firstName: patient.firstName as string,
-          lastName: patient.lastName as string,
-          email: patient.email as string,
-          phoneNumber: patient.phoneNumber as string,
+          firstName: patient.data.firstName as string,
+          lastName: patient.data.lastName as string,
+          email: patient.data.email as string,
+          phoneNumber: patient.data.phoneNumber as string,
           dateOfBirth: formattedDob,
-          gender: patient.gender as string,
+          gender: patient.data.gender as string,
+          phoneCode: patient.data.mobilePrefixCode,
           country: selectedCountry,
-          countryDataId: patient.countryDataId,
-          address: patient.address as string,
-          billingAddress: patient.billingAddress as string,
-          billingCountry: billingCountry?.country || patient.billingCountry || '',
-          socialSecurityNumber: patient.socialSecurityNumber as string,
-          textNotification: patient.textNotification as boolean,
-          emailNotification: patient.emailNotification as boolean,
-          billingSameAsCurrent: patient.isBillingAddressSameAsAddress as boolean,
-          billingCountryId:patient.billingCountryId
+          countryDataId: patient.data.countryDataId,
+          address: patient.data.address as string,
+          billingAddress: patient.data.billingAddress as string,
+          billingCountry: billingCountry?.country || patient.data.billingCountry || '',
+          socialSecurityNumber: patient.data.socialSecurityNumber as string,
+          textNotification: patient.data.textNotification as boolean,
+          emailNotification: patient.data.emailNotification as boolean,
+          billingSameAsCurrent: patient.data.isBillingAddressSameAsAddress as boolean,
+          billingCountryId:patient.data.billingCountryId
         };
         console.log('Patching initial values:', initialValues);
-        
         this.clientForm.patchValue(initialValues);
-
-        // Load primary address dropdowns
         console.log('Loading primary address dropdowns...');
         return this.loadAddressDropdowns(
-          patient.country as string,
-          patient.state as string,
-          patient.city as string,
-          patient.zip as string
+          patient.data.country as string,
+          patient.data.state as string,
+          patient.data.city as string,
+          patient.data.zip as string
         ).pipe(
           switchMap(() => {
             console.log('Primary address dropdowns loaded');
-            
             if (patient.isBillingAddressSameAsAddress) {
               console.log('Billing same as primary - copying values');
               this.billingStates = [...this.states];
@@ -649,10 +607,10 @@ const selectedBillingZip = this.billingZipCodes.find(
             } else {
               console.log('Loading separate billing address dropdowns');
               return this.loadBillingAddressDropdowns(
-                patient.billingCountry as string,
-                patient.billingState as string,
-                patient.billingCity as string,
-                patient.billingZip as string
+                patient.data.billingCountry as string,
+                patient.data.billingState as string,
+                patient.data.billingCity as string,
+                patient.data.billingZip as string
               );
             }
             return of(null);
@@ -671,9 +629,7 @@ const selectedBillingZip = this.billingZipCodes.find(
           ['billingAddress', 'billingCountry', 'billingState', 'billingCity', 'billingPostalCode']
             .forEach(control => this.clientForm.get(control)?.disable());
         }
-        
-        // Log final form state
-        console.log('Final form state after edit:', {
+                console.log('Final form state after edit:', {
           billingSameAsCurrent: this.clientForm.get('billingSameAsCurrent')?.value,
           billingCountry: this.clientForm.get('billingCountry')?.value,
           billingPostalCode: this.clientForm.get('billingPostalCode')?.value,
@@ -724,7 +680,6 @@ private loadAddressDropdowns(
           ).pipe(
             tap(zipCodes => {
               this.zipCodes = zipCodes;
-              // Enhanced zip code matching
               const selectedZip = this.findMatchingZip(zipCodes, zipCode);
               this.clientForm.get('postalCode')?.setValue(
                 selectedZip?.zipCode || zipCode || ''
@@ -746,11 +701,6 @@ private loadBillingAddressDropdowns(
   return this._authservice.getStates(country).pipe(
     switchMap(states => {
       this.billingStates = states;
-
-      // ✅ Don't re-set billingCountry here – it's already patched
-      // If needed, preserve it manually:
-      // this.clientForm.get('billingCountry')?.setValue(country);
-
       const selectedState = states.find((s: any) =>
         s.stateName?.toLowerCase() === stateName?.toLowerCase() ||
         s.stateCode?.toLowerCase() === stateName?.toLowerCase()
@@ -793,22 +743,13 @@ private loadBillingAddressDropdowns(
 }
 
 
-// Add this helper method to your component
 private findMatchingZip(zipCodes: any[], zipValue: string): any {
   if (!zipValue) return null;
-  
-  // Try different matching strategies
-  return zipCodes.find(z => {
-    // Case 1: Direct match with zipCode property
+    return zipCodes.find(z => {
     if (z.zipCode && z.zipCode.toString() === zipValue.toString()) return true;
-    
-    // Case 2: Direct string match (if z is a string)
-    if (typeof z === 'string' && z === zipValue) return true;
-    
-    // Case 3: Match with any other potential property names
-    if (z.code && z.code.toString() === zipValue.toString()) return true;
+        if (typeof z === 'string' && z === zipValue) return true;
+        if (z.code && z.code.toString() === zipValue.toString()) return true;
     if (z.postalCode && z.postalCode.toString() === zipValue.toString()) return true;
-    
     return false;
   });
 }
@@ -816,20 +757,12 @@ private findMatchingZip(zipCodes: any[], zipValue: string): any {
 
 onUpdatePatient(): void {
   const formValue = this.clientForm.getRawValue();
-
-  // Get the countryDataId from the selected zip code
   const countryDataId = formValue.postalCode?.id || 
                        this.zipCodes.find(z => z.zipCode === formValue.postalCode)?.id;
-
-  // For billing country ID - use same as primary if checkbox is checked
   const billingCountryId = formValue.billingSameAsCurrent
     ? countryDataId
     : formValue.billingPostalCode?.id || 
       this.billingZipCodes.find(z => z.zipCode === formValue.billingPostalCode)?.id;
-
-  console.log("countryDataId from zip:", countryDataId);
-  console.log("billingCountryId:", billingCountryId);
-
   const updatePayload:any = {
     id: this.patientId,
     active: true,
@@ -837,38 +770,30 @@ onUpdatePatient(): void {
     lastName: formValue.lastName,
     email: formValue.email,
     phoneNumber: formValue.phoneNumber,
+    phoneCode: formValue.mobilePrefixCode,
     dateOfBirth: formValue.dateOfBirth ? new Date(formValue.dateOfBirth) : null,
     gender: formValue.gender,
     socialSecurityNumber: formValue.socialSecurityNumber,
     address: formValue.address,
-    countryDataId: countryDataId,  // From zip code
+    countryDataId: countryDataId,
     state: formValue.state?.stateCode || formValue.state,
     city: formValue.city?.cityName || formValue.city,
     zip: formValue.postalCode?.zipCode || formValue.postalCode,
     isBillingAddressSameAsAddress: formValue.billingSameAsCurrent,
     billingAddress: formValue.billingSameAsCurrent ? formValue.address : formValue.billingAddress,
-    billingCountryId: billingCountryId,  // From billing zip code
+    billingCountryId: billingCountryId,
     billingState: formValue.billingState?.stateCode || formValue.billingState,
     billingCity: formValue.billingCity?.cityName || formValue.billingCity,
     billingZip: formValue.billingPostalCode?.zipCode || formValue.billingPostalCode,
     emailNotification: formValue.emailNotification,
     textNotification: formValue.textNotification,
-    insurances: formValue.insurances.map((insurance: any) => ({
-      insuranceCarrierId: insurance.insuranceCarrierId,
-      policyHolderName: insurance.policyHolderName,
-      relationship: insurance.relationship,
-      policyHolderDob: insurance.policyHolderDob ? new Date(insurance.policyHolderDob) : null,
-      memberId: insurance.memberId,
-      groupNumber: insurance.groupNumber
-    }))
   };
 
-   this._loader.show();
-
+  this._loader.show();
   console.log('Final Update Payload:', updatePayload);
   this._adminservice.updatepatient(updatePayload).subscribe({
     next: (response) => {
-      this._toastr.success('Patient updated successfully!');
+      this._toastr.success(response.message);
       this._loader.hide();
       this.clientForm.reset();
        this.router.navigate([
@@ -876,30 +801,46 @@ onUpdatePatient(): void {
     ]);
     },
     error: (error) => {
+      this._loader.hide();
       console.error('Update failed', error);
+       this._toastr.success(error.message);
     }
   });
 }
-
-// Add this helper method to your component
 private getCountryIdFromName(country: any): number | undefined {
   if (!country) return undefined;
-  
-  // If country is already an ID
-  if (typeof country === 'number') return country;
-  
-  // If country is a string name
-  if (typeof country === 'string') {
+    if (typeof country === 'number') return country;
+    if (typeof country === 'string') {
     const found = this.countries.find(c => c.country === country);
     return found?.id;
   }
-  
-  // If country is an object
-  if (typeof country === 'object') {
+    if (typeof country === 'object') {
     return country.id || this.countries.find(c => c.country === country.country)?.id;
   }
   
   return undefined;
 }
+
+preventAbove(event: KeyboardEvent): void {
+  const input = event.target as HTMLInputElement;
+  const value = input.value;
+
+  const allowedKeys = ['Backspace', 'ArrowLeft', 'ArrowRight', 'Tab', 'Delete'];
+  if (allowedKeys.includes(event.key)) return;
+
+  if (!/^\d$/.test(event.key)) {
+    event.preventDefault();
+    return;
+  }
+
+  const nextValue = value + event.key;
+  if (nextValue.length > 17) {
+    event.preventDefault();
+  }
+}
+
+
+
+
 
 }

@@ -12,7 +12,7 @@
       </i>
     </div>
 
-    <div class="accordion" [class.show]="isAccordionOpen(menu.name)" *ngIf="!isSidebarCollapsed">
+    <div class="accordion" [class.show]="isAccordionOpen(menu.name)" *ngIf="!isSidebarCollapsed" >
  <a *ngFor="let sub of menu.submenus"
    [routerLink]="['/' + sub.url]"
    routerLinkActive="active"
@@ -29,6 +29,7 @@
 
   <ng-template #singleMenu>
     <a [routerLink]="menu.url"
+     (click)="handleSingleMenuClick(menu.url)"
        routerLinkActive="active"
        class="nav-item"
        [routerLinkActiveOptions]="{ exact: true }">

@@ -42,6 +42,7 @@ export interface Client {
   createdBy: string;
   insurances: Insurance[];
   creditCardTransactions: CreditCardTransaction[];
+  message:string;
 }
 
 export interface Insurance {
@@ -71,4 +72,10 @@ export interface UploadedFile {
   version: number;
   uploadedAt: string;
   uploadedFileName: string;
+}
+
+
+export interface InsuranceCarrier {
+  id: number;
+  name: string;
 }

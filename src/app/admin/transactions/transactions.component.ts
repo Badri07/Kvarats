@@ -25,7 +25,6 @@ export class TransactionsComponent implements OnInit {
   defaultColDef: ColDef = {
     sortable: true,
     resizable: true,
-    filter: true,
     flex: 1,
     minWidth: 130
   };
@@ -82,13 +81,15 @@ export class TransactionsComponent implements OnInit {
     {
       headerCheckboxSelection: true,
     checkboxSelection: true,
-    width: 10,
+    filter: false,
+    width: 1,
     pinned: 'left',
     cellClass: 'no-focus-style'
     },
     {
       field: 'patientName',
       headerName: 'Patient',
+      filter: false,
       cellRenderer: (params: any) => {
         const initials = params.value?.split(' ').map((p: string) => p[0]).join('').toUpperCase();
         return `
@@ -101,22 +102,24 @@ export class TransactionsComponent implements OnInit {
         `;
       }
     },
-    { field: 'transactionDate', headerName: 'Date', valueFormatter: this.dateFormatter },
-    { field: 'appointmentDate', headerName: 'Appt Date', valueFormatter: this.dateFormatter },
-    { field: 'amount', headerName: 'Amount', valueFormatter: this.currencyFormatter },
+    { field: 'transactionDate', headerName: 'Date', valueFormatter: this.dateFormatter,filter: false },
+    { field: 'appointmentDate', headerName: 'Appt Date', valueFormatter: this.dateFormatter, filter: false},
+    { field: 'amount', headerName: 'Amount', valueFormatter: this.currencyFormatter ,filter: false},
     {
       field: 'status',
       headerName: 'Status',
+      filter: false,
       cellRenderer: (params: any) => {
         return `<span class="px-2 py-1 rounded text-xs ${this.statusBadgeClass(params.value)}">${params.value}</span>`;
       }
     },
-    { field: 'invoiceNumber', headerName: 'Invoice #' },
-    { field: 'paymentReference', headerName: 'Reference' },
-    { field: 'notes', headerName: 'Notes' },
+    { filter: false, field: 'invoiceNumber', headerName: 'Invoice #' },
+    { filter: false, field: 'paymentReference', headerName: 'Reference' },
+    { filter: false, field: 'notes', headerName: 'Notes' },
     {
   headerName: 'Action',
   field: 'action',
+  filter: false,
   width: 120,
   pinned: 'right',
   cellRenderer: () => {

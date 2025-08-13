@@ -6,93 +6,227 @@
         <div class="tab" [class.active]="selectedTab === 'patient-info'" (click)="setTab('patient-info')">
           <span>Patient Info</span>
         </div>
-        <div class="tab" [class.active]="selectedTab === 'insurance'" (click)="setTab('insurance')">
-          <span>Insurance Provider</span>
-        </div>
         <div class="tab" [class.active]="selectedTab === 'notification'" (click)="setTab('notification')">
           <span>Notification</span>
         </div>
       </div>
-
-      <!-- Patient Info Tab -->
       <div *ngIf="selectedTab === 'patient-info'">
         <div class="row mt-3">
           <div class="col-md-4 col-12">
             <label class="mb-2">First Name <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" formControlName="firstName" [ngClass]="{'is-invalid': clientFormSubmitted && clientFormUser['firstName'].invalid}" />
+            <input type="text" class="form-control" placeholder="Enter Firstname" formControlName="firstName" [ngClass]="{
+          'is-invalid': clientFormSubmitted && clientFormUser['firstName'].invalid,
+          'is-valid': clientFormSubmitted && clientFormUser['firstName'].valid
+        }" />
+        <div *ngIf="
+                          clientFormSubmitted && clientFormUser['firstName']['errors']
+                        "
+                        class="invalid-feedback"
+                      >
+                        <div *ngIf="clientFormUser['firstName']['errors']['required']">
+                        First Name is required
+                        </div>
+      </div>
           </div>
           <div class="col-md-4 col-12">
             <label class="mb-2">Last Name <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" formControlName="lastName" [ngClass]="{'is-invalid': clientFormSubmitted && clientFormUser['lastName'].invalid}" />
+            <input type="text" class="form-control" placeholder="Enter LastName" formControlName="lastName" [ngClass]="{
+          'is-invalid': clientFormSubmitted && clientFormUser['lastName'].invalid,
+          'is-valid': clientFormSubmitted && clientFormUser['lastName'].valid
+        }" />
+         <div *ngIf="
+                          clientFormSubmitted && clientFormUser['lastName']['errors']
+                        "
+                        class="invalid-feedback"
+                      >
+                        <div *ngIf="clientFormUser['lastName']['errors']['required']">
+                        Last Name is required
+                        </div>
+      </div>
           </div>
           <div class="col-md-4 col-12">
             <label class="mb-2">Date of Birth <span class="text-danger">*</span></label>
-            <input type="date" class="form-control" formControlName="dateOfBirth" [ngClass]="{'is-invalid': clientFormSubmitted && clientFormUser['dateOfBirth'].invalid}" />
+            <input type="date" class="form-control"  formControlName="dateOfBirth" [ngClass]="{
+          'is-invalid': clientFormSubmitted && clientFormUser['dateOfBirth'].invalid,
+          'is-valid': clientFormSubmitted && clientFormUser['dateOfBirth'].valid
+        }" />
+         
+         
+           <div *ngIf="
+                          clientFormSubmitted && clientFormUser['dateOfBirth']['errors']
+                        "
+                        class="invalid-feedback"
+                      >
+                        <div *ngIf="clientFormUser['dateOfBirth']['errors']['required']">
+                        Date of Birth is required
+                        </div>
+      </div>
+         
           </div>
         </div>
 
         <div class="row mt-3">
           <div class="col-md-4 col-12">
             <label class="mb-2">Gender <span class="text-danger">*</span></label>
-            <select class="form-select" formControlName="gender" [ngClass]="{'is-invalid': clientFormSubmitted && clientFormUser['gender'].invalid}">
+            <select class="form-select" formControlName="gender" [ngClass]="{
+          'is-invalid': clientFormSubmitted && clientFormUser['gender'].invalid,
+          'is-valid': clientFormSubmitted && clientFormUser['gender'].valid
+        }">
               <option value="">Select Gender</option>
               <option value="male">Male</option>
               <option value="female">Female</option>
               <option value="other">Other</option>
             </select>
+
+             <div *ngIf="
+                          clientFormSubmitted && clientFormUser['gender']['errors']
+                        "
+                        class="invalid-feedback"
+                      >
+                        <div *ngIf="clientFormUser['gender']['errors']['required']">
+                        gender is required
+                        </div>
+      </div>
           </div>
           <div class="col-md-4 col-12">
             <label class="mb-2">Social Security Number</label>
-            <input type="text" class="form-control" formControlName="socialSecurityNumber" />
+            <input type="text" class="form-control" placeholder="Enter Social Security Number" formControlName="socialSecurityNumber" />
           </div>
           <div class="col-md-4 col-12">
             <label class="mb-2">Address <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" formControlName="address" [ngClass]="{'is-invalid': clientFormSubmitted && clientFormUser['address'].invalid}" />
+            <input type="text" class="form-control" placeholder="Enter Address" formControlName="address" [ngClass]="{
+          'is-invalid': clientFormSubmitted && clientFormUser['address'].invalid,
+          'is-valid': clientFormSubmitted && clientFormUser['address'].valid
+        }" />
           </div>
         </div>
 
-        <!-- Primary Address Section -->
         <div class="row mt-3">
           <div class="col-md-4 col-12">
             <label class="mb-2">Country <span class="text-danger">*</span></label>
-            <select class="form-select" formControlName="country" (change)="onAddressCountryChange()" [ngClass]="{'is-invalid': clientFormSubmitted && clientFormUser['country'].invalid}">
-              <option [ngValue]="null" disabled>Select Country</option>
+            <select class="form-select" formControlName="country"  (change)="onAddressCountryChange()" [ngClass]="{
+          'is-invalid': clientFormSubmitted && clientFormUser['country'].invalid,
+          'is-valid': clientFormSubmitted && clientFormUser['country'].valid
+        }">
+              <option [ngValue]="null" >Select Country</option>
               <option *ngFor="let country of countries" [ngValue]="country">{{ country.country }}</option>
             </select>
+
+              <div *ngIf="
+                          clientFormSubmitted && clientFormUser['country']['errors']
+                        "
+                        class="invalid-feedback"
+                      >
+                        <div *ngIf="clientFormUser['country']['errors']['required']">
+                        country is required
+                        </div>
+      </div>
           </div>
           <div class="col-md-4 col-12">
             <label class="mb-2">State <span class="text-danger">*</span></label>
-            <select class="form-select" formControlName="state" (change)="onAddressStateChange()" [ngClass]="{'is-invalid': clientFormSubmitted && clientFormUser['state'].invalid}">
-              <option [ngValue]="null" disabled>Select State</option>
+            <select class="form-select" formControlName="state" (change)="onAddressStateChange()" [ngClass]="{
+          'is-invalid': clientFormSubmitted && clientFormUser['state'].invalid,
+          'is-valid': clientFormSubmitted && clientFormUser['state'].valid
+        }">
+              <option [ngValue]="null" >Select State</option>
               <option *ngFor="let state of states" [ngValue]="state.stateCode">{{ state.stateName }}</option>
             </select>
+               <div *ngIf="
+                          clientFormSubmitted && clientFormUser['state']['errors']
+                        "
+                        class="invalid-feedback"
+                      >
+                        <div *ngIf="clientFormUser['state']['errors']['required']">
+                        state is required
+                        </div>
+      </div>
           </div>
           <div class="col-md-4 col-12">
             <label class="mb-2">City <span class="text-danger">*</span></label>
-            <select class="form-select" formControlName="city" (change)="onAddressCityChange()" [ngClass]="{'is-invalid': clientFormSubmitted && clientFormUser['city'].invalid}">
+            <select class="form-select" formControlName="city" (change)="onAddressCityChange()" [ngClass]="{
+          'is-invalid': clientFormSubmitted && clientFormUser['city'].invalid,
+          'is-valid': clientFormSubmitted && clientFormUser['city'].valid
+        }">
               <option [ngValue]="null">Select City</option>
               <option *ngFor="let city of cities" [ngValue]="city.cityName">{{ city.cityName }}</option>
             </select>
+              <div *ngIf="
+                          clientFormSubmitted && clientFormUser['city']['errors']
+                        "
+                        class="invalid-feedback"
+                      >
+                        <div *ngIf="clientFormUser['city']['errors']['required']">
+                        city is required
+                        </div>
+      </div>
           </div>
         </div>
 
-        <!-- Added Postal Code row -->
         <div class="row mt-3">
-          <div class="col-md-4 col-12">
+        <div class="col-md-4 col-12">
             <label class="mb-2">Postal Code <span class="text-danger">*</span></label>
-            <select class="form-select" formControlName="postalCode" [ngClass]="{'is-invalid': clientFormSubmitted && clientFormUser['postalCode'].invalid}">
+            <select class="form-select" formControlName="postalCode" [ngClass]="{
+          'is-invalid': clientFormSubmitted && clientFormUser['postalCode'].invalid,
+          'is-valid': clientFormSubmitted && clientFormUser['postalCode'].valid
+        }">
               <option [ngValue]="null">Select Postal Code</option>
               <option *ngFor="let zip of zipCodes" [ngValue]="zip.zipCode">{{ zip.zipCode }}</option>
             </select>
-          </div>
-          <div class="col-md-4 col-12">
-            <label class="mb-2">Phone Number <span class="text-danger">*</span></label>
-            <input type="tel" class="form-control" formControlName="phoneNumber" [ngClass]="{'is-invalid': clientFormSubmitted && clientFormUser['phoneNumber'].invalid}" />
-          </div>
-          <div class="col-md-4 col-12">
+
+            <div *ngIf="
+                          clientFormSubmitted && clientFormUser['postalCode']['errors']
+                        "
+                        class="invalid-feedback"
+                      >
+                        <div *ngIf="clientFormUser['postalCode']['errors']['required']">
+                        postal Code is required
+                        </div>
+      </div>
+        </div>
+
+
+        <div class="col-md-1 col-12 mt-1">
+    <label class="mb-1 font-weight-medium">Code <span class="text-danger">*</span></label>
+    <input formControlName="phoneCode" placeholder="+91" class="form-control" />
+        </div>
+
+        <div class="col-md-3 col-12 mt-1">
+            <label class="mb-1 font-weight-medium">Phone Number <span class="text-danger">*</span></label>
+            <input
+              type="tel"
+              formControlName="phoneNumber"
+              placeholder="Phone Number"
+              class="form-control"
+              (keydown)="preventAbove($event)"
+              [ngClass]="{
+          'is-invalid': clientFormSubmitted && clientFormUser['phoneNumber'].invalid,
+          'is-valid': clientFormSubmitted && clientFormUser['phoneNumber'].valid
+        }"
+            />
+
+              <div *ngIf="
+                          clientFormSubmitted && clientFormUser['phoneNumber']['errors']
+                        "
+                        class="invalid-feedback"
+                      >
+                        <div *ngIf="clientFormUser['phoneNumber']['errors']['required']">
+                        phone Number is required
+                        </div>
+      </div>
+        </div>
+
+        
+        <div class="col-md-4 col-12">
             <label class="mb-2">Email</label>
-            <input type="email" class="form-control" formControlName="email" [ngClass]="{'is-invalid': clientFormSubmitted && clientFormUser['email'].invalid}" />
-          </div>
+            <input type="email" class="form-control" placeholder="Enter Email" formControlName="email" [ngClass]="{
+          'is-invalid': clientFormSubmitted && clientFormUser['email'].invalid,
+          'is-valid': clientFormSubmitted && clientFormUser['email'].valid
+        }" />
+      <div *ngIf="clientFormSubmitted && clientFormUser['email'].errors" class="text-sm text-red-500 mt-1">
+  <div *ngIf="clientFormUser['email'].errors['required']">Email is required</div>
+  <div *ngIf="clientFormUser['email'].errors['invalidComEmail']">Enter valid email</div>
+</div>
+        </div>
         </div>
 
         <div class="form-check form-switch mt-4">
@@ -103,79 +237,104 @@
         <!-- Billing Address Section -->
         <div class="row mt-3">
           <div class="col-md-4">
-            <label class="mb-2">Billing Address Line</label>
-            <input type="text" class="form-control" formControlName="billingAddress" [disabled]="clientForm.get('billingSameAsCurrent')?.value"/>
+            <label class="mb-2">Billing Address Line <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" formControlName="billingAddress" [disabled]="clientForm.get('billingSameAsCurrent')?.value"
+            [ngClass]="{
+          'is-invalid': clientFormSubmitted && clientFormUser['billingAddress'].invalid,
+          'is-valid': clientFormSubmitted && clientFormUser['billingAddress'].valid
+        }">
+           <div *ngIf="
+                          clientFormSubmitted && clientFormUser['billingAddress']['errors']
+                        "
+                        class="invalid-feedback"
+                      >
+                        <div *ngIf="clientFormUser['billingAddress']['errors']['required']">
+                        billingAddress is required
+                        </div>
+      </div>
           </div>
           <div class="col-md-4">
-            <label class="mb-2">Billing Country</label>
-            <select class="form-select" formControlName="billingCountry" [disabled]="clientForm.get('billingSameAsCurrent')?.value" (change)="onBillingCountryChange()">
+            <label class="mb-2">Billing Country <span class="text-danger">*</span></label>
+            <select class="form-select" formControlName="billingCountry" [disabled]="clientForm.get('billingSameAsCurrent')?.value" (change)="onBillingCountryChange()"
+            [ngClass]="{
+          'is-invalid': clientFormSubmitted && clientFormUser['billingCountry'].invalid,
+          'is-valid': clientFormSubmitted && clientFormUser['billingCountry'].valid
+        }">
               <option selected disabled>Select Country</option>
               <option *ngFor="let country of countries" [ngValue]="country">{{ country.country }}</option>
             </select>
+               <div *ngIf="
+                          clientFormSubmitted && clientFormUser['billingCountry']['errors']
+                        "
+                        class="invalid-feedback"
+                      >
+                        <div *ngIf="clientFormUser['billingCountry']['errors']['required']">
+                        billingCountry is required
+                        </div>
+      </div>
           </div>
           <div class="col-md-4">
-            <label class="mb-2">Billing State</label>
-            <select class="form-select" formControlName="billingState" [disabled]="clientForm.get('billingSameAsCurrent')?.value" (change)="onBillingStateChange()">
-              <option [ngValue]="null" disabled>Select State</option>
+            <label class="mb-2">Billing State <span class="text-danger">*</span></label>
+            <select class="form-select" formControlName="billingState" [disabled]="clientForm.get('billingSameAsCurrent')?.value" (change)="onBillingStateChange()"
+             [ngClass]="{
+          'is-invalid': clientFormSubmitted && clientFormUser['billingState'].invalid,
+          'is-valid': clientFormSubmitted && clientFormUser['billingState'].valid
+        }">
+              <option [ngValue]="null" >Select State</option>
               <option *ngFor="let state of billingStates" [ngValue]="state.stateCode">{{ state.stateName }}</option>
             </select>
+              <div *ngIf="
+                          clientFormSubmitted && clientFormUser['billingState']['errors']
+                        "
+                        class="invalid-feedback"
+                      >
+                        <div *ngIf="clientFormUser['billingState']['errors']['required']">
+                        billingState is required
+                        </div>
+      </div>
           </div>
         </div>
 
         <div class="row mt-3">
           <div class="col-md-4">
-            <label class="mb-2">Billing City</label>
-            <select class="form-select" formControlName="billingCity" [disabled]="clientForm.get('billingSameAsCurrent')?.value" (change)="onBillingCityChange()">
+            <label class="mb-2">Billing City <span class="text-danger">*</span></label>
+            <select class="form-select" formControlName="billingCity" [disabled]="clientForm.get('billingSameAsCurrent')?.value" (change)="onBillingCityChange()"
+             [ngClass]="{
+          'is-invalid': clientFormSubmitted && clientFormUser['billingCity'].invalid,
+          'is-valid': clientFormSubmitted && clientFormUser['billingCity'].valid
+        }">
               <option [ngValue]="null">Select City</option>
               <option *ngFor="let city of billingCities" [ngValue]="city.cityName">{{ city.cityName }}</option>
             </select>
+             <div *ngIf="
+                          clientFormSubmitted && clientFormUser['billingCity']['errors']
+                        "
+                        class="invalid-feedback"
+                      >
+                        <div *ngIf="clientFormUser['billingCity']['errors']['required']">
+                        billingCity is required
+                        </div>
+      </div>
           </div>
           <div class="col-md-4">
-            <label class="mb-2">Billing Postal Code</label>
-            <select class="form-select" formControlName="billingPostalCode" [disabled]="clientForm.get('billingSameAsCurrent')?.value">
+            <label class="mb-2">Billing Postal Code <span class="text-danger">*</span></label>
+            <select class="form-select" formControlName="billingPostalCode" [disabled]="clientForm.get('billingSameAsCurrent')?.value"
+            [ngClass]="{
+          'is-invalid': clientFormSubmitted && clientFormUser['billingPostalCode'].invalid,
+          'is-valid': clientFormSubmitted && clientFormUser['billingPostalCode'].valid
+        }">
               <option [ngValue]="null">Select Postal Code</option>
               <option *ngFor="let zip of billingZipCodes" [ngValue]="zip.zipCode">{{ zip.zipCode }}</option>
             </select>
-          </div>
-        </div>
+             <div *ngIf="
+                          clientFormSubmitted && clientFormUser['billingPostalCode']['errors']
+                        "
+                        class="invalid-feedback"
+                      >
+                        <div *ngIf="clientFormUser['billingPostalCode']['errors']['required']">
+                        billingPostalCode is required
+                        </div>
       </div>
-
-      <!-- Insurance Tab -->
-      <div *ngIf="selectedTab === 'insurance'">
-        <div formArrayName="insurances">
-          <div *ngFor="let cc of insurances?.controls; let i = index" [formGroupName]="i">
-            <div class="row mb-3">
-              <div class="col-md-4">
-                <label class="form-label fw-semibold">Name of Insurance Carrier</label>
-                <select class="form-select" formControlName="insuranceCarrierId">
-                  <option selected disabled>Select Insurance Carrier</option>
-                  <option [value]="insurance.id" *ngFor="let insurance of insuranceCarriers">{{insurance.name}}</option>
-                </select>
-              </div>
-              <div class="col-md-4">
-                <label class="form-label fw-semibold">Name of Policy Holder</label>
-                <input type="text" class="form-control" formControlName="policyHolderName"/>
-              </div>
-              <div class="col-md-4">
-                <label class="form-label fw-semibold">Relationship</label>
-                <input type="text" class="form-control" formControlName="relationship"/>
-              </div>
-            </div>
-
-            <div class="row mb-3">
-              <div class="col-md-4">
-                <label class="form-label fw-semibold">Date of Birth (Policy Holder)</label>
-                <input type="date" class="form-control" formControlName="policyHolderDob"/>
-              </div>
-              <div class="col-md-4">
-                <label class="form-label fw-semibold">Member ID Number</label>
-                <input type="text" class="form-control" formControlName="memberId"/>
-              </div>
-              <div class="col-md-4">
-                <label class="form-label fw-semibold">Group Number</label>
-                <input type="text" class="form-control" formControlName="groupNumber"/>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -187,14 +346,20 @@
             <div class="pe-3 border-end">
               <div class="form-check form-switch">
                 <input class="form-check-input" type="checkbox" id="emailNotification" formControlName="emailNotification" 
-                      [ngClass]="{'is-invalid': clientFormSubmitted && clientFormUser['emailNotification'].invalid}">
+                     [ngClass]="{
+          'is-invalid': clientFormSubmitted && clientFormUser['emailNotification'].invalid,
+          'is-valid': clientFormSubmitted && clientFormUser['emailNotification'].valid
+        }">
                 <label class="form-check-label" for="emailNotification">Email Notification</label>
               </div>
             </div>
             <div>
               <div class="form-check form-switch">
                 <input class="form-check-input" type="checkbox" id="textNotification" formControlName="textNotification" 
-                      [ngClass]="{'is-invalid': clientFormSubmitted && clientFormUser['textNotification'].invalid}">
+                     [ngClass]="{
+          'is-invalid': clientFormSubmitted && clientFormUser['textNotification'].invalid,
+          'is-valid': clientFormSubmitted && clientFormUser['textNotification'].valid
+        }">
                 <label class="form-check-label" for="textNotification">Text Notification</label>
               </div>
             </div>

@@ -29,6 +29,7 @@ export class AuthService {
   // }
 
    public getDecodedToken(): any {
+    debugger
     const token = localStorage.getItem('token');
     if (token) {
       return this.jwtHelper.decodeToken(token);
@@ -36,6 +37,37 @@ export class AuthService {
     return null;
   }
 
+
+  // patients
+    public getPatientDecodedToken(): any {
+    debugger
+    const token = localStorage.getItem('tokenPatients');
+    if (token) {
+      return this.jwtHelper.decodeToken(token);
+    }
+    return null;
+  }
+
+    // patients
+    public getPatientRole(): string | null {
+    const decoded = this.getPatientDecodedToken();
+    return decoded?.role || null;
+  }
+  // patients
+  public getPatientId(): string {
+    const decoded = this.getPatientDecodedToken();
+    return decoded?.sub || null;
+  }
+  // patients
+  public getPatientUsername(): string  {
+    const decoded = this.getPatientDecodedToken();
+    return decoded?.UserName || null;;
+  }
+  // patients
+   public getPatientEmail(): string {
+    const decoded = this.getPatientDecodedToken();
+    return  decoded?.email || null;
+  }
   public getUserRole(): string | null {
     const decoded = this.getDecodedToken();
     return decoded?.role || null;
@@ -46,6 +78,11 @@ export class AuthService {
     return decoded?.ClientId || null;
   }
 
+
+  //  public getUserId(): string | null {
+  //   const decoded = this.getDecodedToken();
+  //   return decoded?.userId || null;
+  // }
   public getUsername(): string | null {
     const decoded = this.getDecodedToken();
     return decoded?.UserName || null;;
@@ -76,7 +113,7 @@ export class AuthService {
   signIn(data: registerModel): Observable<any> {
   return this.http.post(`${environment.apidev}/Auth/register`, data).pipe(
     map((response: any) => {
-      return response?.data || response;
+      return response;
     }),
     catchError(error => {
       console.error('Error during sign in:', error);
@@ -87,11 +124,11 @@ export class AuthService {
 
 
 
- logIn(data: registerModel): Observable<any> {
+ logIn(data: any): Observable<any> {
   
   return this.http.post(`${environment.apidev}/Auth/login`, data, { headers }).pipe(
     map((response: any) => {
-      return response?.data || response;
+      return response;
     }),
     catchError(error => {
       console.error('Error during sign in:', error);
@@ -129,19 +166,7 @@ export class AuthService {
   //     return throwError(() => error);
   //   })
   // );
-  // }
-
-  addAvailability(data: any): Observable<any> {
-    return this.http.post(`${environment.apidev}/UserLeavesAndAvailability/AddOrUpdateMultipleAvailability`, data).pipe(
-    map((response: any) => {
-      return response?.data || response;
-    }),
-    catchError(error => {
-      console.error('Error during getting user list:', error);
-      return throwError(() => error);
-    })
-  );
-}
+  // }  
 
 getUserList(clientId?: string): Observable<any[]> {
   let params = new HttpParams();
@@ -191,7 +216,7 @@ getTherapistList(userId?: string): Observable<any> {
 forgotPassword(data:forgotpasswordModel):Observable<any>{
   return this.http.post(`${environment.apidev}/Auth/SendPasswordResetOtp`,data,{headers}).pipe(
     map((response: any) => {
-      return response?.data || response;
+      return response;
     }),
     catchError(error => {
       console.error('Error during getting user list:', error);
@@ -229,6 +254,13 @@ resetPassword(data:forgotpasswordModel):Observable<any>{
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     this.router.navigate(['/login']);
+  }
+
+  
+   Patientslogout(){
+    localStorage.removeItem('tokenPatients');
+    localStorage.removeItem('user');
+    this.router.navigate(['/patient/login']);
   }
 
   getTokenInfo() {

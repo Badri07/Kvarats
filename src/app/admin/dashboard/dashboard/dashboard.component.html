@@ -1,89 +1,134 @@
-<div class="flex flex-col gap-5 px-5 rounded-common-border-radius">
+<div class="flex flex-col gap-3 px-5 rounded-common-border-radius">
 <div class="px-6">
-  <h1 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
-    Hello, {{userName}}<span>👋</span>
-  </h1>
-  <p class="text-gray-500 text-sm mt-1">
-    Let's begin our journey
-  </p>
-</div>
+  <div class="flex justify-between items-center bg-[#f7f5f3] rounded-2xl shadow-sm px-6 py-5 mt-4 mb-2">
+  <!-- Left side -->
+  <div>
+    <h1 class="text-2xl font-bold text-gray-900 flex items-center gap-2">
+      Welcome back, {{ userName }}! <span class="text-2xl">👋</span>
+    </h1>
+    <p class="text-gray-500 mt-1">
+      Here's what's happening with your business today
+    </p>
+  </div>
 
-
-
-  <div class="flex flex-col lg:flex-row gap-2 flex-wrap">
-    <div class="flex-1 w-full">
-      <div class="flex flex-wrap gap-2 mb-3 justify-center lg:justify-start">
- <div class="flex gap-4 px-6">
-  <div *ngFor="let chart of chartConfigs; let i = index" class="bg-white rounded-xl shadow-sm p-4 w-60">
-    <div class="flex items-center gap-2">
-      <div [ngClass]="[
-        i === 0 ? 'bg-purple-600' :
-        i === 1 ? 'bg-orange-500' :
-        i === 2 ? 'bg-green-500' :
-        'bg-blue-500'
-      ]"
-      class="p-3 rounded-xl text-white text-xl shadow-sm">
-        <i [ngClass]="[
-          i === 0 ? 'fas fa-user-md' :
-          i === 1 ? 'fas fa-cut' :
-          i === 2 ? 'fas fa-user-plus' :
-          'fas fa-ticket-alt'
-        ]"></i>
-      </div>
-      <div class="ml-auto text-right">
-        <p class="text-sm text-gray-500">{{ chart.data.datasets[0].label }}</p>
-        <p class="text-xl font-bold">
-          {{ i === 0 ? '650' : i === 1 ? '54' : i === 2 ? '129' : '$20,125' }}
-        </p>
-      </div>
-    </div>
-    <div class="mt-4 h-12">
-      <canvas
-        baseChart
-        [type]="chart.type"
-        [data]="chart.data"
-        [options]="chart.options">
-      </canvas>
-    </div>
+  <!-- Right side -->
+  <div class="text-right">
+    <p class="text-sm text-gray-500">Today's Date</p>
+    <p class="text-lg font-semibold text-gray-900">
+      {{ currentDate | date: 'fullDate' }}
+    </p>
   </div>
 </div>
-      </div>
- 
-      <div class="flex flex-col lg:flex-row flex-wrap p-6 gap-4">
-        <div class="flex-1 min-w-[280px] w-1/5 bg-white rounded-xl p-5 shadow-sm">
-          <div class="flex justify-between items-center mb-3 ">
-            <h3 class="text-lg font-semibold">Doctor List</h3>
-            <span class="text-sm text-secondary-grey-100">Today</span>
+
+</div>
+
+
+
+<div class="container-fluid">
+  <div class="row justify-content-center mb-4">
+    <div *ngFor="let chart of chartConfigs; let i = index" class="col-12 col-sm-6 col-lg-3 mb-3">
+      <div class="bg-white rounded-xl shadow-md p-4 h-100">
+        <div class="d-flex align-items-center gap-2">
+          <div [ngClass]="[
+            i === 0 ? 'bg-purple-600' :
+            i === 1 ? 'bg-orange-500' :
+            i === 2 ? 'bg-green-500' :
+            'bg-blue-500'
+          ]" class="p-3 rounded-xl text-white text-xl shadow-sm">
+            <i [ngClass]="[
+              i === 0 ? 'fas fa-user-md' :
+              i === 1 ? 'fas fa-cut' :
+              i === 2 ? 'fas fa-user-plus' :
+              'fas fa-ticket-alt'
+            ]"></i>
           </div>
-          <hr class="hr-line my-2">
-          <div *ngFor="let doctor of therapists" class="flex items-center mb-3">
-            <img src="icons/image 1.png" class="w-10 h-10 text-primary-orange rounded-md mr-3" />
-            <div>
-              <div class="text-primary-orange font-medium">{{ doctor.name }}</div>
-              <div class="text-sm text-gray-500">{{ doctor.specialty }}</div>
-            </div>
+          <div class="ms-auto text-end">
+            <p class="text-sm text-muted">{{ chart.data.datasets[0].label }}</p>
+            <p class="fs-5 fw-bold">
+              {{ i === 0 ? '650' : i === 1 ? '54' : i === 2 ? '129' : '$20,125' }}
+            </p>
           </div>
         </div>
- 
-        <div class="flex-1 min-w-[280px] w-2/5 bg-white rounded-xl p-5 shadow-sm">
-          <h3 class="text-lg font-semibold mb-3">Recovery Rate</h3>
-          <hr class="hr-line my-2" />
-          <div *ngFor="let item of recoveryRates" class="mb-4">
-            <div class="flex justify-between text-sm mb-1">
-              <span>{{ item.condition }}</span>
-              <span>{{ item.percentage }}%</span>
-            </div>
-            <div class="w-full h-1.5 bg-secondary-table rounded">
-              <div class="h-1.5 text-primary-orange rounded" [style.width.%]="item.percentage"></div>
-            </div>
-          </div>
+        <div class="mt-4" style="height: 48px;">
+          <canvas
+            baseChart
+            [type]="chart.type"
+            [data]="chart.data"
+            [options]="chart.options">
+          </canvas>
         </div>
       </div>
     </div>
-    <!-- <div class="w-full lg:w-[270px] bg-primary-white rounded-lg p-4 shadow-sm">
-      <h3 class="text-sm font-semibold mb-2">Upcoming Appointments</h3>
-      <hr class="hr-line my-2" />
+  </div>
+
+  <div class="row">
+   
+<div class="col-12">
+  <div class="">
+  <div class="bg-white rounded-xl shadow-md p-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-semibold text-gray-800">All Appointments</h2>
+      <button class="text-sm text-blue-600 hover:underline">View All</button>
+    </div>
+
+    <!-- Table -->
+    <div class="overflow-x-auto shadow-md">
+  
+  <app-common-ag-grid
+  [rowData]="users"
+  [columnDefs]="columnDefs"
+  [IsshowPagination]="IsshowPagination"
+  [tableHeight]="tableHeight"
+  [paginationPageSize]="10"
+  [paginationPageSizeSelector]="[10, 20, 50, 100]"
+  (edit)="editUser($event)"
+  (delete)="onDelete($event)">
+</app-common-ag-grid>
+</div>
+</div>
+</div>
+</div>
+
+    <!-- <div class="col-12 col-lg-6">
+      <div class="bg-white rounded-xl p-4 shadow-sm h-100">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h3 class="fs-5 fw-semibold">Doctor List</h3>
+          <span class="text-sm text-secondary-grey-100">Today</span>
+        </div>
+        <hr class="my-2" />
+        <div *ngFor="let doctor of therapists" class="d-flex align-items-center mb-3">
+          <img src="icons/image 1.png" class="me-3 rounded-md" style="width: 40px; height: 40px;" />
+          <div>
+            <div class="text-primary-orange fw-medium">{{ doctor.name }}</div>
+            <div class="text-muted small">{{ doctor.specialty }}</div>
+          </div>
+        </div>
+      </div>
     </div> -->
+
+    <!-- <div class="col-12 col-lg-6">
+      <div class="bg-white rounded-xl p-4 shadow-sm h-100">
+        <h3 class="fs-5 fw-semibold mb-3">Recovery Rate</h3>
+        <hr class="my-2" />
+        <div *ngFor="let item of recoveryRates" class="mb-4">
+          <div class="d-flex justify-content-between small mb-1">
+            <span>{{ item.condition }}</span>
+            <span>{{ item.percentage }}%</span>
+          </div>
+          <div class="w-100 bg-secondary-table rounded" style="height: 6px;">
+            <div class="bg-primary-orange rounded" [style.width.%]="item.percentage" style="height: 6px;"></div>
+          </div>
+        </div>
+      </div>
+    </div> -->
+
   </div>
 </div>
+
+</div>
+ 
+
+
+
  

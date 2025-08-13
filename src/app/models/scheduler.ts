@@ -7,6 +7,8 @@ export interface User {
   availableFrom?: string;
   availableTo?: string;
   appointments: Appointment[];
+  firstName?:string,
+  lastName?:string
 }
 
 export interface Appointment {

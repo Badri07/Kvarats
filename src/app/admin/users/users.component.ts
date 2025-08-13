@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, ViewChild } from '@angular/core';
 import { AuthService } from '../../service/auth/auth.service';
-import { AbstractControl, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 import { AdminService } from '../../service/admin/admin.service';
 import { TosterService } from '../../service/toaster/tostr.service';
 import { MatSelectChange } from '@angular/material/select';
@@ -15,8 +15,21 @@ import * as FileSaver from 'file-saver';
 import { BreadcrumbService } from '../../shared/breadcrumb/breadcrumb.service';
 import { forkJoin, Observable, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
+import { PopupService } from '../../service/popup/popup-service';
 
 declare var bootstrap: any;
+
+
+export function emailWithComValidator(control: AbstractControl): ValidationErrors | null {
+  const email = control.value;
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+  if (!email) return null;
+
+  return emailRegex.test(email) ? null : { invalidComEmail: true };
+}
+
+
 
 @Component({
   selector: 'app-users',
@@ -56,12 +69,15 @@ export class UsersComponent {
   userDepartment: any[] = [];
   userSpecializations: any[] = [];
 
+  showDeleteConfirm:boolean = false;
   UserSubmitted = false;
   isEditMode = false;
   editUserId!: string;
 
   addUserForm!: FormGroup;
+   get_CountryCode: string = '';
 
+   
   constructor(
     private cdr: ChangeDetectorRef,
     private authservice: AuthService,
@@ -69,6 +85,7 @@ export class UsersComponent {
     private adminservice: AdminService,
     private toastr: TosterService,
     private breadcrumbService: BreadcrumbService,
+    private _loader:PopupService
   ) {}
 
   ngOnInit() {
@@ -81,7 +98,7 @@ export class UsersComponent {
       Username: ['', Validators.required],
       firstName: ['', Validators.required],
       lastName: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
+      email: ['', [Validators.required, Validators.email,emailWithComValidator]],
       roleIds: ['', Validators.required],
       contactNumber: ['',Validators.required],
       specialization: ['',Validators.required],
@@ -92,6 +109,7 @@ export class UsersComponent {
       country: [null,Validators.required],
       state: [null,Validators.required],
       city: [null,Validators.required],
+      phoneCode: [null,Validators.required],
     });
 
     this.getUserList();
@@ -125,17 +143,20 @@ openAddUserModal(){
   this.isshowuserForm = true;
 }
 
-
  onAddressCountryChange() {
     const selectedCountryObj: any = this.addUserForm.value.country;
+    this.addUserForm.get('phoneCode')?.setValue('');
     if (selectedCountryObj) {
       this.selectedCountry = selectedCountryObj.country;
       this.selectedCountryCode = selectedCountryObj.mobilePrefixCode;
+      this.get_CountryCode = selectedCountryObj.mobilePrefixCode;
+      this.addUserForm.get('phoneCode')?.setValue(this.get_CountryCode);
       this.getStates();
       this.cities = [];
       this.zipCodes = [];
     }
   }
+
 
   onStateChange() {
     this.selectedStateCode = this.addUserForm.value.billingState;
@@ -193,13 +214,12 @@ openAddUserModal(){
     }
   }
   onSubmit() {
-  console.log(this.addUserForm.value);
-
+  
   if (this.addUserForm.invalid) {
     this.UserSubmitted = true;
     return;
   }
-
+  this._loader.show();
   const formValue = this.addUserForm.value;
   const getRoleName = formValue.roleIds;
   const getRoleId = getRoleName?.id;
@@ -230,25 +250,33 @@ openAddUserModal(){
   if (this.isEditMode) {
     this.adminservice.updateUser(this.editUserId, payload).subscribe({
       next: () => {
+         this._loader.hide();
         this.toastr.success('User updated successfully');
         this.addUserForm.reset();
+       
         this.getUserList();
         this.isEditMode = false;
+       this.setTab('ListUser');
       },
       error: () => {
+         this._loader.hide();
         this.toastr.error('Something went wrong during update');
       }
     });
   } else {
     this.adminservice.saveAdduser(payload).subscribe({
       next: (res) => {
+        this._loader.hide();
         this.toastr.success(res.message || 'User added successfully');
         this.addUserForm.reset();
+        this.setTab('ListUser');
         this.getUserList();
+         
       },
       error: (err) => {
+        this._loader.hide();
         const errorMessage = err.error?.message || 'Something went wrong while adding user';
-  this.toastr.error(errorMessage);
+        this.toastr.error(errorMessage);
       }
     });
   }
@@ -304,6 +332,7 @@ compareRoles(r1: any, r2: any): boolean {
 
 
 editUser(id: string) {
+  debugger
   this.isEditMode = true;
   this.editUserId = id;
   this.isshowuserForm = true;
@@ -323,8 +352,6 @@ editUser(id: string) {
       
       const userRoleId = userRes.roles?.[0]?.roleId;
       const selectedRole = this.userRole.find((r: any) => r.id === userRoleId);
-
-      // Find matching country
       const selectedCountry = this.countries.find(c => 
         c.country === userRes.country && 
         c.mobilePrefixCode === userRes.mobilePrefixCode
@@ -340,7 +367,8 @@ editUser(id: string) {
         contactNumber: userRes.phoneNumber,
         qualification: userRes.qualification,
         address: userRes.address,
-        country: selectedCountry || null
+        country: selectedCountry || null,
+        phoneCode:userRes.mobilePrefixCode
       });
 
       this.selectedCountry = userRes.country;
@@ -399,7 +427,7 @@ editUser(id: string) {
     })
   ).subscribe({
     error: (err) => {
-      this.toastr.error('Failed to load user data');
+      this.toastr.error('Failed to edit user data');
       console.error('Error in editUser:', err);
     }
   });
@@ -473,7 +501,7 @@ getUserList() {
   if (getUserRole === 'SuperAdmin') {
     this.authservice.getUserList().subscribe(users => {
       this.userList = users;
-      this.rowData = this.userList.map((user: any, index: number) => ({
+      this.users = this.userList.map((user: any, index: number) => ({
         ...user,
         avatar: `https://randomuser.me/api/portraits/${index % 2 === 0 ? 'men' : 'women'}/${30 + index}.jpg`
       }));
@@ -482,7 +510,7 @@ getUserList() {
     this.authservice.getUserList(getClientId).subscribe(users => {
       this.userList = users;
 
-      this.rowData = this.userList.map((user: any, index: number) => ({
+      this.users = this.userList.map((user: any, index: number) => ({
         ...user,
         avatar: `https://randomuser.me/api/portraits/${index % 2 === 0 ? 'men' : 'women'}/${30 + index}.jpg`
       }));
@@ -522,13 +550,14 @@ getUserList() {
     return this.addUserForm.controls;
   }
 
-  onDelete(id: string){
+onDelete(id: string){
 const confirmed = confirm('Are you sure you want to delete this user?');
   if (!confirmed) return;
 
   this.adminservice.deleteUser(id).subscribe(
     (res: any) => {
       this.toastr.success('User deleted successfully.');
+      this.getUserList();
     },
     (err) => {
       this.toastr.error(
@@ -561,26 +590,29 @@ const confirmed = confirm('Are you sure you want to delete this user?');
 
 setTab(tab: 'ListUser' | 'AddUser') {
   this.selectedTab = tab;
+ 
+  setTimeout(() => {
+    const slider = document.querySelector('.slider') as HTMLElement;
+    const tabElements = document.querySelectorAll('.tab');
 
-  const slider = document.querySelector('.slider') as HTMLElement;
-  const tabElements = document.querySelectorAll('.tab');
-
-  const tabIndex = { 'ListUser': 0, 'AddUser': 1 }[tab];
-
-  if (slider && tabElements[tabIndex]) {
-    const tabEl = tabElements[tabIndex] as HTMLElement;
-    slider.style.left = `${tabEl.offsetLeft}px`;
-    slider.style.width = `${tabEl.offsetWidth}px`;
-  }
-  // if (tab === 'Listclient') {
-  //   this.loadClientList();
-  // }
+    const tabIndex = { 'ListUser': 0, 'AddUser': 1 }[tab];
+if(tab === 'ListUser'){
+ this.isEditMode = false;
 }
+    if (slider && tabElements[tabIndex]) {
+      const tabEl = tabElements[tabIndex] as HTMLElement;
+      slider.style.left = `${tabEl.offsetLeft}px`;
+      slider.style.width = `${tabEl.offsetWidth}px`;
+    }
+  }, 0);
+}
+
 
 
 columnDefs: any = [
   {
     headerCheckboxSelection: true,
+    filter: false,
     checkboxSelection: true,
     field: 'checkbox',
     width: 40,
@@ -589,6 +621,7 @@ columnDefs: any = [
   },
   {
     headerName: 'Name',
+    filter: false,
     field: 'username',
     flex: 1.2,
     cellRenderer: (params: any) => {
@@ -600,23 +633,25 @@ columnDefs: any = [
       `;
     },
   },
-  { headerName: 'Email', field: 'email', flex: 1 },
+  { headerName: 'Email', field: 'email', flex: 1 ,filter: false},
   {
     headerName: 'Mobile',
+    filter: false,
     field: 'phoneNumber',
     flex: 1,
     cellRenderer: (params: any) =>
       `<i class="fa fa-phone text-green-600 mr-1"></i> ${params.value}`,
   },
-  { headerName: 'Country', field: 'country', flex: 1 },
-  { headerName: 'City', field: 'city', flex: 1 },
-  { headerName: 'Roles', field: 'roles', flex: 1 },
+  { headerName: 'Country', field: 'country', flex: 1 ,filter: false},
+  { headerName: 'City', field: 'city', filter: false, flex: 1 },
+  { headerName: 'Roles', field: 'roles',filter: false, flex: 1 },
 
 
   {
     headerName: 'Actions',
     field: 'actions',
     flex: 1,
+    filter: false,
     pinned: 'right',
     cellRenderer: (params: any) => {
       return `
@@ -635,11 +670,12 @@ columnDefs: any = [
 
 defaultColDef = {
     sortable: true,
-    filter: true,
+    filter: false,
     resizable: true,
 };
 
-rowData:any[] = [];
+users:any[] = [];
+
 gridOptions:any = {
   rowSelection: 'multiple',
   suppressRowClickSelection: true,
@@ -648,6 +684,8 @@ gridOptions:any = {
     this.gridColumnApi = params.columnApi;
   },
 };
+
+getUserId!:string;
 
 onCellClicked(event: any): void {
   debugger
@@ -661,6 +699,7 @@ onCellClicked(event: any): void {
     this.editUser(id);
   } else if (classList.contains('fa-trash')) {
     this.onDelete(id);
+    this.getUserId = id;
   }
 }
 
@@ -668,15 +707,15 @@ onQuickFilterChanged(): void {
     if (this.gridApi) {
       this.gridApi.setGridOption('quickFilterText', this.searchValue);
     }
-  }
-  onExportClick() {
-    const worksheet = XLSX.utils.json_to_sheet(this.rowData);
+}
+
+onExportClick() {
+    const worksheet = XLSX.utils.json_to_sheet(this.users);
     const workbook = { Sheets: { data: worksheet }, SheetNames: ['data'] };
     const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
     const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
     FileSaver.saveAs(blob, 'userList.xlsx');
-  }
-
+}
 
 onPageSizeChanged(size: number) {
   this.paginationPageSize = +size;
@@ -690,4 +729,21 @@ onPageSizeChanged(size: number) {
   }
 }
 
+preventAbove(event: KeyboardEvent): void {
+  const input = event.target as HTMLInputElement;
+  const value = input.value;
+
+  const allowedKeys = ['Backspace', 'ArrowLeft', 'ArrowRight', 'Tab', 'Delete'];
+  if (allowedKeys.includes(event.key)) return;
+
+  if (!/^\d$/.test(event.key)) {
+    event.preventDefault();
+    return;
+  }
+
+  const nextValue = value + event.key;
+  if (nextValue.length > 17) {
+    event.preventDefault();
+  }
+}
 }

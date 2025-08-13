@@ -131,5 +131,14 @@ menus: Menu[] = [];
     document.documentElement.classList.toggle('dark', this.isDarkMode);
   }
 
+handleSingleMenuClick(url: string) {
+  this.openedAccordion = null; 
+  if (this.router.url !== url) {
+    this.router.navigate([url]);
+  }
+  if (this.isMobileView) {
+    this.isMobileSidebarOpen = false;
+  }
+}
 
 }

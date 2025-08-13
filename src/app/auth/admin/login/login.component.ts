@@ -1,11 +1,19 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
-import { AbstractControl, FormControl, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 import { AuthService } from '../../../service/auth/auth.service';
 import { loginModel, LoginResponse } from '../../../models/user-model';
 import { Router } from '@angular/router';
 import { TosterService } from '../../../service/toaster/tostr.service';
 import { PopupService } from '../../../service/popup/popup-service';
 
+export function emailWithComValidator(control: AbstractControl): ValidationErrors | null {
+  const email = control.value;
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+  if (!email) return null;
+
+  return emailRegex.test(email) ? null : { invalidComEmail: true };
+}
 
 @Component({
   selector: 'app-login',
@@ -26,7 +34,7 @@ export class LoginComponent {
   
 
   public loginForm = new FormGroup({
-    usernameOrEmail: new FormControl("",[Validators.required,Validators.email]),
+    usernameOrEmail: new FormControl("",[Validators.required,Validators.email,emailWithComValidator]),
     password:new FormControl("",Validators.required),
   })
 
@@ -85,11 +93,12 @@ currentIndex = 0;
     };
 
     this.authservice.logIn(data).subscribe({
-      next: (res: LoginResponse) => {
+      next: (res: any) => {
+        // console.log("res",res.message);
          this._loader.hide();
-        let getToken = res.token;
+        let getToken = res.data.token;
         const user: any = res.user;
-        this.toastr.success('Logged in successfully');
+        this.toastr.success(res.message);
         localStorage.setItem('token', getToken!);
         var getUserRole = this.authservice.getUserRole();
         if (getUserRole === 'SuperAdmin' || getUserRole === 'Admin') {
@@ -101,9 +110,11 @@ currentIndex = 0;
       error: (err) => {
          this._loader.hide();
         if (err.status === 401) {
-          this.toastr.error('Invalid username or password');
+          const errorMessage = err.error?.message;
+          this.toastr.error(errorMessage);
         } else {
-          this.toastr.error('Something went wrong');
+          const errorMessage = err.error?.message;
+          this.toastr.error(errorMessage);
         }
       }
     });
@@ -126,5 +137,16 @@ nextImage() {
   this.currentIndex = (this.currentIndex + 1) % this.imageList.length;
 }
 
+showPassword: boolean = false;
 
+togglePasswordVisibility() {
+  this.showPassword = !this.showPassword;
+}
+
+PasswordValue: any = '';
+
+onPasswordInput(){
+  const control = this.loginForm.get('password');
+  this.PasswordValue = control?.value || '';
+}
 }

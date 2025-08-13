@@ -1,11 +1,11 @@
 import { Output,Component, EventEmitter, inject } from '@angular/core';
 import { ColDef, Column, GridApi, GridReadyEvent, ICellRendererParams } from 'ag-grid-community';
 import { AdminService } from '../../../service/admin/admin.service';
-import { Router } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
 import * as XLSX from 'xlsx';
 import * as FileSaver from 'file-saver';
 import { BreadcrumbService } from '../../../shared/breadcrumb/breadcrumb.service';
-import { Subscription } from 'rxjs';
+import { filter, Subscription } from 'rxjs';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { PopupService } from '../../../service/popup/popup-service';
 import { TosterService } from '../../../service/toaster/tostr.service';
@@ -48,7 +48,7 @@ export class ListPatientsComponent {
       `;
     },
   },
-  { field: 'lastName', headerName: 'Last Name', sortable: true, filter: true, flex: 1 },
+  { field: 'lastName', headerName: 'Last Name', sortable: true, flex: 1 },
 {
     headerName: 'Mobile',
     field: 'phoneNumber',
@@ -56,29 +56,28 @@ export class ListPatientsComponent {
     cellRenderer: (params: any) =>
       `<i class="fa fa-phone text-green-600 mr-1"></i> ${params.value}`,
 },
-{ field: 'email', headerName: 'Email', sortable: true, filter: true, flex: 1 },
-{ field: 'socialSecurityNumber', headerName: 'SSN', sortable: true, filter: true, flex: 1 },
+{ field: 'email', headerName: 'Email', sortable: true, flex: 1 },
+{ field: 'socialSecurityNumber', headerName: 'SSN', sortable: true, flex: 1 },
 {
     field: 'dateOfBirth',
     headerName: 'DOB',
     sortable: true,
-    filter: true,
     flex: 1,
     valueFormatter: params => this.formatDate(params.value)
 },
-{ field: 'gender', headerName: 'Gender', sortable: true, filter: true, flex: 1 },
+{ field: 'gender', headerName: 'Gender', sortable: true, flex: 1 },
 {
     headerName: 'Assessment',
     flex: 0.8,
     cellRenderer: (params: ICellRendererParams) => {
-      console.log("params");
+      console.log("params",params.data.assessmentId);
       const hasAssessment = params.data.hasAssessment;
-      const patientId = params.data.id;
+      const assessmentId = params.data.assessmentId;
       const borderColor = hasAssessment ? 'green' : 'red';
 
       return `
         <button class="assessment-btn"
-                data-id="${patientId}"
+                data-id="${assessmentId}"
                 style="border: 2px solid ${borderColor};
                        padding: 4px;
                        border-radius: 50%;
@@ -96,14 +95,12 @@ export class ListPatientsComponent {
         </button>
       `;
     },
-    sortable: false,
-    filter: false
+    sortable: false
 },
 {
   field: 'quickBookSync',
   headerName: 'QuickBook Sync',
   sortable: true,
-  filter: true,
   flex: 1,
   cellRenderer: (params: any) => {
     if (!params.value) {
@@ -135,8 +132,7 @@ export class ListPatientsComponent {
         </div>
       `;
     },
-    sortable: false,
-    filter: false
+    sortable: false
 }
 ];
   uploadForm!: FormGroup;
@@ -159,10 +155,18 @@ export class ListPatientsComponent {
 
 
   ngOnInit(): void {
+     this.loadPatientsList();
+
+     this.router.events
+    .pipe(filter((event) => event instanceof NavigationEnd))
+    .subscribe(() => {
+      this.loadPatientsList();
+    });
+
     this.breadcrumbService.setBreadcrumbs([
     { label: 'List-Patients', url: 'patients/list-patients' },
   ]);
-    this.loadPatientsList();
+   
     this.uploadForm = this.fb.group({
       files: [null]
     });
@@ -170,7 +174,7 @@ export class ListPatientsComponent {
 
   defaultColDef = {
     sortable: true,
-    filter: true,
+    filter: false,
     resizable: true,
   };
 
@@ -194,7 +198,8 @@ gridOptions:any = {
   //   this.loadPatientsList();
   //   this.setupAssessmentClickHandler();
   // }
-selectedPatientId: string = '';
+  selectedassessmentId: string = '';
+  selectedPatientId: string = '';
 
   setupAssessmentClickHandler(): void {
   if (!this.gridApi) return;
@@ -208,9 +213,10 @@ selectedPatientId: string = '';
 
     const btn = target.closest('.assessment-btn');
     if (btn) {
-      const patientId = btn.getAttribute('data-id');
-      if (patientId) {
-        this.selectedPatientId = patientId; 
+      const assessmentId = btn.getAttribute('data-id');
+      if (assessmentId) {
+        this.selectedassessmentId = assessmentId;
+        this.selectedPatientId = event.data.id; // Store patientId from row data
         this.showInitialPopup = true;       
       }
     }
@@ -218,9 +224,9 @@ selectedPatientId: string = '';
 }
 
 
-  // goToAssessment(patientId: string): void {
+  // goToAssessment(assessmentId: string): void {
     
-  //   this.router.navigate(['admin/patients/assessment/', patientId]);
+  //   this.router.navigate(['admin/patients/assessment/', assessmentId]);
   // }
 
 
@@ -285,8 +291,12 @@ loadPatientsList(){
   this.showInitialPopup = false;
   this.isshowupload = true;
 
-  if (this.selectedPatientId) {
-    this.router.navigate(['admin/patients/assessment', this.selectedPatientId]);
+  if (this.selectedassessmentId) {
+    // Get the patientId from the row data
+    const selectedRow = this.rowData.find(row => row.assessmentId === this.selectedassessmentId);
+    if (selectedRow) {
+      this.router.navigate(['admin/patients/assessment', this.selectedPatientId, this.selectedassessmentId]);
+    }
   }
 }
 
@@ -347,7 +357,7 @@ upload(): void {
       }));
 
       const patientData: any = {
-        patientId:this.selectedPatientId,
+        assessmentId:this.selectedassessmentId,
         isFileUpload: true,
         fileUrl: this.uploadedUrl,
       };
@@ -360,8 +370,8 @@ upload(): void {
         },
         error: (err) => {
           this._loader.hide();
-          this._toastr.error('Error saving assessment');
-        }
+          const errorMessage = err.error?.message;
+          this._toastr.error(errorMessage);        }
       });
     },
     error: (err) => {
@@ -386,12 +396,12 @@ onCellClicked(event: any): void {
     this.adminService.addPatientToQuickBooks(this.getPatientsId).subscribe({
       next: (res) => {
         console.log("addPatientToQuickBooks response:", res);
-        this._toastr.success("Patient added to QuickBooks successfully");
+        this._toastr.success(res.message);
         this.loadPatientsList();
       },
       error: (err) => {
-        console.error("QuickBooks sync failed:", err);
-      }
+          const errorMessage = err.error?.message;
+          this._toastr.error(errorMessage);      }
     });
   }
  
@@ -406,27 +416,27 @@ onCellClicked(event: any): void {
  
  
 onEditAction(rowData: any): void {
+  console.log("rowdata",rowData);
    this.router.navigate(['admin/patients/add-patients', rowData.id]);
 }
 
-onDeleteAction(rowData: any){
-  console.log("rowData",rowData);  
-  var getPatientId = rowData.id
-  console.log("getPatientId",getPatientId);
-const confirmed = confirm('Are you sure you want to delete this user?');
+onDeleteAction(rowData: any) {
+  const getPatientId = rowData.id;
+  const confirmed = confirm('Are you sure you want to delete this user?');
   if (!confirmed) return;
 
-  this.adminService.deletePatient(getPatientId).subscribe(
-    (res: any) => {
-      this._toastr.success('User deleted successfully.');
-      this.loadPatientsList();
+  this.adminService.deletePatient(getPatientId).subscribe({
+    next: (res: any) => {
+      this._toastr.success(res.message);
+      this.rowData = this.rowData.filter((row: any) => row.id !== getPatientId);
     },
-    (err) => {
-      this._toastr.error(
-        err.status === 401 ? 'Unauthorized' : 'Error deleting user'
-      );
+    error: (err) => {
+      const errorMessage = err.error?.message;
+      this._toastr.error(errorMessage);
     }
-  );
+  });
 }
+
+
 
 }
