@@ -19,6 +19,9 @@ import { MenusComponent } from './shared/menu/menus.component';
 import { BreadcrumbComponent } from './shared/breadcrumb/breadcrumb.component';
 import { PatientLoginComponent } from './auth/patients/patient-login/patient-login.component';
 import { PatientsComponent } from './patients/patients.component';
+import { AuthComponent } from './auth/auth.component';
+import { DashboardComponent } from './dashboard/dashboard.component';
+import { SuccessComponent } from './success/success.component';
 
 @NgModule({
   declarations: [
@@ -31,6 +34,9 @@ import { PatientsComponent } from './patients/patients.component';
    MenusComponent,
    BreadcrumbComponent,
    PatientLoginComponent,
+   AuthComponent,
+   DashboardComponent,
+   SuccessComponent,
   ],
   imports: [
     CommonModule,
