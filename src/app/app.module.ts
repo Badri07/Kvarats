@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { NgxStripeModule } from '@stripe/stripe-angular';
+import { NgxStripeModule } from 'ngx-stripe';
 import { BrowserModule } from '@angular/platform-browser';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { AppRoutingModule } from './app-routing.module';
