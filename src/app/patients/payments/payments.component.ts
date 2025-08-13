@@ -5,6 +5,8 @@ import * as FileSaver from 'file-saver';
 import { AuthService } from '../../service/auth/auth.service';
 import { PatientService } from '../../service/patient/patients-service';
 import { InvoicePatients, Payment } from '../../models/patients-interface';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { environment } from '../../../environments/environment';
 import { products } from '../../../stripe-config';
 
 @Component({
@@ -14,6 +16,7 @@ import { products } from '../../../stripe-config';
   styleUrl: './payments.component.scss'
 })
 export class PaymentsComponent {
+  private supabase: SupabaseClient;
   private retryCount = 0;
   private maxRetries = 3;
   rowData: any[] = [];
@@ -55,6 +58,10 @@ paymentError: string | null = null;
         flowType: 'pkce'
       }
     });
+    this.supabase = createClient(
+      environment.supabaseUrl,
+      environment.supabaseAnonKey
+    );
   }
 
   async ngOnInit(): Promise<void> {
