@@ -143,14 +143,7 @@ export class SchedulerHeaderComponent {
 
 this._service.getSlidingScales().subscribe(data => this.slidingScalesList = data);
 
- if (this.appointmentForm?.get('patientId')) {
-    console.log("this.appointmentForm.get('patientId')", this.appointmentForm.get('patientId')?.value);
-  } else {
-    console.warn('appointmentForm or patientId is not available yet');
-  }
-
-
-        this.appointmentForm = this.formBuilder.group({
+       this.appointmentForm = this.formBuilder.group({
       therapistInput: [null, Validators.required],
       appointmentTypeInput: ['', Validators.required],
       patientId: ['', Validators.required],
@@ -180,6 +173,13 @@ this._service.getSlidingScales().subscribe(data => this.slidingScalesList = data
     this.recalculateInsuranceClaim();
   }
 });
+
+
+ if (this.appointmentForm?.get('patientId')) {
+    console.log("this.appointmentForm.get('patientId')", this.appointmentForm.get('patientId')?.value);
+  } else {
+    console.warn('appointmentForm or patientId is not available yet');
+  }
   }
 
   setTab(tab: string) {
@@ -422,49 +422,26 @@ onSubmit(): void {
   }
 
 onInsuranceToggle(event: any) {
-
+  debugger
   this.useInsurance = event.target.checked;
- 
   if (this.useInsurance) {
-
     const patientId = this.appointmentForm.get('patientId')?.value;
-
     if (patientId) {
-
-      // Find the selected patient and their insurances
-
       this.selectedPatient = this.PatientsListOptions.find(p => p.id === patientId);
-
       this.insuranceList = this.selectedPatient?.insurances || [];
-
-      // Auto-select the first insurance if available
-
       if (this.insuranceList.length > 0) {
-
         this.selectedInsuranceId = this.insuranceList[0].id;
-
         this.selectedInsurance = this.insuranceList[0];
-
         this.copayAmount = this.selectedInsurance.coPay || 0;
-
       }
-
     }
-
   } else {
-
     this.selectedInsuranceId = null;
-
     this.selectedInsurance = null;
-
     this.insuranceClaimAmount = 0;
-
     this.copayAmount = 0;
-
   }
- 
   this.recalculateInsuranceClaim();
-
 }
  
 onInsuranceChange(event: Event): void {

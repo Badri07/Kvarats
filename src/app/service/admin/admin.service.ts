@@ -6,6 +6,7 @@ import { Billing, Client, DropdownModel } from '../../models/useradmin-model';
 import { environment } from '../../../environments/environments';
 import { LeaveRequest } from '../../models/user-model';
 import { ToastrService } from 'ngx-toastr';
+import { retry, timeout } from 'rxjs/operators';
 
 
 @Injectable({
@@ -382,10 +383,87 @@ getAllUserAppointments(): Observable<any> {
 }
 
 savePatientAssessment(data: any): Observable<any> {
-
-  return this.http.post(`${environment.apidev}/PatientAssessment/AddPatientAssessment`, data).pipe(
+  return this.http.post(`${environment.apidev}/PatientAssessment/AddPatientAssessment`, data, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  }).pipe(
+    timeout(30000), // 30 second timeout
+    retry(2), // Retry up to 2 times on failure
+    map((response: any) => response?.data || response),
     catchError(error => {
       console.error('Error saving assessment:', error);
+      
+      // Provide more specific error messages
+      let errorMessage = 'Failed to save assessment';
+      if (error.status === 0) {
+        errorMessage = 'Network error - please check your connection';
+      } else if (error.status >= 500) {
+        errorMessage = 'Server error - please try again later';
+      } else if (error.status === 413) {
+        errorMessage = 'Assessment data too large - please reduce file sizes';
+      }
+      
+      return throwError(() => ({ ...error, userMessage: errorMessage }));
+    })
+  );
+}
+
+// Add a method for quick validation before saving
+validateAssessmentData(data: any): { isValid: boolean; errors: string[] } {
+  const errors: string[] = [];
+  
+  if (!data.patientId) {
+    errors.push('Patient ID is required');
+  }
+  
+  // Validate vital signs ranges
+  if (data.systolic && (data.systolic < 50 || data.systolic > 300)) {
+    errors.push('Systolic pressure must be between 50-300 mmHg');
+  }
+  
+  if (data.diastolic && (data.diastolic < 30 || data.diastolic > 200)) {
+    errors.push('Diastolic pressure must be between 30-200 mmHg');
+  }
+  
+  if (data.heartRate && (data.heartRate < 30 || data.heartRate > 250)) {
+    errors.push('Heart rate must be between 30-250 bpm');
+  }
+  
+  // Validate pain scales
+  if (data.chiefComplaints) {
+    data.chiefComplaints.forEach((complaint: any, index: number) => {
+      if (complaint.painScale !== null && (complaint.painScale < 0 || complaint.painScale > 10)) {
+        errors.push(`Pain scale for complaint ${index + 1} must be between 0-10`);
+      }
+    });
+  }
+  
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
+}
+
+// Optimized method for auto-save with minimal data
+autoSaveAssessment(data: any): Observable<any> {
+  // Create a lightweight version for auto-save
+  const autoSaveData = {
+    ...data,
+    isAutoSave: true // Flag to indicate this is an auto-save
+  };
+  
+  return this.http.post(`${environment.apidev}/PatientAssessment/AddPatientAssessment`, autoSaveData, {
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Auto-Save': 'true'
+    }
+  }).pipe(
+    timeout(15000), // Shorter timeout for auto-save
+    map((response: any) => response?.data || response),
+    catchError(error => {
+      // Don't throw errors for auto-save failures, just log them
+      console.warn('Auto-save failed:', error);
       return throwError(() => error);
     })
   );
