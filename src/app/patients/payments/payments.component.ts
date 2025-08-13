@@ -8,6 +8,8 @@ import { InvoicePatients, Payment } from '../../models/patients-interface';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { environment } from '../../../environments/environment';
 import { products } from '../../../stripe-config';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-payments',
@@ -16,6 +18,9 @@ import { products } from '../../../stripe-config';
   styleUrl: './payments.component.scss'
 })
 export class PaymentsComponent {
+  private supabase: SupabaseClient;
+  private retryCount = 0;
+  private maxRetries = 3;
   rowData: any[] = [];
   searchValue: string = '';
   gridApi!: GridApi;
@@ -47,13 +52,54 @@ paymentError: string | null = null;
   public authService = inject(AuthService);
 
   constructor() {
+    this.supabase = createClient(environment.supabaseUrl, environment.supabaseAnonKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: false,
+        flowType: 'pkce'
+      }
+    });
     this.supabase = createClient(
       environment.supabaseUrl,
       environment.supabaseAnonKey
     );
   }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
+    await this.initializeWithRetry();
+  }
+
+  private async initializeWithRetry(): Promise<void> {
+    try {
+      await this.initializeSupabase();
+    } catch (error: any) {
+      if (error.message?.includes('lock') && this.retryCount < this.maxRetries) {
+        this.retryCount++;
+        console.log(`Retrying Supabase initialization (attempt ${this.retryCount}/${this.maxRetries})`);
+        
+        // Wait before retry with exponential backoff
+        await new Promise(resolve => setTimeout(resolve, 1000 * this.retryCount));
+        await this.initializeWithRetry();
+      } else {
+        console.warn('Supabase initialization failed, continuing without auth:', error);
+        // Continue without authentication for now
+      }
+    }
+  }
+
+  private async initializeSupabase(): Promise<void> {
+    try {
+      // Try to get the current session with timeout
+      const sessionPromise = this.supabase.auth.getSession();
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Session timeout')), 5000)
+      );
+      
+      await Promise.race([sessionPromise, timeoutPromise]);
+    } catch (error) {
+      throw error;
+    }
     this.getInvoiceByPatients();
     this.getUserDetails();
   }
