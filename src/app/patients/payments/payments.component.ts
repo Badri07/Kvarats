@@ -8,8 +8,6 @@ import { InvoicePatients, Payment } from '../../models/patients-interface';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { environment } from '../../../environments/environment';
 import { products } from '../../../stripe-config';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-payments',
