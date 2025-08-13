@@ -348,4 +348,99 @@ closePaymentConfirmation() {
   this.paymentError = null;
 }
 
+  // Stripe Payment Methods
+  async onStripePayClick(invoiceData: any) {
+    this.checkoutLoading = true;
+    
+    try {
+      const { data: { session } } = await this.supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        throw new Error('Please log in to make a payment');
+      }
+
+      // Find the appointment product from our config
+      const appointmentProduct = this.products.find(p => p.name === 'Appointment');
+      
+      if (!appointmentProduct) {
+        throw new Error('Appointment product not found');
+      }
+
+      const response = await fetch(`${environment.supabaseUrl}/functions/v1/stripe-checkout`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          price_id: appointmentProduct.priceId,
+          success_url: `${window.location.origin}/patient/payment?success=true&invoice=${invoiceData.invoiceNumber}`,
+          cancel_url: `${window.location.origin}/patient/payment?canceled=true`,
+          mode: appointmentProduct.mode,
+          metadata: {
+            invoiceNumber: invoiceData.invoiceNumber,
+            patientId: this.getPatientId,
+            amount: invoiceData.balanceDue
+          }
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create checkout session');
+      }
+
+      const { url } = await response.json();
+      
+      if (url) {
+        // Redirect to Stripe Checkout
+        window.location.href = url;
+      } else {
+        throw new Error('No checkout URL received');
+      }
+    } catch (error: any) {
+      console.error('Stripe checkout error:', error);
+      this.paymentError = error.message;
+      
+      // Show error to user
+      setTimeout(() => {
+        this.paymentError = null;
+      }, 5000);
+    } finally {
+      this.checkoutLoading = false;
+    }
+  }
+
+  // Handle success/cancel redirects
+  ngAfterViewInit() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const success = urlParams.get('success');
+    const canceled = urlParams.get('canceled');
+    const invoiceNumber = urlParams.get('invoice');
+
+    if (success === 'true') {
+      this.showSuccessMessage(invoiceNumber);
+      // Refresh the invoice data
+      this.getInvoiceByPatients();
+    } else if (canceled === 'true') {
+      this.showCancelMessage();
+    }
+
+    // Clean up URL parameters
+    if (success || canceled) {
+      const cleanUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, cleanUrl);
+    }
+  }
+
+  private showSuccessMessage(invoiceNumber: string | null) {
+    // You can implement a toast notification or modal here
+    console.log(`Payment successful for invoice: ${invoiceNumber}`);
+  }
+
+  private showCancelMessage() {
+    // You can implement a toast notification here
+    console.log('Payment was canceled');
+  }
+
 }

@@ -190,6 +190,10 @@ Deno.serve(async (req) => {
       mode,
       success_url,
       cancel_url,
+      metadata: {
+        userId: user.id,
+        ...(req.body.metadata || {})
+      }
     });
 
     console.log(`Created checkout session ${session.id} for customer ${customerId}`);
