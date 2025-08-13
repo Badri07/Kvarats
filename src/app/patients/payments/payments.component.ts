@@ -5,6 +5,9 @@ import * as FileSaver from 'file-saver';
 import { AuthService } from '../../service/auth/auth.service';
 import { PatientService } from '../../service/patient/patients-service';
 import { InvoicePatients, Payment } from '../../models/patients-interface';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { environment } from '../../../environments/environment';
+import { products } from '../../../stripe-config';
 
 @Component({
   selector: 'app-payments',
@@ -35,9 +38,20 @@ transactionId: string = '';
 showPaymentProcessing: boolean = false;
 paymentError: string | null = null;
 
+  // Stripe integration properties
+  private supabase: SupabaseClient;
+  products = products;
+  checkoutLoading = false;
 
   public patientService = inject(PatientService);
   public authService = inject(AuthService);
+
+  constructor() {
+    this.supabase = createClient(
+      environment.supabaseUrl,
+      environment.supabaseAnonKey
+    );
+  }
 
   ngOnInit(): void {
     this.getInvoiceByPatients();
