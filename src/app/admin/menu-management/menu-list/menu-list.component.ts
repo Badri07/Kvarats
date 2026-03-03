@@ -99,7 +99,7 @@ this.columnDefsMenu = [
   }
 
   onQuickFilterChanged(): void {
-    debugger
+    
         this.gridApi.setGridOption('quickFilterText', this.searchValue);
         console.log(" this.searchValue", this.searchValue);
         console.log("this.gridApi.setGridOption", this.gridApi.setGridOption);

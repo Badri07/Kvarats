@@ -1,149 +1,278 @@
-<div class=" p-4 bg-white rounded-lg shadow-md border border-gray-100">
-  <!-- Client Selector -->
-  <div class="mb-5">
-    <label class="block text-sm font-medium text-gray-700 mb-1">Select Client</label>
-    <div class="relative">
-      <select 
-        (change)="onClientChangeEvent($event)"
-        class="block w-96 pl-3 pr-8 py-2 text-sm rounded-md border border-gray-300 focus:outline-none focus:ring-1 focus:ring-primary-orange focus:border-primary-orange transition-colors"
-      >
-        <option value="">-- Choose a Client --</option>
-        <option *ngFor="let c of clients" [value]="c.id">{{ c.name }}</option>
-      </select>
-      <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-        <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-        </svg>
+<div class="dashboard-container dark-mode-1">
+  <!-- Header Section -->
+  <div class="dashboard-header">
+    <div class="header-content">
+      <div class="title-section dark-mode-1">
+      
+
+        <div>
+          <h1 class="dashboard-titles">Menu Access Control</h1>
+          <p class="dashboard-subtitle">Manage menu permissions and role-based access across all clinics</p>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Loading State -->
-  <div *ngIf="loadingMenus" class="flex items-center justify-center py-3">
-    <div class="animate-spin h-4 w-4 border-2 border-primary-orange border-t-transparent rounded-full mr-2"></div>
-    <span class="text-sm text-gray-600">Loading menus...</span>
+  <!-- Stats Grid -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon clinic-icon">
+        <i class="fas fa-hospital"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">24</div>
+        <div class="stat-label">Active Clinics</div>
+        <div class="stat-trend positive">
+          <i class="fas fa-arrow-up"></i>
+          <span>+3 this month</span>
+        </div>
+      </div>
+      <div class="stat-decoration"></div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon menu-icon">
+        <i class="fas fa-bars"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">156</div>
+        <div class="stat-label">Menu Items</div>
+        <div class="stat-trend positive">
+          <i class="fas fa-arrow-up"></i>
+          <span>+12 this week</span>
+        </div>
+      </div>
+      <div class="stat-decoration"></div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon users-icon">
+        <i class="fas fa-users"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">1,247</div>
+        <div class="stat-label">Total Users</div>
+        <div class="stat-trend positive">
+          <i class="fas fa-arrow-up"></i>
+          <span>+89 this month</span>
+        </div>
+      </div>
+      <div class="stat-decoration"></div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon permission-icon">
+        <i class="fas fa-shield-alt"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">48</div>
+        <div class="stat-label">Permission Groups</div>
+        <div class="stat-trend positive">
+          <i class="fas fa-arrow-up"></i>
+          <span>+2 this week</span>
+        </div>
+      </div>
+      <div class="stat-decoration"></div>
+    </div>
   </div>
 
-  <!-- Menu Groups - Two Column Layout -->
-  <div *ngIf="!loadingMenus && groupedMenus.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <ng-container *ngFor="let group of groupedMenus; let i = index; trackBy: trackByGroupIndex">
-      <div *ngIf="i % 2 === 0" class="space-y-4">
-        <!-- First Column Group -->
-        <div class="border border-gray-200 rounded-md overflow-hidden">
-          <div class="flex items-center px-3 py-2 bg-primary-orange/10 border-b border-primary-orange/20">
-            <input
-              type="checkbox"
-              class="h-4 w-4 text-primary-orange rounded border-gray-300 focus:ring-primary-orange"
-              [checked]="selectedMenuIds.includes(group.parent.Id.toString())"
-              [indeterminate]="isParentIndeterminate(group)"
-              (change)="toggleParent(group, $event)"
-            />
-            <span class="ml-2 text-sm font-semibold text-primary-orange">{{ group.parent.Name }}</span>
-          </div>
-          <div class="divide-y divide-gray-100">
-            <div 
-              *ngFor="let child of group.children; trackBy: trackByMenuId"
-              class="px-3 py-2 hover:bg-gray-50 border-b last:border-b-0"
-            >
-              <div class="flex items-center">
-                <input
-                  type="checkbox"
-                  class="h-4 w-4 text-primary-orange rounded border-gray-300 focus:ring-primary-orange"
-                  [checked]="selectedMenuIds.includes(child.Id.toString())"
-                  (change)="toggleMenu(child.Id, $event)"
-                  id="menu-{{child.Id}}"
-                />
-                <label for="menu-{{child.Id}}" class="ml-2 text-sm text-gray-700 flex-1">{{ child.Name }}</label>
-              </div>
-
-              <!-- Role checkboxes for this menu -->
-              <div class="mt-1 ml-6 flex flex-wrap gap-2">
-                <label *ngFor="let role of roles; trackBy: trackByRoleId" class="inline-flex items-center text-xs text-gray-600 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    class="h-3 w-3 text-primary-orange rounded border-gray-300 focus:ring-primary-orange"
-                    [checked]="menuRoleSelections[child.Id.toString()].includes(role.id.toString())"
-                    (change)="toggleRole(child.Id.toString(), role.id.toString(), $event)"
-                    [disabled]="!selectedMenuIds.includes(child.Id.toString())"
-                  />
-                  <span class="ml-1">{{ role.roleName }}</span>
-                </label>
-              </div>
-
+  <!-- Menu Management Section -->
+  <div class="menu-management-container dark-mode-1">
+    <div class="menu-header">
+      <div class="header-controls">
+        <div class="client-selector">
+          <label class="selector-label">
+            <i class="fas fa-building"></i>
+            Select Client
+          </label>
+          <div class="select-wrapper">
+            <select class="form-control" (change)="onClientChangeEvent($event)" >
+              <option value="">-- Choose a Client --</option>
+              <option *ngFor="let c of clients" [value]="c.id">{{ c.name }}</option>
+            </select>
+            <div class="select-arrow">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
             </div>
           </div>
         </div>
 
-        <!-- Second Column Group (if exists) -->
-        <div *ngIf="groupedMenus[i+1]" class="border border-gray-200 rounded-md overflow-hidden">
-          <div class="flex items-center px-3 py-2 bg-primary-orange/10 border-b border-primary-orange/20">
-            <input
-              type="checkbox"
-              class="h-4 w-4 text-primary-orange rounded border-gray-300 focus:ring-primary-orange"
-              [checked]="selectedMenuIds.includes(groupedMenus[i+1].parent.Id.toString())"
-              [indeterminate]="isParentIndeterminate(groupedMenus[i+1])"
-              (change)="toggleParent(groupedMenus[i+1], $event)"
-            />
-            <span class="ml-2 text-sm font-semibold text-primary-orange">{{ groupedMenus[i+1].parent.Name }}</span>
+        <div class="header-actions">
+          <div class="selection-info" *ngIf="selectedMenuIds.length > 0">
+            <i class="fas fa-check-circle"></i>
+            {{ selectedMenuIds.length }} menu{{ selectedMenuIds.length !== 1 ? 's' : '' }} selected
           </div>
-          <div class="divide-y divide-gray-100">
-            <div *ngFor="let child of groupedMenus[i+1].children; trackBy: trackByMenuId" class="px-3 py-2 hover:bg-gray-50">
-              <div class="flex items-center">
-                <input
-                  type="checkbox"
-                  class="h-4 w-4 text-primary-orange rounded border-gray-300 focus:ring-primary-orange"
-                  [checked]="selectedMenuIds.includes(child.Id.toString())"
-                  (change)="toggleMenu(child.Id, $event)"
-                  id="menu-{{child.Id}}"
-                />
-                <label for="menu-{{child.Id}}" class="ml-2 text-sm text-gray-700 flex-1">{{ child.Name }}</label>
-              </div>
-              <!-- Role checkboxes -->
-              <div class="mt-1 ml-6 flex flex-wrap gap-2">
-                <label
-                  *ngFor="let role of roles; trackBy: trackByRoleId"
-                  class="inline-flex items-center space-x-1 text-xs cursor-pointer select-none"
-                >
-                  <input
-                    type="checkbox"
-                    class="h-3 w-3 text-primary-orange rounded border-gray-300 focus:ring-primary-orange"
-                    [checked]="menuRoleSelections[child.Id.toString()].includes(role.id.toString())"
-                    (change)="toggleRole(child.Id.toString(), role.id.toString(), $event)"
-                    [disabled]="!selectedMenuIds.includes(child.Id.toString())"
-                  />
-                  <span>{{ role.roleName }}</span>
-                </label>
-              </div>
-            </div>
+          
+          <!-- Save Button -->
+          <div *ngIf="selectedClientId && !loadingMenus && groupedMenus.length > 0" class="save-section">
+            <button (click)="saveAccess()" [disabled]="saving" class="custom-button">
+              <span *ngIf="!saving" class="button-content">
+                <svg class="button-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                Apply Changes
+              </span>
+              <span *ngIf="saving" class="button-content">
+                <svg class="button-spinner" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Saving...
+              </span>
+            </button>
           </div>
         </div>
       </div>
-    </ng-container>
-  </div>
+    </div>
 
-  <!-- Empty State -->
-  <div *ngIf="!loadingMenus && groupedMenus?.length === 0" class="py-4 text-center">
-    <svg class="mx-auto h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-    </svg>
-    <p class="mt-1 text-sm text-gray-500">No menus available for this client</p>
-  </div>
+    <!-- Loading State -->
+    <div *ngIf="loadingMenus" class="loading-state">
+      <div class="loading-spinner"></div>
+      <span class="loading-text">Loading menu configuration...</span>
+    </div>
 
-  <!-- Save Button -->
-  <div *ngIf="selectedClientId && !loadingMenus && groupedMenus.length > 0" class="mt-6">
-    <button
-      (click)="saveAccess()"
-      [disabled]="saving"
-      class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-orange hover:bg-orange-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-orange disabled:opacity-70 disabled:cursor-not-allowed transition-colors"
-    >
-      <span *ngIf="!saving">Save Access</span>
-      <span *ngIf="saving" class="flex items-center justify-center">
-        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-        Saving...
-      </span>
-    </button>
+    <!-- Role Matrix Table -->
+    <div *ngIf="!loadingMenus && groupedMenus.length > 0" class="role-matrix-container">
+      <div class="matrix-header">
+        <div class="menu-column-header">
+          <i class="fas fa-list"></i>
+          Menu Features
+        </div>
+        <div class="roles-header">
+          <div *ngFor="let role of roles; let i = index" class="role-header" [class]="'role-' + (i % 4 + 1)">
+            <div class="role-icon">
+              <i class="fas" [ngClass]="getRoleIcon(role.roleName)"></i>
+            </div>
+            {{ role.roleName }}
+          </div>
+        </div>
+      </div>
+
+      <div class="matrix-body">
+        <ng-container *ngFor="let group of groupedMenus; let groupIndex = index">
+          <!-- Parent Menu Row -->
+          <div class="matrix-row parent-row" *ngIf="group.children.length === 0">
+            <div class="menu-item">
+              <div class="menu-checkbox-container">
+                <input
+                  type="checkbox"
+                  class="menu-checkbox"
+                  [checked]="selectedMenuIds.includes(group.parent.Id)"
+                  (change)="toggleMenu(group.parent.Id, $event)"
+                  id="parent-{{group.parent.Id}}"
+                />
+                <label for="parent-{{group.parent.Id}}" class="menu-label">
+                  <span class="menu-icon">
+                    <i class="fas" [ngClass]="getMenuIcon(group.parent.Name)"></i>
+                  </span>
+                  {{ group.parent.Name }}
+                </label>
+              </div>
+            </div>
+            <div class="role-checkboxes">
+              <div *ngFor="let role of roles; let i = index" class="role-cell" [class]="'role-' + (i % 4 + 1)">
+                <label class="role-toggle">
+                  <input
+                    type="checkbox"
+                    class="role-checkbox"
+                    [checked]="menuRoleSelections[group.parent.Id].includes(role.id) || false"
+                    (change)="toggleRole(group.parent.Id, role.id, $event)"
+                    [disabled]="!selectedMenuIds.includes(group.parent.Id)"
+                  />
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Parent with Children -->
+          <div *ngIf="group.children.length > 0" class="parent-group">
+            <!-- Parent Row -->
+            <div class="matrix-row parent-row">
+              <div class="menu-item">
+                <div class="menu-checkbox-container">
+                  <input
+                    type="checkbox"
+                    class="menu-checkbox"
+                    [checked]="selectedMenuIds.includes(group.parent.Id)"
+                    [indeterminate]="isParentIndeterminate(group)"
+                    (change)="toggleParent(group, $event)"
+                    id="parent-{{group.parent.Id}}"
+                  />
+                  <label for="parent-{{group.parent.Id}}" class="menu-label parent-label">
+                    <span class="menu-icon">
+                      <i class="fas fa-folder"></i>
+                    </span>
+                    {{ group.parent.Name }}
+                    <span class="child-count">({{ group.children.length }})</span>
+                  </label>
+                </div>
+              </div>
+              <div class="role-checkboxes">
+                <div *ngFor="let role of roles; let i = index" class="role-cell" [class]="'role-' + (i % 4 + 1)">
+                  <label class="role-toggle">
+                    <input
+                      type="checkbox"
+                      class="role-checkbox"
+                      [checked]="menuRoleSelections[group.parent.Id].includes(role.id) || false"
+                      (change)="toggleRole(group.parent.Id, role.id, $event)"
+                      [disabled]="!selectedMenuIds.includes(group.parent.Id)"
+                    />
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Child Rows -->
+            <div *ngFor="let child of group.children; let childIndex = index" 
+                 class="matrix-row child-row"
+                 [class.last-child]="childIndex === group.children.length - 1">
+              <div class="menu-item">
+                <div class="menu-checkbox-container">
+                  <input
+                    type="checkbox"
+                    class="menu-checkbox"
+                    [checked]="selectedMenuIds.includes(child.Id)"
+                    (change)="toggleMenu(child.Id, $event)"
+                    id="child-{{child.Id}}"
+                  />
+                  <label for="child-{{child.Id}}" class="menu-label child-label">
+                    <span class="menu-icon">
+                      <i class="fas fa-file-alt"></i>
+                    </span>
+                    {{ child.Name }}
+                  </label>
+                </div>
+              </div>
+              <div class="role-checkboxes">
+                <div *ngFor="let role of roles; let i = index" class="role-cell" [class]="'role-' + (i % 4 + 1)">
+                  <label class="role-toggle">
+                    <input
+                      type="checkbox"
+                      class="role-checkbox"
+                      [checked]="menuRoleSelections[child.Id].includes(role.id) || false"
+                      (change)="toggleRole(child.Id, role.id, $event)"
+                      [disabled]="!selectedMenuIds.includes(child.Id)"
+                    />
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!loadingMenus && groupedMenus?.length === 0" class="empty-state">
+      <div class="empty-illustration">
+        <i class="fas fa-tasks"></i>
+      </div>
+      <h3 class="empty-title">No Menus Available</h3>
+      <p class="empty-text">Select a different client to configure menu access</p>
+    </div>
   </div>
 </div>

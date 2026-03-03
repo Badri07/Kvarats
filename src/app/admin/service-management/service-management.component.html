@@ -1,0 +1,370 @@
+<div class="services-management">
+  <!-- Header -->
+  <div class="management-header">
+    <div class="header-content">
+      <h1 class="management-title dark-mode-text">Services Management</h1>
+      <p class="management-subtitle">Manage appointment types, pricing, and service configurations for all clients</p>
+    </div>
+    <div class="header-actions">
+      @if (activeTab() === 'services') {
+        <app-button variant="primary" (click)="createService()">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+          </svg>
+          Create Service
+        </app-button>
+      }
+    </div>
+  </div>
+
+  <!-- Tabs Navigation -->
+  <div class="tabs-container">
+    <div class="tabs-navigation">
+      <button 
+        class="tab-button" 
+        [class.active]="activeTab() === 'services'"
+        (click)="setActiveTab('services')">
+        Services
+      </button>
+      <button 
+        class="tab-button" 
+        [class.active]="activeTab() === 'subscriptions'"
+        (click)="setActiveTab('subscriptions')">
+        Clients Subscriptions
+      </button>
+    </div>
+  </div>
+
+  <!-- Tab Content -->
+  <div class="tab-content">
+    <!-- Services Tab -->
+    @if (activeTab() === 'services') {
+      <div class="services-tab">
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon stat-icon-blue">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+              </svg>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value dark-mode-text">{{ totalServices() }}</div>
+              <div class="stat-label">Total Services</div>
+              <div class="stat-change positive">{{ activeServices() }} active</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon stat-icon-green">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value dark-mode-text">{{ activeServices() }}</div>
+              <div class="stat-label">Active Services</div>
+              <div class="stat-change positive">Available to clients</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon stat-icon-purple">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+              </svg>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value dark-mode-text">{{ formatCurrency(averagePrice()) }}</div>
+              <div class="stat-label">Average Price</div>
+              <div class="stat-change neutral">Per service</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Services List -->
+        <div class="services-content mt-3">
+          <div class="services-grid">
+            @for (service of appointmentTypes(); track service.id) {
+              <div class="service-card stat-card-service" [class.inactive]="!service.isActive">
+                <div class="service-header">
+                  <div class="service-info">
+                    <h3 class="service-name">{{ service.label }}</h3>
+                    @if (service.description) {
+                      <p class="service-description">{{ service.description }}</p>
+                    }
+                    <div class="service-meta">
+                      @if (service.metadata?.['duration']) {
+                        <span class="meta-item duration">{{ service.metadata?.['duration'] }} min</span>
+                      }
+                      @if (service.metadata?.['cptCode']) {
+                        <span class="meta-item cpt-code">{{ service.metadata?.['cptCode'] }}</span>
+                      }
+                    </div>
+                  </div>
+                  
+                  <div class="service-pricing">
+                    @if (service.price !== undefined && service.price !== null) {
+                      <div class="price-amount">{{ formatCurrency(service.price) }}</div>
+                    } @else {
+                      <div class="price-amount">No price set</div>
+                    }
+                  </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="service-actions">
+                  <app-button 
+                    variant="info" 
+                    class="flex-1 bg-blue-50 text-blue-600 py-2 px-3 text-sm rounded-lg hover:bg-blue-100 transition flex items-center justify-center gap-2"
+                    size="sm"
+                    (click)="editService(service)">
+                    <i class="fas fa-edit text-sm"></i>
+                    Edit
+                  </app-button>
+                  <app-button 
+                    variant="warning" 
+                    size="sm"
+                    (click)="deleteService(service)">
+                    <i class="fas fa-trash text-sm"></i>
+                    Delete
+                  </app-button>
+                </div>
+              </div>
+            } @empty {
+              <div class="empty-state">
+                <div class="empty-icon">
+                  <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                  </svg>
+                </div>
+                <h3 class="empty-title">No services configured</h3>
+                <p class="empty-description">Create your first appointment type to get started with services management.</p>
+                <app-button variant="primary" (click)="createService()">Create First Service</app-button>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Subscriptions Tab -->
+    @if (activeTab() === 'subscriptions') {
+      <div class="subscriptions-tab">
+        <div class="subscriptions-header">
+          <div class="select-wrapper">
+            <select class="form-control" (change)="onClientChangeEvent($event)">
+              <option value="">-- Choose a Client --</option>
+              <option *ngFor="let c of clients" [value]="c.id">{{ c.name }}</option>
+            </select>
+            <div class="select-arrow">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Services List View - Only show when client is selected -->
+        @if (get_clientId) {
+          <div class="services-list-container">
+            <div class="services-list">
+              @for (service of appointmentTypes(); track service.id) {
+                <div class="service-list-item" [class.inactive]="!service.isActive">
+                  <div class="service-list-content">
+                    <div class="service-list-info">
+                      <h3 class="service-name">{{ service.label }}</h3>
+                      @if (service.description) {
+                        <p class="service-description">{{ service.description }}</p>
+                      }
+                      <div class="service-meta">
+                        @if (service.metadata?.['duration']) {
+                          <span class="meta-item duration">{{ service.metadata?.['duration'] }} min</span>
+                        }
+                        @if (service.metadata?.['cptCode']) {
+                          <span class="meta-item cpt-code">{{ service.metadata?.['cptCode'] }}</span>
+                        }
+                        @if (service.price !== undefined && service.price !== null) {
+                          <span class="meta-item price">{{ formatCurrency(service.price) }}</span>
+                        }
+                      </div>
+                    </div>
+                    
+                    <div class="service-list-actions">
+                      <!-- Subscribe/Unsubscribe Button -->
+                      @if (isServiceSubscribed(service.id)) {
+                        <app-button 
+                          variant="warning" 
+                          size="sm"
+                          (click)="unsubscribeService(service)"
+                          class="unsubscribe-btn">
+                          <i class="fas fa-ban text-sm"></i>
+                          Unsubscribe
+                        </app-button>
+                      } @else {
+                        <app-button 
+                          variant="primary" 
+                          size="sm"
+                          (click)="subscribeService(service)"
+                          class="subscribe-btn">
+                          <i class="fas fa-check text-sm"></i>
+                          Subscribe
+                        </app-button>
+                      }
+                    </div>
+                  </div>
+                </div>
+              } @empty {
+                <div class="empty-state">
+                  <div class="empty-icon">
+                    <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                  </div>
+                  <h3 class="empty-title">No services configured</h3>
+                  <p class="empty-description">Create your first appointment type to get started with services management.</p>
+                  <app-button variant="primary" (click)="createService()">Create First Service</app-button>
+                </div>
+              }
+            </div>
+          </div>
+        } @else {
+          <!-- Show empty state when no client is selected -->
+          <div class="subscriptions-empty-state">
+            <div class="empty-icon">
+              <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+              </svg>
+            </div>
+            <h3 class="empty-title">No Client Selected</h3>
+            <p class="empty-description">Please select a client to view and manage their subscriptions</p>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Service Creation/Edit Modal -->
+<app-modal 
+  [isOpen]="showServiceModal()" 
+  [title]="editingService() ? 'Edit Service' : 'Create New Service'"
+  size="lg"
+  (closed)="closeServiceModal()">
+  
+  <form [formGroup]="serviceForm" (ngSubmit)="saveServiceForm()" class="service-form">
+    <div class="form-grid">
+      <div class="form-group">
+        <label for="serviceName" class="form-label">Service Name <span class="text-danger">*</span></label>
+        <input 
+          type="text" 
+          id="serviceName"
+          formControlName="label"
+          class="form-control"
+          [class.error]="isFieldInvalid('label')"
+          placeholder="Enter service name">
+        @if (isFieldInvalid('label')) {
+          <div class="form-error">Service name is required</div>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="servicePrice" class="form-label">Price ($) <span class="text-danger">*</span></label>
+        <input 
+          type="number" 
+          id="servicePrice"
+          formControlName="price"
+          class="form-control"
+          [class.error]="isFieldInvalid('price')"
+          min="0"
+          step="0.01"
+          placeholder="0.00">
+        @if (isFieldInvalid('price')) {
+          <div class="form-error">Price is required</div>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="serviceDuration" class="form-label">Duration (minutes)<span class="text-danger">*</span></label>
+        <input 
+          type="number" 
+          id="serviceDuration"
+          formControlName="duration"
+          class="form-control"
+          [class.error]="isFieldInvalid('duration')"
+          min="1"
+          placeholder="45">
+        @if (isFieldInvalid('duration')) {
+          <div class="form-error">Duration is required</div>
+        }
+      </div>
+      <div class="form-group">
+        <label for="serviceCptCode" class="form-label">CPT Code</label>
+        <input 
+          type="text" 
+          id="serviceCptCode"
+          formControlName="cptCode"
+          class="form-control"
+          placeholder="Enter CPT code">
+      </div>
+    </div>
+
+ <div class="form-group full-width">
+  <label for="category" class="form-label">Category</label>
+  <input 
+    id="category"
+    formControlName="category"
+    class="form-control">
+</div>
+
+    <div class="form-group full-width">
+      <label for="serviceDescription" class="form-label">Description</label>
+      <textarea 
+        id="serviceDescription"
+        formControlName="description"
+        class="form-textarea"
+        rows="3"
+        placeholder="Enter service description"></textarea>
+    </div>
+
+    <div class="form-actions">
+      <app-button type="button" variant="outline" (click)="closeServiceModal()">
+        Cancel
+      </app-button>
+      <app-button type="submit" variant="primary" [disabled]="serviceForm.invalid">
+        {{ editingService() ? 'Update Service' : 'Create Service' }}
+      </app-button>
+    </div>
+  </form>
+</app-modal>
+
+<!-- Delete Confirmation Modal -->
+<div *ngIf="showDeleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-1000">
+  <div class="bg-white rounded-xl shadow-2xl max-w-md w-full transform transition-all">
+    <div class="p-6 border-b border-gray-200">
+      <div class="flex items-center gap-3 text-red-500">
+        <i class="fas fa-exclamation-triangle text-xl"></i>
+        <h3 class="text-xl font-semibold">Delete Service</h3>
+      </div>
+    </div>
+
+    <div class="p-6">
+      <p class="text-gray-700 mb-2">Are you sure you want to delete the service <strong>"{{ selectedService?.label }}"</strong>?</p>
+      <p class="text-sm text-gray-500">This action cannot be undone.</p>
+
+      <div class="flex gap-3 mt-6">
+        <button 
+          (click)="closeDeleteModal()"
+          class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition">
+          Cancel
+        </button>
+        <button 
+          (click)="confirmDelete()"
+          class="flex-1 bg-red-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center gap-2">
+          <i class="fas fa-trash"></i>
+          Delete Service
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

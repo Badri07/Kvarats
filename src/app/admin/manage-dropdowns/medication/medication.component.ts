@@ -6,6 +6,8 @@ import { Column, GridApi, PaginationChangedEvent } from 'ag-grid-community';
 import * as XLSX from 'xlsx';
 import * as FileSaver from 'file-saver';
 import { ToastrService } from 'ngx-toastr';
+import { PopupService } from '../../../service/popup/popup-service';
+import { SuperAdminService } from '../../../service/admin/superAdmin.service';
 
 @Component({
   selector: 'app-medication',
@@ -40,13 +42,41 @@ export class MedicationComponent implements OnInit {
     this.loadMedications();
   }
 
-  loadMedications(): void {
-    this.dropdownService.getMedications().subscribe((medications:any) => {
-      // this.medications = medications.data;
-      this.rowData = medications.data
-      console.log();
+loadMedications(): void {
+    this.dropdownService.getMedications(this.currentPage, this.paginationPageSize, this.searchText).subscribe((response: any) => {
+      // Assuming your API response structure is similar to countries
+      this.rowData = response.data.data || response.data || [];
+      this.filteredData = [...this.rowData];
+      
+      // Set pagination metadata
+      this.totalCount = response.data.totalRecords || response.data.length || 0;
+      this.totalPages = response.data.totalPages || Math.ceil(this.totalCount / this.paginationPageSize) || 1;
+
+      // Calculate page start and end
+      this.pageStart = this.totalCount > 0 ? ((this.currentPage - 1) * this.paginationPageSize) + 1 : 0;
+      this.pageEnd = this.totalCount > 0 ? Math.min(this.currentPage * this.paginationPageSize, this.totalCount) : 0;
     });
   }
+
+      searchText: string = '';
+      rowData: any[] = [];          
+      filteredData: any[] = [];    
+
+onSearch(): void {
+  const searchTerm = this.searchText.trim().toLowerCase();
+  console.log('Search term:', JSON.stringify(searchTerm));
+
+  if (!searchTerm) {
+    console.log('Search term is empty - resetting filtered data');
+    this.filteredData = [...this.rowData];
+  } else {
+    this.filteredData = this.rowData.filter(item =>
+      (item.name && item.name.toLowerCase().includes(searchTerm)) ||
+      (item.genericname && item.genericname.toLowerCase().includes(searchTerm)) ||
+      (item.drugClass && item.drugClass.toLowerCase().includes(searchTerm))
+    );
+  }
+}
 
   showAddForm(): void {
     this.showForm = true;
@@ -78,8 +108,7 @@ export class MedicationComponent implements OnInit {
     
   }
 
-  onSubmit(): void {
-  debugger;
+onSubmit(): void {
   if (this.medicationForm.valid) {
     const formData = this.medicationForm.value;
 
@@ -89,28 +118,42 @@ export class MedicationComponent implements OnInit {
         ...formData
       };
 
-      this.dropdownService.updateMedication(payload).subscribe(() => {
-        this._toastr.success("Updated Successfully");
-        this.loadMedications();
-        this.cancelForm();
-      }, error => {
-        console.error('Update error:', error);
-        this._toastr.error("Failed to update medication.");
+      this.dropdownService.updateMedication(payload).subscribe({
+        next: (res: any) => {
+          if (res.success) {
+            this._toastr.success(res.message || "Updated Successfully");
+            this.loadMedications();
+            this.cancelForm();
+          } else {
+            this._toastr.error(res.message || "Failed to update medication.");
+          }
+        },
+        error: (error) => {
+          console.error('Update error:', error);
+          this._toastr.error(error?.error?.message || "Failed to update medication.");
+        }
       });
 
     } else {
-      this.dropdownService.createMedication(formData).subscribe(() => {
-        this._toastr.success("Added Successfully");
-        this.loadMedications();
-        this.cancelForm();
-      }, error => {
-        console.error('Create error:', error);
-        this._toastr.error("Failed to add medication.");
+      this.dropdownService.createMedication(formData).subscribe({
+        next: (res: any) => {
+          if (res.success) {
+            this._toastr.success(res.message || "Added Successfully");
+            this.loadMedications();
+            this.cancelForm();
+          } else {
+            this._toastr.error(res.message || "Failed to add medication.");
+          }
+        },
+        error: (error) => {
+          console.error('Create error:', error);
+          this._toastr.error(error?.error?.message || "Failed to add medication.");
+        }
       });
     }
   }
+}
 
-  }
 
   confirmDelete(id: number): void {
     this.deleteId = id;
@@ -161,15 +204,17 @@ deleteMedication(): void {
 
   columnDefs:any = [
   {
-    headerName: 'ID',
-    field: 'id',
-    flex: 0.5,
-    cellClass: 'font-medium'
+   headerName: 'S. No.',
+    valueGetter: 'node.rowIndex + 1',
+    width: 90,
+    pinned: 'left',
+    cellClass: 'font-medium text-gray-700',
+    headerClass: 'font-bold text-gray-800',
   },
   {
     headerName: 'Medication Name',
     field: 'name',
-    flex: 1.5,
+    flex: 1,
     cellRenderer: (params: any) => {
       const medicationName = params.value;
 
@@ -187,19 +232,19 @@ deleteMedication(): void {
   {
     headerName: 'Generic Name',
     field: 'genericName',
-    flex: 0.5,
+    flex: 1,
     cellClass: 'font-medium'
   },
   {
     headerName: 'Drug Class',
     field: 'drugClass',
-    flex: 0.5,
+    flex: 1,
     cellClass: 'font-medium'
   },
   {
     headerName: 'Status',
     field: 'active',
-    flex: 1,
+     flex: 1,
     cellRenderer: (params: any) => {
       const isActive = params.value;
       const classes = isActive
@@ -216,7 +261,7 @@ deleteMedication(): void {
   {
     headerName: 'Actions',
     field: 'actions',
-    flex: 0.7,
+    flex: 1,
     cellRenderer: () => {
       return `
         <div class="flex space-x-2">
@@ -240,7 +285,6 @@ deleteMedication(): void {
       resizable: true,
   };
   
-  rowData:any[] = [];
   gridOptions:any = {
     rowSelection: 'multiple',
     suppressRowClickSelection: true,
@@ -251,7 +295,7 @@ deleteMedication(): void {
   };
   
   onCellClicked(event: any): void {
-    debugger
+    
     if (event.colDef.field !== 'actions') return;
     const id = event.data.id;
     const clickedEl = event.eventPath?.[0] || event.target;
@@ -329,4 +373,162 @@ deleteMedication(): void {
         this.loadMedications();
       }
     }
+
+
+
+
+        showUploadPopup = false;
+
+        isDragOver = false;
+          selectedFile: File | null = null;
+        
+          showFileUploadPopup(): void {
+            this.showUploadPopup = true;
+          }
+        
+          closeFileUploadPopup(): void {
+            this.showUploadPopup = false;
+            this.selectedFile = null;
+            this.isDragOver = false;
+          }
+        
+          onFileSelected(event: any): void {
+            const file = event.target.files[0];
+            this.validateAndSetFile(file);
+          }
+        
+          onFileDrop(event: DragEvent): void {
+            event.preventDefault();
+            this.isDragOver = false;
+            
+            const files = event.dataTransfer?.files;
+            if (files && files.length > 0) {
+              this.validateAndSetFile(files[0]);
+            }
+          }
+        
+          onDragOver(event: DragEvent): void {
+            event.preventDefault();
+            this.isDragOver = true;
+          }
+        
+          onDragLeave(event: DragEvent): void {
+            event.preventDefault();
+            this.isDragOver = false;
+          }
+        
+          validateAndSetFile(file: File): void {
+            // Validate file type
+            const allowedTypes = [
+              'text/csv',
+              'application/vnd.ms-excel',
+              'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            ];
+            
+            if (!allowedTypes.includes(file.type) && !file.name.toLowerCase().endsWith('.csv')) {
+              alert('Please select a valid CSV file.');
+              return;
+            }
+        
+            // Validate file size (5MB max)
+            const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+            if (file.size > maxSize) {
+              alert('File size must be less than 5MB.');
+              return;
+            }
+        
+            this.selectedFile = file;
+          }
+        
+          removeFile(): void {
+            this.selectedFile = null;
+          }
+        
+        
+        
+          public _superadminService = inject(SuperAdminService);
+            isUploading = false;
+        
+        
+        uploadFile(): void {
+          this._loader.show();
+            if (!this.selectedFile) {
+              this._toastr.warning('Please select a file to upload');
+              this._loader.hide();
+              return;
+            }
+            this.isUploading = true; 
+            // console.log('Uploading file:', this.selectedFile);
+            this.uploadToBackend(this.selectedFile);
+          }
+        
+          private uploadToBackend(file: File): void {
+            this._loader.show();
+            this._superadminService.UploadFileMedication(file).subscribe({
+              next: (res) => {
+                this.loadMedications();
+                this.isUploading = false;
+                this._loader.hide();
+                this._toastr.success('File uploaded successfully!');
+                this.closeFileUploadPopup();        
+                // this.loadMedications();
+                // console.log('Upload successful:', res);
+              },
+              error: (error) => {
+                this._loader.hide();
+                this.isUploading = false;
+                console.error('Upload failed:', error);
+                if (error.status === 400) {
+                  this._toastr.error('Invalid file format or data structure');
+                } else if (error.status === 413) {
+                  this._toastr.error('File size too large');
+                } else if (error.status === 500) {
+                  this._toastr.error('Server error occurred during upload');
+                } else {
+                  this._toastr.error('Failed to upload file. Please try again.');
+                }
+              },
+              complete: () => {
+                this._loader.hide();
+                this.isUploading = false;
+              }
+            });
+          }
+        
+          public _loader = inject(PopupService);
+          private sampleFile: string = 'https://careslot-dev.s3.amazonaws.com/Medications%20/medications-sample.csv?AWSAccessKeyId=AKIAXJSU3GUHIVYCBLG7&Expires=2079705703&Signature=Xe3%2BQv%2FWGUZJE6Kwd02nwOdvRyU%3D';
+          isDownloading: boolean = false;
+        
+        downloadSampleFile(): void {
+          if (this.isDownloading) return;
+          
+          this.isDownloading = true;
+           this._loader.show();
+        
+          const link = document.createElement('a');
+          link.href = this.sampleFile;
+          link.download = 'Sample-County-Data.csv';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          
+          setTimeout(() => {
+            this._loader.hide();
+            this.isDownloading = false;
+            this._toastr.success('Sample file downloaded successfully!');
+          }, 1000);
+        }
+
+  formatFileSize(bytes: number): string {
+  if (bytes === 0) return '0 Bytes';
+  
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  if (i <= 1) {
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(0)) + ' ' + sizes[i];
+  }
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
 }

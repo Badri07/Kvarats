@@ -1,0 +1,138 @@
+<div 
+  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-1000 transition-opacity duration-300"
+  [class.opacity-0]="!isVisible"
+  (click)="onClose()"
+>
+  <div 
+    class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 relative"
+    (click)="$event.stopPropagation()"
+  >
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-semibold">Make Payment</h2>
+      <button class="text-gray-500 hover:text-gray-700" (click)="onClose()">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div class="space-y-6">
+      <!-- Invoice Summary -->
+      <div class="border rounded-lg p-4 bg-gray-50">
+        <h3 class="text-lg font-medium mb-2">Invoice #{{paymentRequest.id.substring(0, 8)}}</h3>
+        <div class="space-y-2">
+          <div class="flex justify-between text-sm">
+            <span class="font-medium">Total Amount:</span>
+            <span>{{paymentRequest.finalAmount | currency}}</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="font-medium">Balance Due:</span>
+            <span class="text-red-600 font-semibold">{{paymentRequest.balance | currency}}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment Form -->
+      <form class="space-y-4" (ngSubmit)="onSubmit()">
+        <!-- Payment Amount -->
+        <div>
+  <label class="block text-sm font-medium mb-1">Payment Amount *</label>
+  <div class="relative">
+    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+    <input
+      type="number"
+      [(ngModel)]="paymentForm.amountPaid"
+      name="amountPaid"
+      class="w-full border rounded-lg pl-10 pr-3 py-2 text-sm focus:ring-2 focus:ring-orange-500 indent-[1.2rem]"
+      [max]="paymentRequest.balance"
+      min="0.01"
+      step="0.01"
+      required
+    />
+  </div>
+</div>
+
+        <!-- Payment Method -->
+        <div>
+          <label class="block text-sm font-medium mb-1">Payment Method *</label>
+          <select
+            [(ngModel)]="paymentForm.paymentMethod"
+            name="paymentMethod"
+            class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+            required
+          >
+            <option *ngFor="let method of paymentMethods" [value]="method">
+              {{method}}
+            </option>
+          </select>
+        </div>
+
+        <!-- Transaction Reference -->
+        <div>
+          <label class="block text-sm font-medium mb-1">Transaction ID / Reference *</label>
+          <input
+            type="text"
+            [(ngModel)]="paymentForm.transactionReference"
+            name="transactionReference"
+            class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-orange-500"
+            placeholder="Enter transaction ID or reference number"
+            required
+          >
+        </div>
+
+        <!-- File Upload -->
+        <div>
+          <label class="block text-sm font-medium mb-1">Payment Screenshot (Optional)</label>
+          <div class="flex items-center gap-3">
+            <input
+              type="file"
+              (change)="onFileSelected($event)"
+              accept="image/*"
+              id="screenshot"
+              class="hidden"
+            >
+            <label for="screenshot" class="flex items-center gap-2 px-4 py-2 border rounded-lg cursor-pointer hover:bg-gray-100 text-sm">
+              <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+              </svg>
+              <span>Choose File</span>
+            </label>
+            <span *ngIf="selectedFile" class="text-sm text-gray-600">{{getFileName()}}</span>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div>
+          <label class="block text-sm font-medium mb-1">Notes (Optional)</label>
+          <textarea
+            [(ngModel)]="paymentForm.notes"
+            name="notes"
+            class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+            rows="3"
+            placeholder="Add any additional notes about this payment"
+          ></textarea>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex justify-end gap-3 pt-4">
+          <button type="button" class="px-4 py-2 rounded-lg border text-gray-700 hover:bg-gray-100" (click)="onClose()">
+            Cancel
+          </button>
+          <button 
+            type="submit" 
+            class="px-4 py-2 rounded-lg bg-orange-300 text-white hover:bg-orange-400 flex items-center gap-2 disabled:opacity-50"
+            [disabled]="isSubmitting"
+          >
+            <svg *ngIf="isSubmitting" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>{{isSubmitting ? 'Processing...' : 'Submit Payment'}}</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,407 @@
+
+  <!-- Header -->
+
+<div class=" mt-4 mx-auto bg-white rounded-2xl shadow-md overflow-hidden animate-fade-in">
+  <div class="bg-secondary-lightColor px-6 md:px-8 py-3 md:py-6 text-white">
+    <div class="header-content">
+      <h1 class="text-2xl md:text-xl font-bold mb-1 text-orange-400">{{ isEditMode() ? 'Edit Insurance Plan' : 'Add Insurance Plan' }}</h1>
+      <p class="text-orange-400 text-sm md:text-base">{{ isEditMode() ? 'Update insurance plan details' : 'Enter insurance plan information for patient coverage' }}</p>
+    </div>
+  </div>
+
+  <!-- Progress Steps -->
+  <div class="flex items-center justify-between w-full max-w-md mx-auto mt-6">
+    <!-- Step 1: Insurance Info -->
+    <div class="flex flex-col items-center relative z-10">
+      <div class="flex items-center cursor-pointer">
+        <div [ngClass]="selectedTab==='insurance-info' ? 'w-10 h-10 rounded-full bg-primary-500 text-white flex items-center justify-center font-semibold shadow-lg' : 'w-10 h-10 rounded-full bg-secondary-200 text-secondary-500 flex items-center justify-center font-semibold hover:bg-secondary-300 transition-colors'">
+          1
+        </div>
+      </div>
+      <span class="mt-2 text-xs font-medium text-center" [ngClass]="selectedTab==='insurance-info' ? 'text-primary-600' : 'text-secondary-500'">
+        Insurance Info
+      </span>
+    </div>
+
+    <!-- Progress Line Container -->
+    <div class="flex-1 px-2 relative h-1">
+      <div 
+        [ngClass]="selectedTab==='insurance-info' || selectedTab==='coverage-details' ? 'bg-primary-500' : 'bg-secondary-200'" 
+        class="w-full h-full rounded-full">
+      </div>
+    </div>
+
+    <!-- Step 2: Coverage Details -->
+    <div class="flex flex-col items-center relative z-10">
+      <div class="flex items-center cursor-pointer">
+        <div [ngClass]="selectedTab==='coverage-details' ? 'w-10 h-10 rounded-full bg-primary-500 text-white flex items-center justify-center font-semibold shadow-lg' : 'w-10 h-10 rounded-full bg-secondary-200 text-secondary-500 flex items-center justify-center font-semibold hover:bg-secondary-300 transition-colors'">
+          2
+        </div>
+      </div>
+      <span class="mt-2 text-xs font-medium text-center" [ngClass]="selectedTab==='coverage-details' ? 'text-primary-600' : 'text-secondary-500'">
+        Coverage Details
+      </span>
+    </div>
+  </div>
+
+  <!-- Form Container -->
+  <div class="bg-white rounded-2xl  mx-6 md:mx-8 overflow-hidden animate-fade-in">
+    <div class="p-6 md:p-8">
+      <form [formGroup]="insuranceForm" (ngSubmit)="onSubmit()" class="space-y-8">
+        
+        <!-- INSURANCE INFO TAB -->
+        <div *ngIf="selectedTab === 'insurance-info'" class="space-y-8">
+          <!-- Patient Information -->
+          <div class="space-y-6">
+            <h2 class="text-xl font-bold text-secondary-800 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-primary-500" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+              </svg>
+              Patient Information
+            </h2>
+
+            <div class="form-group">
+              <label class="block text-sm font-medium text-secondary-700 mb-1">Patient <span class="text-danger">*</span></label>
+              <select 
+                formControlName="patientId"
+                class="form-control"
+                [class.is-invalid]="isFieldInvalid('patientId')" 
+                (change)="onSelectPatients($event)">
+                <option value="">Select a patient...</option>
+                @for (patient of patients(); track patient.id) {
+                  <option [value]="patient.id">
+                    {{ patient.firstName }} {{ patient.lastName }}
+                  </option>
+                }
+              </select>
+              @if (isFieldInvalid('patientId')) {
+                <div class="invalid-feedback text-sm text-red-500 mt-1">{{ getFieldError('patientId') }}</div>
+              }
+            </div>
+          </div>
+
+          <!-- Insurance Provider Information -->
+          <div class="space-y-6">
+            <h2 class="text-xl font-bold text-secondary-800 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-primary-500" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z" />
+              </svg>
+              Insurance Provider Information
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-secondary-700 mb-1">Insurance Provider <span class="text-danger">*</span></label>
+                <select 
+                  formControlName="provider"
+                  class="form-select"
+                  [class.is-invalid]="isFieldInvalid('provider')">
+                  <option value="">Select provider...</option>
+                  @for (provider of insurancePlanIds; track provider) {
+                    <option [value]="provider.id">{{ provider.insuranceCarrier }}</option>
+                  }
+                </select>
+                @if (isFieldInvalid('provider')) {
+                  <div class="invalid-feedback text-sm text-red-500 mt-1">{{ getFieldError('provider') }}</div>
+                }
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-secondary-700 mb-1">Plan Type <span class="text-danger">*</span></label>
+                <select 
+                  formControlName="planType"
+                  class="form-select">
+                  @for (provider of appointmentTypeOptions; track provider) {
+                    <option [value]="provider.id">{{ provider.value }}</option>
+                  }
+                </select>
+                @if (isFieldInvalid('planType')) {
+                  <div class="invalid-feedback text-sm text-red-500 mt-1">{{ getFieldError('planType') }}</div>
+                }
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-secondary-700 mb-1">Policy Number <span class="text-danger">*</span></label>
+                <input 
+                  type="text"
+                  formControlName="policyNumber"
+                  class="form-control"
+                  [class.is-invalid]="isFieldInvalid('policyNumber')"
+                  placeholder="Enter policy number">
+                @if (isFieldInvalid('policyNumber')) {
+                  <div class="invalid-feedback text-sm text-red-500 mt-1">{{ getFieldError('policyNumber') }}</div>
+                }
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-secondary-700 mb-1">Group Number</label>
+                <input 
+                  type="text"
+                  formControlName="groupNumber"
+                  class="form-control"
+                  placeholder="Enter group number (if applicable)">
+              </div>
+            </div>
+          </div>
+
+          <!-- Subscriber Information -->
+          <div class="space-y-6">
+            <h2 class="text-xl font-bold text-secondary-800 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-primary-500" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+              </svg>
+              Subscriber Information
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-secondary-700 mb-1">Subscriber ID <span class="text-danger">*</span></label>
+                <input 
+                  type="text"
+                  formControlName="subscriberId"
+                  class="form-control"
+                  [class.is-invalid]="isFieldInvalid('subscriberId')"
+                  placeholder="Enter subscriber ID">
+                @if (isFieldInvalid('subscriberId')) {
+                  <div class="invalid-feedback text-sm text-red-500 mt-1">{{ getFieldError('subscriberId') }}</div>
+                }
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-secondary-700 mb-1">Subscriber Name <span class="text-danger">*</span></label>
+                <input 
+                  type="text"
+                  formControlName="subscriberName"
+                  class="form-control"
+                  [class.is-invalid]="isFieldInvalid('subscriberName')"
+                  placeholder="Enter subscriber full name">
+                @if (isFieldInvalid('subscriberName')) {
+                  <div class="invalid-feedback text-sm text-red-500 mt-1">{{ getFieldError('subscriberName') }}</div>
+                }
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-secondary-700 mb-1">Subscriber Date of Birth <span class="text-danger">*</span></label>
+                <input 
+                  type="date"
+                  formControlName="subscriberDateOfBirth"
+                  class="form-control"
+                  [class.is-invalid]="isFieldInvalid('subscriberDateOfBirth')">
+                @if (isFieldInvalid('subscriberDateOfBirth')) {
+                  <div class="invalid-feedback text-sm text-red-500 mt-1">{{ getFieldError('subscriberDateOfBirth') }}</div>
+                }
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-secondary-700 mb-1">Relationship to Subscriber <span class="text-danger">*</span></label>
+                <select 
+                  formControlName="relationshipToSubscriber"
+                  class="form-select">
+                  <option value="self">Self</option>
+                  <option value="spouse">Spouse</option>
+                  <option value="child">Child</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- COVERAGE DETAILS TAB -->
+        <div *ngIf="selectedTab === 'coverage-details'" class="space-y-8">
+          <!-- Coverage Details -->
+          <div class="space-y-6">
+            <h2 class="text-xl font-bold text-secondary-800 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-primary-500" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd" />
+              </svg>
+              Coverage Details
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-secondary-700 mb-1">Effective Date <span class="text-danger">*</span></label>
+                <input 
+                  type="date"
+                  formControlName="effectiveDate"
+                  class="form-control"
+                  [class.is-invalid]="isFieldInvalid('effectiveDate')">
+                @if (isFieldInvalid('effectiveDate')) {
+                  <div class="invalid-feedback text-sm text-red-500 mt-1">{{ getFieldError('effectiveDate') }}</div>
+                }
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-secondary-700 mb-1">Expiration Date</label>
+                <input 
+                  type="date"
+                  formControlName="expirationDate"
+                  class="form-control">
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-secondary-700 mb-1">Copay ($)</label>
+                <input 
+                  type="number"
+                  formControlName="copay"
+                  class="form-control"
+                  placeholder="0.00"
+                  min="0"
+                  step="0.01">
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-secondary-700 mb-1">Annual Deductible ($)</label>
+                <input 
+                  type="number"
+                  formControlName="deductible"
+                  class="form-control"
+                  placeholder="0.00"
+                  min="0"
+                  step="0.01">
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-secondary-700 mb-1">Coinsurance (%)</label>
+                <input 
+                  type="number"
+                  formControlName="coinsurance"
+                  class="form-control"
+                  placeholder="0"
+                  min="0"
+                  max="100">
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-secondary-700 mb-1">Out of Pocket Maximum ($)</label>
+                <input 
+                  type="number"
+                  formControlName="outOfPocketMax"
+                  class="form-control"
+                  placeholder="0.00"
+                  min="0"
+                  step="0.01">
+              </div>
+            </div>
+          </div>
+
+          <!-- Network & Authorization -->
+          <div class="space-y-6">
+            <h2 class="text-xl font-bold text-secondary-800 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-primary-500" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              </svg>
+              Network & Authorization
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-secondary-700 mb-1">Network Status <span class="text-danger">*</span></label>
+                <select 
+                  formControlName="networkStatus"
+                  class="form-select">
+                  <option value="in-network">In-Network</option>
+                  <option value="out-of-network">Out-of-Network</option>
+                  <option value="unknown">Unknown</option>
+                </select>
+              </div>
+
+              <div class="flex items-center">
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    formControlName="authorizationRequired"
+                    class="sr-only peer"
+                  />
+                  <div 
+                    class="w-11 h-6 bg-gray-200 rounded-full 
+                          peer peer-checked:bg-orange-300 
+                          peer-focus:ring-2 peer-focus:ring-orange-400 
+                          after:content-[''] after:absolute after:top-[2px] after:left-[2px] 
+                          after:bg-white after:border-gray-300 after:border 
+                          after:rounded-full after:h-5 after:w-5 after:transition-all 
+                          peer-checked:after:translate-x-full">
+                  </div>
+                  <span class="ml-3 text-gray-700 font-medium">Prior Authorization Required</span>
+                </label>
+              </div>
+
+              <div class="flex items-center">
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    formControlName="referralRequired"
+                    class="sr-only peer"
+                  />
+                  <div 
+                    class="w-11 h-6 bg-gray-200 rounded-full 
+                          peer peer-checked:bg-orange-300 
+                          peer-focus:ring-2 peer-focus:ring-orange-400 
+                          after:content-[''] after:absolute after:top-[2px] after:left-[2px] 
+                          after:bg-white after:border-gray-300 after:border 
+                          after:rounded-full after:h-5 after:w-5 after:transition-all 
+                          peer-checked:after:translate-x-full">
+                  </div>
+                  <span class="ml-3 text-gray-700 font-medium">Referral Required</span>
+                </label>
+              </div>
+
+              <div class="flex items-center">
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    formControlName="mentalHealthCoverage"
+                    class="sr-only peer"
+                  />
+                  <div 
+                    class="w-11 h-6 bg-gray-200 rounded-full 
+                          peer peer-checked:bg-orange-300 
+                          peer-focus:ring-2 peer-focus:ring-orange-400 
+                          after:content-[''] after:absolute after:top-[2px] after:left-[2px] 
+                          after:bg-white after:border-gray-300 after:border 
+                          after:rounded-full after:h-5 after:w-5 after:transition-all 
+                          peer-checked:after:translate-x-full">
+                  </div>
+                  <span class="ml-3 text-gray-700 font-medium">Mental Health Coverage</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Additional Notes -->
+          <div class="space-y-6">
+            <h2 class="text-xl font-bold text-secondary-800 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-primary-500" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+              </svg>
+              Additional Notes
+            </h2>
+
+            <div>
+              <label class="block text-sm font-medium text-secondary-700 mb-1">Notes</label>
+              <textarea 
+                formControlName="notes"
+                class="form-control"
+                rows="3"
+                placeholder="Additional notes about this insurance plan..."></textarea>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex flex-col-reverse md:flex-row justify-between px-6 md:px-8 pb-6 space-y-4 space-y-reverse md:space-y-0">
+      <button type="button" class="custom-button"
+              *ngIf="tabs.indexOf(selectedTab) > 0" (click)="onBack()">
+        Back
+      </button>
+      <button [type]="selectedTab === 'coverage-details' ? 'submit' : 'button'"
+              class="custom-button bg-primary-500 text-white hover:bg-primary-600"
+              (click)="onNext()">
+        {{ selectedTab === 'coverage-details' ? 'Save Insurance Plan' : 'Next' }}
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,359 @@
+<div class="notes-dashboard">
+  <div class="dashboard-header">
+    <div class="header-content">
+      <h1 class="dashboard-title">Therapy Notes & EHR</h1>
+      <p class="dashboard-subtitle">Manage SOAP notes, progress notes, and treatment plans</p>
+    </div>
+    <!-- <div class="header-actions">
+      <button class="custom-button flex p-2">
+        <svg class="w-5 h-5 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+        </svg>
+        <span class="ml-1">Filter Notes</span>
+      </button>
+      <button class="custom-button flex p-2" (click)="createNewNote()">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+        </svg>
+        New Note
+      </button>
+    </div> -->
+    
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    <div class="stat-card">
+     <div class="flex justify-center">
+       <div class="stat-icon stat-icon-blue">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        </svg>
+      </div>
+     </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ totalNotes() }}</div>
+        <div class="stat-label">Total Notes</div>
+        <div class="stat-change positive">+5 this week</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+    <div class="flex justify-center">
+        <div class="stat-icon stat-icon-green">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+        </svg>
+      </div>
+    </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ completedNotes() }}</div>
+        <div class="stat-label">Completed Notes</div>
+        <div class="stat-change positive">{{ completionRate() }}% completion</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+    <div class="flex justify-center">
+        <div class="stat-icon stat-icon-yellow">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+      </div>
+    </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ pendingNotes() }}</div>
+        <div class="stat-label">Pending Notes</div>
+        <div class="stat-change neutral">Due today</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+    <div class="flex justify-center">
+        <div class="stat-icon stat-icon-purple">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+        </svg>
+      </div>
+    </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ treatmentPlans() }}</div>
+        <div class="stat-label">Treatment Plans</div>
+        <div class="stat-change positive">3 active</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Grid -->
+  <div class="content-grid">
+    <!-- Recent Notes -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Recent Notes</h3>
+        <button class="card-action" (click)="viewAllNotes()">View All</button>
+      </div>
+      <div class="card-content">
+        @if (isLoading()) {
+          <div class="loading-state">
+            <div class="loading-spinner"></div>
+            <p>Loading notes...</p>
+          </div>
+        } @else {
+          <div class="notes-list">
+            @for (note of recentNotes(); track note.id) {
+              <div class="note-item" (click)="viewNote(note.id)">
+                <div class="note-header">
+                  <div class="note-type-badge" [ngClass]="'type-' + note.type">
+                    {{ getNoteTypeLabel(note.type) }}
+                  </div>
+                  <div class="note-status" [ngClass]="'status-' + note.status">
+                    {{ note.status | titlecase }}
+                  </div>
+                </div>
+                <h4 class="note-title">{{ note.title }}</h4>
+                <!-- <p class="note-client">{{ getClientName(note.clientId) }}</p> -->
+                <div class="note-meta">
+                  <span class="note-date">{{ note.createdAt | date:'MMM d, y' }}</span>
+                  @if (note.tags.length > 0) {
+                    <div class="note-tags">
+                      @for (tag of note.tags.slice(0, 2); track tag) {
+                        <span class="tag">{{ tag }}</span>
+                      }
+                      @if (note.tags.length > 2) {
+                        <span class="tag-more">+{{ note.tags.length - 2 }}</span>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+            } @empty {
+              <div class="empty-state">
+                <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <h4 class="empty-title">No notes yet</h4>
+                <p class="empty-description">Start by creating your first therapy note.</p>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+   <div class="card">
+  <div class="card-header">
+    <h3 class="card-title">Quick Actions</h3>
+  </div>
+  <div class="card-content">
+    <div class="quick-actions">
+      <button class="quick-action" (click)="createSOAPNote()">
+        <div class="action-icon">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </svg>
+        </div>
+        <div class="action-content">
+          <span class="action-title">SOAP Note</span>
+          <span class="action-description">Create structured session note</span>
+        </div>
+      </button>
+      
+      <button class="quick-action" (click)="createProgressNote()">
+        <div class="action-icon">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+          </svg>
+        </div>
+        <div class="action-content">
+          <span class="action-title">Progress Note</span>
+          <span class="action-description">Track client progress</span>
+        </div>
+      </button>
+      
+      <button class="quick-action" (click)="createTreatmentPlan()">
+        <div class="action-icon">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+          </svg>
+        </div>
+        <div class="action-content">
+          <span class="action-title">Treatment Plan</span>
+          <span class="action-description">Create comprehensive plan</span>
+        </div>
+      </button>
+      
+      <button class="quick-action" (click)="createAssessment()">
+        <div class="action-icon">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+          </svg>
+        </div>
+        <div class="action-content">
+          <span class="action-title">Assessment</span>
+          <span class="action-description">Clinical assessment form</span>
+        </div>
+      </button>
+      
+      <button class="quick-action" (click)="createDAPNote()">
+        <div class="action-icon">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
+          </svg>
+        </div>
+        <div class="action-content">
+          <span class="action-title">DAP Notes</span>
+          <span class="action-description">Data, Assessment, Plan format</span>
+        </div>
+      </button>
+      
+      <button class="quick-action" (click)="createCrisisNote()">
+        <div class="action-icon">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+          </svg>
+        </div>
+        <div class="action-content">
+          <span class="action-title">Crisis Notes</span>
+          <span class="action-description">Emergency intervention documentation</span>
+        </div>
+      </button>
+      
+      <button class="quick-action" (click)="createDischargeSummary()">
+        <div class="action-icon">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+          </svg>
+        </div>
+        <div class="action-content">
+          <span class="action-title">Discharge Summary</span>
+          <span class="action-description">Treatment completion documentation</span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+
+    <!-- Templates -->
+    <!-- <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Note Templates</h3>
+        <button class="card-action" (click)="manageTemplates()">Manage</button>
+      </div>
+      <div class="card-content">
+        <div class="templates-list">
+          @for (template of templates(); track template.id) {
+            <div class="template-item" (click)="useTemplate(template.id)">
+              <div class="template-icon">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+              </div>
+              <div class="template-info">
+                <span class="template-name">{{ template.name }}</span>
+                <span class="template-type">{{ template.type | titlecase }}</span>
+              </div>
+              @if (template.isDefault) {
+                <div class="default-badge">Default</div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div> -->
+  </div>
+</div>
+
+
+
+
+
+
+<div *ngIf="showInitialPopup" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-1000">
+  <div class="bg-white rounded-xl shadow-xl p-8 w-full max-w-xl text-center animate-fadeIn">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">CHOOSE AN OPTION</h2>
+
+    <div class="flex flex-col md:flex-row gap-6 justify-center">
+      <div (click)="openPdfUpload()"
+           class="card-customBtn cursor-pointer w-40 h-40 flex flex-col items-center justify-center rounded-xl bg-white border-orange-400 border-2 hover:border-primary-border-color  shadow-lg transition">
+        <i class="fas fa-file-upload text-4xl text-orange-400 mb-3"></i>
+        <p class="font-medium text-gray-700 hover:text-white">Upload PDF</p>
+      </div>
+
+      <div  class="cursor-pointer w-40 h-40 flex flex-col items-center card-customBtn justify-center rounded-xl bg-white border-orange-400 border-2 hover:border-primary-border-color shadow-lg transition" (click)="openAssessmentForm()">
+        
+        <button (click)="openAssessmentForm()">
+        <i class="fas fa-clipboard-list text-4xl text-orange-300 mb-3"></i>
+        <p class="font-medium text-gray-700 hover:text-white" (click)="openAssessmentForm()">Assessment Form</p></button>
+      </div>
+    </div>
+    <div class="mt-6">
+      <button class="text-gray-500 hover:text-gray-800 customBtn-secondary" (click)="closeAll()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+
+
+
+<div *ngIf="isshowupload" [formGroup]="uploadForm">
+  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-1000">
+    <div class="bg-white rounded-xl shadow-lg max-w-4xl w-full mx-4 p-6 animate-fadeIn">
+      <h2 class="text-xl font-semibold mb-4 text-orange-400">Upload Files</h2>
+      <div class="flex flex-col md:flex-row gap-6">
+        <!-- File Upload Box -->
+        <div class="flex-1 border-2 border-dashed border-orange-300 rounded-lg flex flex-col items-center justify-center p-6 text-center text-gray-600 relative">
+          <i class="fas fa-file-upload text-4xl text-orange-400 mb-3"></i>
+          <p class="font-medium">Drag & Drop your files here</p>
+          <p class="text-sm mt-1">
+            or 
+            <span class="text-orange-300 underline cursor-pointer" (click)="fileInput.click()">Browse</span>
+          </p>
+          <p class="text-xs text-gray-500 mt-2">
+            Only PDF, Excel, and .jpg formats allowed. Max size: 10 MB
+          </p>
+
+          <!-- Validation error -->
+          <div *ngIf="uploadError" class="text-red-600 text-sm mt-2">
+            {{ uploadError }}
+          </div>
+
+          <!-- File Input -->
+          <input #fileInput type="file" multiple (change)="onFileSelected($event)" class="hidden" />
+        </div>
+
+        <!-- File List Table -->
+        <div class="flex-1">
+          <table class="w-full text-left text-sm">
+            <thead>
+              <tr class="text-gray-500 border-b">
+                <th class="py-2">File Name</th>
+                <th class="py-2">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let file of selectedFiles" class="border-b">
+                <td class="py-2">{{ file.name }}</td>
+                <td class="py-2" 
+                    [ngClass]="file.status === 'Success' ? 'text-green-600' : 'text-red-500'">
+                  {{ file.status }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="mt-6 flex justify-end">
+        <button class="bg-orange-300 hover:bg-orange-400 text-white px-6 py-2 rounded-md m-1" (click)="cancelPdf()">
+          Cancel
+        </button>
+        <button class="bg-orange-300 hover:bg-orange-400 text-white px-6 py-2 rounded-md m-1" (click)="upload()">
+          Upload
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+

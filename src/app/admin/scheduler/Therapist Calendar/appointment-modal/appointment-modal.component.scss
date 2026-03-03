@@ -1,0 +1,108 @@
+.time-slots-section {
+  .time-session-group {
+    padding: 1rem;
+    background: white;
+    border-radius: 0.75rem;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    
+    // &:hover {
+    //   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    // }
+  }
+
+  .time-slot-btn {
+    min-height: 70px;
+    border-width: 2px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    &:not(:disabled):hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(251, 146, 60, 0.2);
+    }
+    
+    &:active:not(:disabled) {
+      transform: translateY(0);
+    }
+    
+    // Selected state
+    &.selected {
+      background: linear-gradient(135deg, #ea580c, #dc2626);
+      border-color: #ea580c;
+      box-shadow: 0 4px 12px rgba(251, 146, 60, 0.4);
+    }
+    
+    // Available state
+    &.available {
+      background: white;
+      border-color: #d1d5db;
+      
+    //   &:hover {
+    //     border-color: #f97316;
+    //     background: #fff7ed;
+    //   }
+    }
+    
+    // Booked state
+    &.booked {
+      background: #f9fafb;
+      border-color: #e5e7eb;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    
+    // Current recommended slot
+    &.current {
+      border-color: #3b82f6;
+      background: #eff6ff;
+    }
+  }
+
+  .selected-time-display {
+    animation: slideInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    border-left: 4px solid #10b981;
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Custom scrollbar
+.time-slots-grid {
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 3px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+  }
+  
+  &::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+}
+
+// Focus states for better accessibility
+.time-slot-btn:focus-visible {
+  outline: 2px solid #f97316;
+  outline-offset: 2px;
+}
+
+// Smooth transitions for all interactive elements
+button, select, input, textarea {
+  transition: all 0.2s ease-in-out;
+}

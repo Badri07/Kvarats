@@ -1,10 +1,11 @@
 import { Component, ElementRef, inject, ViewChild } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { finalize } from 'rxjs';
+
 import { TosterService } from '../../../service/toaster/tostr.service';
 import { PopupService } from '../../../service/popup/popup-service';
 import { AuthService } from '../../../service/auth/auth.service';
-import { LoginResponse } from '../../../models/user-model';
 import { PatientService } from '../../../service/patient/patients-service';
 
 @Component({
@@ -14,41 +15,62 @@ import { PatientService } from '../../../service/patient/patients-service';
   styleUrl: './patient-login.component.scss'
 })
 export class PatientLoginComponent {
- 
 
-  isshowupload:boolean =false;
-  isTransitionEnabled = true;
-  loginSubmitted:boolean =false;
+  /* -------------------- FORM -------------------- */
+  patientsLoginForm = new FormGroup({
+    usernameOrEmail: new FormControl('', [Validators.required, Validators.email]),
+    password: new FormControl('', Validators.required)
+  });
 
+  loginSubmitted = false;
 
-   imageList: string[] = [
-  'images/undraw_doctor_aum1.svg',
-  '/images/undraw_doctors_djoj.svg',
-  '/images/undraw_medical-care_7m9g.svg',
-  '/images/undraw_medical-research_pze7.svg'];
+  /* -------------------- STEP -------------------- */
+  step: 'login' | 'emailOtp' = 'login';
+
+  /* -------------------- OTP -------------------- */
+  otpDigits: string[] = ['', '', '', '', '', ''];
+  otpCode = '';
+  tempToken!: string;
+
+  /* -------------------- UI -------------------- */
+  showPassword = false;
+  PasswordValue = '';
+
+  /* -------------------- SLIDER -------------------- */
+  @ViewChild('sliderRef') sliderRef!: ElementRef;
+
+  imageList: string[] = [
+    '/images/undraw_doctor_aum1.svg',
+    '/images/undraw_doctors_djoj.svg',
+    '/images/undraw_medical-care_7m9g.svg',
+    '/images/undraw_medical-research_pze7.svg'
+  ];
 
   currentIndex = 0;
-  intervalId: any; 
+  isTransitionEnabled = true;
 
+  /* -------------------- SERVICES -------------------- */
+  private router = inject(Router);
+  private toastr = inject(TosterService);
+  private authservice = inject(AuthService);
+  private patientService = inject(PatientService);
+  private loader = inject(PopupService);
 
-  public _patientService = inject(PatientService);
-  public router = inject(Router);
-  public toastr = inject(TosterService);
-  public authservice = inject(AuthService);
-
-  constructor(private _loader:PopupService
-  ){
-
+  /* -------------------- INIT -------------------- */
+  ngOnInit(): void {
+    this.authservice.setUserType('patient', true);
   }
- ngAfterViewInit() {
-  setTimeout(() => this.startAutoSlide(),500);
-  }  
-  startAutoSlide() {
+
+  ngAfterViewInit(): void {
+    setTimeout(() => this.startAutoSlide(), 500);
+  }
+
+  startAutoSlide(): void {
     setInterval(() => {
       this.currentIndex++;
       this.isTransitionEnabled = true;
+
       if (this.currentIndex === this.imageList.length) {
-        this.isTransitionEnabled = true;
         setTimeout(() => {
           this.isTransitionEnabled = false;
           this.currentIndex = 0;
@@ -57,114 +79,164 @@ export class PatientLoginComponent {
     }, 3000);
   }
 
-  public patientsLoginForm = new FormGroup({
-    usernameOrEmail: new FormControl("",[Validators.required,Validators.email]),
-    password:new FormControl("",Validators.required),
-  })
-
-  showInitialPopup = false;
-  showPdfUploadPopup = false;
-
-
-  
-userChoice!: string;
-
-openPdfUpload(data:string) {
-  debugger
-  this.userChoice = data;
-}
-
-openAssessmentForm(data:string) {
-  debugger
-  this.userChoice = data;
-}
-
-  closeAll() {
-    this.showInitialPopup = false;
-    this.isshowupload = false;
+  /* -------------------- PASSWORD -------------------- */
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
   }
 
-  selectedFiles: { name: string; status: string }[] = [];
-
-onFileSelected(event: Event): void {
-  debugger
-  const input = event.target as HTMLInputElement;
-  if (input.files) {
-    for (let i = 0; i < input.files.length; i++) {
-      const file = input.files[i];
-      const allowedTypes = ['application/pdf', 'application/vnd.ms-excel', 'image/jpeg'];
-      const isValid = allowedTypes.includes(file.type) && file.size <= 10 * 1024 * 1024;
-
-      this.selectedFiles.push({
-        name: file.name,
-        status: isValid ? 'Success' : 'Failed',
-      });
-    }
+  onPasswordInput(): void {
+    this.PasswordValue = this.patientsLoginForm.get('password')?.value || '';
   }
-}
 
- onloginSubmit() {
-  debugger
-  if(this.patientsLoginForm.invalid){
+  /* -------------------- LOGIN (STEP 1) -------------------- */
+  onloginSubmit(): void {
     this.loginSubmitted = true;
-    return
-  }
-  else{
- const data: any = {
-      usernameOrEmail: this.patientsLoginForm.get('usernameOrEmail')?.value,
-      password: this.patientsLoginForm.get('password')?.value
+
+    if (this.patientsLoginForm.invalid) {
+      return;
+    }
+
+    this.loader.show();
+
+    const payload = {
+      email: this.patientsLoginForm.value.usernameOrEmail,
+      password: this.patientsLoginForm.value.password
     };
 
-    this._patientService.patientLogIn(data).subscribe({
-      next: (res: any) => {
-        // console.log("res",res.message);
-         this._loader.hide();
-        let getToken = res.data.token;
-        const user: any = res.user;
-        this.toastr.success(res.message);
-        localStorage.setItem('tokenPatients', getToken!);
-        var getUserRole = this.authservice.getPatientRole();
-        if (getUserRole === 'Patient') {
-          this.router.navigate(['/patient/dashboard']);
+    this.patientService.PatientslogIn(payload)
+      .pipe(finalize(() => this.loader.hide()))
+      .subscribe({
+        next: (res: any) => {
+          if (!res.success) {
+            this.toastr.error(res.message || 'Login failed');
+            return;
+          }
+
+          this.tempToken = res.data.tempToken;
+          this.toastr.success('OTP has been sent to your email');
+          this.step = 'emailOtp';
+        },
+        error: (err) => {
+          this.toastr.error(err?.error?.message || 'Login failed');
         }
-      },
-      error: ((err:any) => {
-         this._loader.hide();
-        if (err.status === 401) {
-          const errorMessage = err.error?.message;
-          this.toastr.error(errorMessage);
-        } else {
-          const errorMessage = err.error?.message;
-          this.toastr.error(errorMessage);
-        }
-      })
-    });
-
-}
-}
-  prevImage() {
-  this.currentIndex = (this.currentIndex - 1 + this.imageList.length) % this.imageList.length;
-}
-
-nextImage() {
-  this.currentIndex = (this.currentIndex + 1) % this.imageList.length;
-}
-
-
-get loginUser():{[key:string]:AbstractControl}{
-    return this.patientsLoginForm.controls
+      });
   }
 
-  showPassword: boolean = false;
+  /* -------------------- OTP INPUT -------------------- */
+  handle2FAInput(event: Event, index: number): void {
+    const input = event.target as HTMLInputElement;
+    const value = input.value;
 
-togglePasswordVisibility() {
-  this.showPassword = !this.showPassword;
-}
+    if (!/^\d$/.test(value) && value !== '') {
+      input.value = '';
+      return;
+    }
 
-PasswordValue: any = '';
+    this.otpDigits[index] = value;
+    this.otpCode = this.otpDigits.join('');
 
-onPasswordInput(){
-  const control = this.patientsLoginForm.get('password');
-  this.PasswordValue = control?.value || '';
-}
+    if (value && index < 5) {
+      const next = input.parentElement?.querySelectorAll('input')[index + 1] as HTMLInputElement;
+      next?.focus();
+    }
+
+    if (!value && index > 0) {
+      const prev = input.parentElement?.querySelectorAll('input')[index - 1] as HTMLInputElement;
+      prev?.focus();
+    }
+  }
+
+  onOtpKeyDown(event: KeyboardEvent, index: number): void {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      if (this.otpCode.length === 6) {
+        this.verifyOtp();
+      }
+      return;
+    }
+
+    if (
+      !/^\d$/.test(event.key) &&
+      !['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight'].includes(event.key)
+    ) {
+      event.preventDefault();
+    }
+  }
+
+  /* -------------------- VERIFY OTP (STEP 2) -------------------- */
+  verifyOtp(): void {
+    if (this.otpCode.length !== 6) {
+      this.toastr.error('Enter valid OTP');
+      return;
+    }
+
+    this.loader.show();
+
+    const payload = {
+      tempToken: this.tempToken,
+      otp: this.otpCode
+    };
+
+    this.patientService.Patientsverify2FA(payload)
+      .pipe(finalize(() => this.loader.hide()))
+      .subscribe({
+        next: (res: any) => {
+          if (!res.success) {
+            this.toastr.error(res.message || 'Invalid OTP');
+            return;
+          }
+
+          localStorage.setItem('tokenPatients', res.data.token);
+          this.toastr.success('Login successful');
+          this.router.navigate(['/patient/dashboard']);
+        },
+        error: (err) => {
+          this.toastr.error(err?.error?.message || 'Invalid OTP');
+        }
+      });
+  }
+
+  /* -------------------- RESEND OTP -------------------- */
+  resendOtp(): void {
+    if (this.patientsLoginForm.invalid) {
+      this.toastr.error('Email or password missing');
+      return;
+    }
+
+    this.loader.show();
+
+    const payload = {
+      email: this.patientsLoginForm.value.usernameOrEmail,
+      password: this.patientsLoginForm.value.password
+    };
+
+    this.patientService.PatientslogIn(payload)
+      .pipe(finalize(() => this.loader.hide()))
+      .subscribe({
+        next: (res: any) => {
+          if (!res.success) {
+            this.toastr.error(res.message || 'Failed to resend OTP');
+            return;
+          }
+
+          this.tempToken = res.data.tempToken;
+          this.toastr.success('OTP has been resent to your email');
+        },
+        error: (err) => {
+          this.toastr.error(err?.error?.message || 'Failed to resend OTP');
+        }
+      });
+  }
+
+  /* -------------------- CLOSE MODAL -------------------- */
+  closeOtpModal(): void {
+    this.step = 'login';
+    this.otpDigits = ['', '', '', '', '', ''];
+    this.otpCode = '';
+  }
+
+  /* -------------------- HELPERS -------------------- */
+  get loginUser(): { [key: string]: AbstractControl } {
+    return this.patientsLoginForm.controls;
+  }
 }

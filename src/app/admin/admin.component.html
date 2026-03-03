@@ -1,90 +1,340 @@
-<div class="d-flex" [class.dark-mode]="isDarkMode">
-  <div class="sidebar shadow-sm" [class.collapsed]="isSidebarCollapsed" [class.dark-mode]="isDarkMode">
-   <div class="flex justify-between items-center px-4 mt-5 mb-4">
-  <div *ngIf="!isSidebarCollapsed" class="flex justify-center items-center gap-2">
-    <img [src]="logo" alt="CareSlot Logo" class="w-40">
-  </div>
-<div class="menu-icon cursor-pointer" (click)="toggleSidebar()">
-  <img *ngIf="!isSidebarCollapsed" [src]="toggleOpen" alt="Open Sidebar" class=" w-8 h-8">
-  <img *ngIf="isSidebarCollapsed" [src]="toggleClose" alt="Close Sidebar" class=" w-6 h-6">
-</div>
-</div>
-
-<!-- <div class="flex justify-center">
- <img src="{{titleImg}}" alt="" class="w-75">
-</div> -->
-
-<div class="nav-links sidebar-scroll">
-<app-menus></app-menus>
-</div>
-
-<!-- <ng-container *ngFor="let menu of menus">
-        <ng-container *ngIf="menu.submenus?.length; else singleMenu">
-          <div class="nav-item" (click)="toggleAccordion(menu.name)">
-            <div class="d-flex align-items-center gap-2">
-              <i class="{{ menu.icon }}"></i>
-              <span>{{ menu.name }}</span>
-            </div>
-            <i class="fas fa-chevron-down arrow" [class.rotate]="isAccordionOpen(menu.name)" *ngIf="!isSidebarCollapsed"></i>
-          </div>
-          <div class="accordion" [class.show]="isAccordionOpen(menu.name)" *ngIf="!isSidebarCollapsed">
-            <a *ngFor="let sub of menu.submenus" [routerLink]="sub.url" routerLinkActive="active" class="nav-item submenu-item">
-              <i class="{{ sub.icon }}"></i>
-              <span>{{ sub.name }}</span>
-            </a>
-          </div>
-        </ng-container>
-        <ng-template #singleMenu>
-          <a [routerLink]="menu.url" routerLinkActive="active" class="nav-item" [routerLinkActiveOptions]="{ exact: true }">
-            <i class="{{ menu.icon }}"></i>
-            <span>{{ menu.name }}</span>
-          </a>
-        </ng-template>
-      </ng-container> -->
-
-    <div class="bottom-links">
-      <a routerLink="/admin/profile" routerLinkActive="active" class="nav-item">
-        <i class="fas fa-user-circle"></i> <span *ngIf="!isSidebarCollapsed">Profile</span>
-      </a>
-      <a class="nav-item" (click)="logout()">
-        <i class="fas fa-sign-out-alt"></i> <span *ngIf="!isSidebarCollapsed">Logout</span>
-      </a>
+<div class="d-flex dark:bg-dark-bg text-secondary-900 dark:text-dark-text" [class.dark-mode]="isDarkMode">
+  <!-- Mobile Navbar -->
+  <div class="mobile-navbar fixed top-0 left-0 right-0 z-30 bg-white dark:bg-dark-surface flex items-center justify-between px-4 py-3 md:hidden">
+    <div class="flex items-center gap-2">
+      <button class="hamburger-menu text-gray-700 dark:text-dark-text" (click)="toggleSidebar()">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+      </button>
+      <img [src]="logo" alt="CareSlot Logo" class="w-32">
     </div>
-  </div>
-
-  <div class="workspace">
-    <header  [ngStyle]="{ left: isSidebarCollapsed ? '70px' : '280px' }" class="top-header d-flex align-items-center justify-content-between px-4 py-3">
-    <div class="top-header">
-
-  <div class="search-container">
-  </div>
-  <div class="right-section ">
-        <span class="flex items-center gap-4 bg-[#F9F4F1] p-2 rounded-xl">
-
-     <button
+    <div class="flex items-center gap-4">
+      <button
         (click)="toggleDarkMode()"
         class="p-2 rounded-full transition"
         [title]="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
         <i class="fas" [ngClass]="isDarkMode ? 'fa-sun text-yellow-400' : 'fa-moon text-gray-800'"></i>
       </button>
-
-  
-  <i class="fas fa-bell text-xl text-gray-600"></i>
-  <div class="profile flex items-center gap-2">
-    <div class="bg-primary-border-color px-[9px] py-[8px] rounded-lg">
-      <img src="{{userImg}}" alt="Avatar">
-    </div>
-    <div class="profile-info">
-      <div class="name font-medium">{{ username }}</div>
-      <div class="role text-sm text-gray-500">{{ userRole }}</div>
+      <button 
+        type="button" 
+        class="bell-button"
+        [class.has-notifications]="hasUnread"
+        (click)="toggleDropdown()">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+        </svg>
+        @if (unreadCount > 0) {
+          <div class="notification-badge">
+            {{ unreadCount > 99 ? '99+' : unreadCount }}
+          </div>
+        }
+      </button>
     </div>
   </div>
-</span>
 
-
+  <!-- Sidebar -->
+  <div class="sidebar shadow-sm dark:bg-dark-surface" [class.collapsed]="isSidebarCollapsed" [class.expanded]="isMobileSidebarOpen" [class.dark-mode]="isDarkMode">
+    <div class="flex justify-between items-center px-4 mt-5 mb-4">
+      <div *ngIf="!isSidebarCollapsed" class="flex justify-center items-center gap-2">
+        <img [src]="logo" alt="CareSlot Logo" class="w-40">
+      </div>
+      <div class="sidebar-toggle menu-icon cursor-pointer" (click)="toggleSidebar()">
+        <svg class="w-5 h-5 transition-transform duration-300" [class.rotate-180]="!isExpanded()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path>
+        </svg>
+      </div>
+    </div>
+    <div class="nav-links sidebar-scroll">
+      <app-menus (sidebarToggle)="toggleSidebar()"></app-menus>
+    </div>
+    <div class="bottom-links" [ngStyle]="isMobileView ? {'width': '30%'} : {}">
+      <a routerLink="/profile" routerLinkActive="active" class="nav-item dark:text-dark-text with-icon-spacing" (click)="handleBottomLinkClick('/profile')">
+        <i class="fas fa-user-circle"></i>
+        <span *ngIf="!isSidebarCollapsed" [ngStyle]="isMobileView ? {'margin-left': '10px'} : {}">Profile</span>
+      </a>
+      <a class="nav-item dark:text-dark-text with-icon-spacing" (click)="handleBottomLinkClick()">
+        <i class="fas fa-sign-out-alt"></i>
+        <span *ngIf="!isSidebarCollapsed" [ngStyle]="isMobileView ? {'margin-left': '10px'} : {}">Logout</span>
+      </a>
+    </div>
   </div>
+
+  <div class="workspace">
+     <header [ngStyle]="{ left: isSidebarCollapsed ? '70px' : '280px' }" class="top-header d-flex align-items-center justify-between px-4 py-3 dark:bg-dark-surface">
+    <div class="search-container">
+    </div>
+    <div class="right-section relative">
+      <span class="flex items-center gap-4 bg-cream-100 dark:bg-dark-border p-2 rounded-xl">
+        <button
+          (click)="toggleDarkMode()"
+          class="p-2 rounded-full transition"
+          [title]="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
+          <i class="fas" [ngClass]="isDarkMode ? 'fa-sun text-yellow-400' : 'fa-moon text-gray-800'"></i>
+        </button>
+        
+<!-- Replace the entire <div class="date-format-selector"> block with this -->
+<div class="date-format-selector relative">
+  <!-- Settings Icon Button -->
+  <button
+    type="button"
+    class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-border/50 transition-all duration-200 group"
+    (click)="toggleDateFormatPopover()"
+    [title]="'Current format: ' + (currentDateFormat() | uppercase)">
+    
+    <svg class="w-5 h-5 text-gray-600 dark:text-gray-400 group-hover:text-orange-600 transition-colors"
+         fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+    </svg>
+
+    <span class="text-xs font-medium text-gray-600 dark:text-gray-400 group-hover:text-orange-600">
+      Date Format
+    </span>
+
+    <svg class="w-4 h-4 text-gray-500 group-hover:text-orange-600 transition-transform duration-200"
+         [class.rotate-180]="isDateFormatPopoverOpen()"
+         fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+    </svg>
+  </button>
+
+  <!-- Compact & Beautiful 2-Column Popover -->
+  @if (isDateFormatPopoverOpen()) {
+    <div class="absolute right-0 mt-2 w-96 bg-white dark:bg-dark-surface rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 z-50 overflow-hidden">
+      
+      <!-- Compact Header -->
+      <div class="px-5 py-4 bg-[#F9F4F1] dark:bg-orange-900/20 border-b border-orange-200 dark:border-orange-800">
+        <div class="flex items-center justify-between">
+          <h3 class="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+            <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            Date Format
+          </h3>
+          <span class="text-xs text-orange-700 dark:text-orange-400 font-medium">
+            Current: {{ currentDateFormat() }}
+          </span>
+        </div>
+      </div>
+
+      <!-- 2-Column Grid Layout -->
+      <div class="p-4 grid grid-cols-2 gap-3">
+        @for (format of dateFormatOptions; track format.value) {
+          <label 
+            class="relative flex flex-col p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 hover:shadow-md group"
+            [class.border-orange-500]="currentDateFormat() === format.value"
+            [class.bg-orange-50]="currentDateFormat() === format.value"
+            [class.border-gray-300]="currentDateFormat() !== format.value"
+            [class.dark:border-gray-600]="currentDateFormat() !== format.value">
+            
+            <input 
+              type="radio" 
+              [value]="format.value" 
+              [checked]="currentDateFormat() === format.value"
+              (change)="onDateFormatChange($event)"
+              class="absolute opacity-0">
+
+            <!-- Selected Checkmark -->
+            <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                 [class.opacity-100]="currentDateFormat() === format.value">
+              <div class="w-5 h-5 bg-orange-600 rounded-full flex items-center justify-center">
+                <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                </svg>
+              </div>
+            </div>
+
+            <div class="font-medium text-sm text-gray-900 dark:text-gray-100">
+              {{ format.label }}
+            </div>
+            <div class="text-xs text-gray-500 dark:text-gray-400 mt-1 font-mono">
+              {{ format.example }}
+            </div>
+            @if (format.universal) {
+              <div class="mt-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                Recommended
+              </div>
+            }
+          </label>
+        }
+      </div>
+
+      <!-- Compact Footer Tip -->
+      <div class="px-5 py-3 bg-gray-50 dark:bg-gray-800/70 border-t border-gray-200 dark:border-gray-700 text-xs text-center text-gray-600 dark:text-gray-400">
+        <svg class="w-4 h-4 inline mr-1 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+        </svg>
+        <strong>ISO 8601</strong> (YYYY-MM-DD) is the global standard — never ambiguous
+      </div>
+    </div>
+  }
 </div>
-    </header>
+        <!-- Notification Bell with Dropdown Container -->
+       <div class="notification-container relative">
+  <!-- Notification Bell Button -->
+  <button 
+    type="button" 
+    class="bell-button relative p-2 rounded-full hover:bg-gray-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+    [class.has-notifications]="hasUnread"
+    (click)="toggleDropdown()">
+    
+    <!-- Bell Icon -->
+    <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
+      </path>
+    </svg>
+
+    <!-- Notification Badge -->
+    @if (unreadCount > 0) {
+      <div class="notification-badge absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full min-w-[20px] h-5 flex items-center justify-center px-1 border-2 border-white">
+        {{ unreadCount > 99 ? '99+' : unreadCount }}
+      </div>
+    }
+  </button>
+
+  <!-- Notification Dropdown -->
+  @if (isOpen()) {
+    <div class="notification-dropdown absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50 transform origin-top-right">
+      
+      <!-- Dropdown Header -->
+      <div class="dropdown-header px-4 py-3 border-b border-gray-200 bg-gray-50 rounded-t-lg">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <h3 class="text-lg font-semibold text-gray-900">Notifications</h3>
+            @if (unreadCount > 0) {
+              <span class="unread-count bg-orange-100 text-orange-800 text-sm px-2 py-1 rounded-full">
+                {{ unreadCount }} unread
+              </span>
+            }
+          </div>
+          
+          <div class="header-actions">
+            @if (hasUnread) {
+              <button 
+                type="button" 
+                class="mark-all-read-btn flex items-center space-x-1 text-sm text-orange-600 hover:text-orange-800 transition-colors duration-200 focus:outline-none"
+                (click)="markAllAsRead()">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z">
+                  </path>
+                </svg>
+                <span>Mark all read</span>
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Notifications List -->
+      <div class="notifications-list max-h-96 overflow-y-auto">
+        @if (isLoading()) {
+          <!-- Loading State -->
+          <div class="loading-state flex flex-col items-center justify-center py-8">
+            <div class="loading-spinner w-8 h-8 border-2 border-orange-600 border-t-transparent rounded-full animate-spin mb-2"></div>
+            <p class="loading-text text-gray-500 text-sm">Loading notifications...</p>
+          </div>
+        } @else if (recentNotifications().length > 0) {
+          <!-- Notifications List -->
+          <div class="divide-y divide-gray-100">
+            @for (notification of recentNotifications(); track notification.id) {
+              <div 
+                class="notification-item px-4 py-3 hover:bg-gray-50 transition-colors duration-200 cursor-pointer relative"
+                [class.unread]="!notification.isRead"
+                [class.bg-orange-50]="!notification.isRead"
+                (click)="onNotificationClick(notification)">
+                
+                <!-- Unread indicator -->
+                @if (!notification.isRead) {
+                  <div class="absolute left-2 top-1/2 transform -translate-y-1/2 w-2 h-2 bg-orange-500 rounded-full"></div>
+                }
+                
+                <div class="flex items-start space-x-3 ml-3">
+                  <!-- Notification Icon -->
+                  <div class="notification-icon flex-shrink-0 mt-1">
+                    <div class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+                      <svg class="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M13 16h-1v-4h-1m1-4h.01M21 12A9 9 0 113 12a9 9 0 0118 0z">
+                        </path>
+                      </svg>
+                    </div>
+                  </div>
+
+                  <!-- Notification Content -->
+                  <div class="notification-content flex-1 min-w-0">
+                    <h4 class="notification-title text-sm font-medium text-gray-900 mb-1">
+                      {{ getNotificationTitle(notification.type) }}
+                    </h4>
+                    <p class="notification-message text-sm text-gray-600 mb-2 line-clamp-2">
+                      {{ notification.message }}
+                    </p>
+                    <span class="notification-time text-xs text-gray-400">
+                      {{ formatTimeAgo(notification.createdAt) }}
+                    </span>
+                  </div>
+
+                  <!-- Delete Button -->
+                  <button 
+                    type="button"
+                    class="delete-notification-btn flex-shrink-0 text-gray-400 hover:text-red-500 transition-colors duration-200 focus:outline-none p-1 rounded"
+                    (click)="deleteNotification(notification.id, $event)">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                            d="M6 18L18 6M6 6l12 12">
+                      </path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <!-- Empty State -->
+          <div class="empty-notifications flex flex-col items-center justify-center py-8 px-4">
+            <div class="empty-icon mb-3">
+              <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
+                </path>
+              </svg>
+            </div>
+            <h4 class="empty-title text-lg font-medium text-gray-900 mb-1">No notifications</h4>
+            <p class="empty-description text-sm text-gray-500 text-center">You're all caught up! Check back later for updates.</p>
+          </div>
+        }
+      </div>
+
+      <!-- Dropdown Footer -->
+      @if (notifications().length > 0) {
+        <div class="dropdown-footer px-4 py-3 border-t border-gray-200 bg-gray-50 rounded-b-lg">
+          <button 
+            type="button" 
+            class="view-all-btn w-full text-center text-sm text-orange-600 hover:text-orange-800 font-medium transition-colors duration-200 focus:outline-none py-2"
+            (click)="viewAllNotifications()">
+            View all Notifications
+          </button>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+        <div class="profile flex items-center gap-2">
+          <div class="bg-primary-border-color px-[9px] py-[8px] rounded-lg">
+            <img src="{{userImg}}" alt="Avatar">
+          </div>
+          <div class="profile-info">
+            <div class="name font-medium">{{ username }}</div>
+            <div class="role text-sm text-gray-500">{{ userRole }}</div>
+          </div>
+        </div>
+      </span>
+    </div>
+  </header>
     <div class="main-content p-1" [ngStyle]="{ 'margin-top': '100px', 'margin-left': isSidebarCollapsed ? '0%' : '5%' }">
       <app-breadcrumb></app-breadcrumb>
       <router-outlet></router-outlet>
@@ -92,3 +342,143 @@
   </div>
 </div>
 
+<!-- All Notifications Modal/Popup -->
+@if (showAllNotificationsModal()) {
+  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] p-4">
+    <div class="bg-white rounded-lg shadow-xl w-[40%] max-h-[90vh] flex flex-col">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between p-6 border-b border-gray-200">
+        <div class="flex items-center space-x-3">
+          <h2 class="text-2xl font-bold text-gray-900">All Notifications</h2>
+          @if (unreadCount > 0) {
+            <span class="bg-orange-100 text-orange-800 text-sm px-3 py-1 rounded-full font-medium">
+              {{ unreadCount }} unread
+            </span>
+          }
+        </div>
+        <div class="flex items-center space-x-3">
+          @if (hasUnread) {
+            <button 
+              type="button"
+              class="flex items-center space-x-2 text-sm text-orange-600 hover:text-orange-800 font-medium transition-colors duration-200"
+              (click)="markAllAsRead()">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z">
+                </path>
+              </svg>
+              <span>Mark all read</span>
+            </button>
+          }
+          <button 
+            type="button"
+            class="text-gray-400 hover:text-gray-600 transition-colors duration-200 p-2 rounded-full hover:bg-gray-100"
+            (click)="closeAllNotificationsModal()">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal Content -->
+      <div class="flex-1 overflow-y-auto">
+        @if (isLoading()) {
+          <div class="flex flex-col items-center justify-center py-12">
+            <div class="loading-spinner w-8 h-8 border-2 border-orange-600 border-t-transparent rounded-full animate-spin mb-3"></div>
+            <p class="text-gray-500">Loading all notifications...</p>
+          </div>
+        } @else if (notifications().length > 0) {
+          <div class="divide-y divide-gray-100">
+            @for (notification of notifications(); track notification.id) {
+              <div 
+                class="notification-item p-6 hover:bg-gray-50 transition-colors duration-200 cursor-pointer relative"
+                [class.unread]="!notification.isRead"
+                [class.bg-orange-50]="!notification.isRead"
+                (click)="onModalNotificationClick(notification)">
+                
+                <!-- Unread indicator -->
+                @if (!notification.isRead) {
+                  <div class="absolute left-4 top-1/2 transform -translate-y-1/2 w-3 h-3 bg-orange-500 rounded-full"></div>
+                }
+                
+                <div class="flex items-start space-x-4 ml-4">
+                  <!-- Notification Icon -->
+                  <div class="notification-icon flex-shrink-0">
+                    <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                      <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M13 16h-1v-4h-1m1-4h.01M21 12A9 9 0 113 12a9 9 0 0118 0z">
+                        </path>
+                      </svg>
+                    </div>
+                  </div>
+
+                  <!-- Notification Content -->
+                  <div class="notification-content flex-1 min-w-0">
+                    <div class="flex items-start justify-between mb-2">
+                      <h4 class="notification-title text-lg font-semibold text-gray-900">
+                        {{ getNotificationTitle(notification.type) }}
+                      </h4>
+                      <button 
+                        type="button"
+                        class="delete-notification-btn flex-shrink-0 text-gray-400 hover:text-red-500 transition-colors duration-200 p-1 rounded"
+                        (click)="deleteNotification(notification.id, $event)">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                d="M6 18L18 6M6 6l12 12">
+                          </path>
+                        </svg>
+                      </button>
+                    </div>
+                    <p class="notification-message text-gray-600 mb-3 leading-relaxed">
+                      {{ notification.message }}
+                    </p>
+                    <div class="flex items-center justify-between">
+                      <span class="notification-time text-sm text-gray-400">
+                        {{ formatTimeAgo(notification.createdAt) }}
+                      </span>
+                      @if (notification.priority) {
+                        <span class="priority-badge text-xs px-2 py-1 rounded-full" 
+                              [ngClass]="getPriorityColor(notification.priority)">
+                          {{ notification.priority }}
+                        </span>
+                      }
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="flex flex-col items-center justify-center py-16">
+            <div class="empty-icon mb-4">
+              <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
+                </path>
+              </svg>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-900 mb-2">No notifications</h3>
+            <p class="text-gray-500 text-center">You're all caught up! Check back later for updates.</p>
+          </div>
+        }
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-4 border-t border-gray-200 bg-gray-50 rounded-b-lg">
+        <div class="flex justify-between items-center">
+          <span class="text-sm text-gray-500">
+            Total: {{ notifications().length }} notification{{ notifications().length !== 1 ? 's' : '' }}
+          </span>
+          <button 
+            type="button"
+            class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors duration-200 font-medium"
+            (click)="closeAllNotificationsModal()">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

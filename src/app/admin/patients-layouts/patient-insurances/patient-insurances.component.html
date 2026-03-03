@@ -1,0 +1,277 @@
+
+<div class="dashboard-container container">
+<div class="animated-tabs">
+  <div class="slider"></div>
+  <div class="tab" [class.active]="selectedTab === 'list-patients'" (click)="setTab('list-patients')">
+      <i class="fas fa-calendar-days"></i>
+      <span>patients List</span>
+    </div>
+</div>
+
+<div *ngIf="selectedTab === 'list-patients'" class="card-wrapper mb-4">
+    <div class="container mx-auto p-1">
+  <!-- <h4 class="text-2xl font-semibold  text-primary-border-color">Patients List</h4> -->
+  <div class="mt-4 rounded-xl bg-white">
+     <div class="flex gap-2 justify-between mb-3">
+      <div class="relative flex items-center">
+      <input
+        type="text"
+        id="searchInput"
+        class="w-full px-4 m-2 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-primary-border-color focus:border-transparent"
+        [(ngModel)]="searchValue"
+       
+        placeholder="Search patients...">
+      <button
+        class="px-4 py-2 bg-gray-100 text-gray-600 border border-l-0 border-gray-300 rounded-r-lg hover:bg-primary-border-color hover:text-white transition-colors"
+        *ngIf="searchValue"
+        (click)="searchValue=''; onQuickFilterChanged()">
+        Clear
+      </button>
+    </div>
+    
+ <button 
+  class="flex items-center gap-2 px-2.5 py-1 border border-green-600 text-green-600 rounded-md text-sm hover:bg-green-600 hover:text-white transition"
+  (click)="onExportClick()"
+>
+  <i class="fas fa-file-excel text-sm"></i>
+  <span>Export Excel</span>
+</button>
+</div>
+
+  
+
+<ag-grid-angular
+  class="ag-theme-alpine ag-theme-custom"
+  [gridOptions]="gridOptions"
+  [rowData]="rowData"
+  [columnDefs]="columnDefs"
+  [defaultColDef]="defaultColDef"
+  [pagination]="true"
+  [paginationPageSize]="paginationPageSize"
+    (cellClicked)="onCellClicked($event)"
+  style="width: 100%; height: 500px;">
+</ag-grid-angular>
+
+<!-- <app-common-ag-grid
+  [rowData]="users"
+  [columnDefs]="columnDefs"
+  [paginationPageSize]="10"
+  [paginationPageSizeSelector]="[10, 20, 50, 100]"
+  (edit)="onEditAction($event)"
+  (delete)="onDeleteAction($event)">
+</app-common-ag-grid> -->
+
+
+</div>
+</div>
+</div>
+
+<div *ngIf="showInsurancePopup"
+     class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-1000">
+
+  <div class="bg-white w-full max-w-4xl rounded-2xl shadow-xl p-6 relative">
+
+    <button type="button" (click)="closeInsurancePopup()"
+      class="absolute top-3 right-3 text-gray-500 hover:text-gray-800">
+      <i class="fa-solid fa-xmark text-xl"></i>
+    </button>
+
+    <div class="flex items-center gap-2 border-b pb-3 mb-4">
+      <i class="fas fa-plus-circle text-orange-400 text-xl"></i>
+      <h2 class="text-lg font-semibold text-gray-800">Add Insurance</h2>
+    </div>
+
+    <form [formGroup]="patientsInusranceForm" (ngSubmit)="saveForm()">
+      <div class="space-y-4">
+        <!-- Row 1: Insurance Carrier + Policyholder Name + Relationship -->
+        <div class="grid md:grid-cols-3 gap-4">
+          <!-- Insurance Carrier (Single Select) -->
+          <mat-form-field appearance="fill" class="w-full">
+            <mat-label>Insurance Carrier</mat-label>
+            <mat-select formControlName="insuranceCarrier" required>
+              <mat-option *ngFor="let insurance of insuranceArr" [value]="insurance.id">
+                {{ insurance.name }}
+              </mat-option>
+            </mat-select>
+            <mat-error *ngIf="patientsInusranceForm.get('insuranceCarrier')?.hasError('required')">
+              Insurance carrier is required
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Policyholder Name -->
+          <mat-form-field appearance="fill" class="w-full">
+            <mat-label>Policyholder Name</mat-label>
+            <input matInput placeholder="John Smith" formControlName="plicyname" required />
+            <mat-error *ngIf="patientsInusranceForm.get('plicyname')?.hasError('required')">
+              Policyholder name is required
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Relationship (Dropdown) -->
+          <mat-form-field appearance="fill" class="w-full">
+            <mat-label>Relationship</mat-label>
+            <mat-select formControlName="relationship" required>
+              <mat-option value="Self">Self</mat-option>
+              <mat-option value="Spouse">Spouse</mat-option>
+              <mat-option value="Child">Child</mat-option>
+              <mat-option value="Other">Other</mat-option>
+            </mat-select>
+            <mat-error *ngIf="patientsInusranceForm.get('relationship')?.hasError('required')">
+              Relationship is required
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <!-- Row 2: Member ID + Group Number + Copay -->
+        <div class="grid md:grid-cols-3 gap-4">
+          <!-- Member ID -->
+          <mat-form-field appearance="fill" class="w-full">
+            <mat-label>Member ID </mat-label>
+            <input matInput placeholder="AETNA123456789" formControlName="membernumber" required />
+            <mat-error *ngIf="patientsInusranceForm.get('membernumber')?.hasError('required')">
+              Member ID is required
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Group Number -->
+          <mat-form-field appearance="fill" class="w-full">
+            <mat-label>Group Number </mat-label>
+            <input matInput placeholder="GP1234567" formControlName="groupnumber" required />
+            <mat-error *ngIf="patientsInusranceForm.get('groupnumber')?.hasError('required')">
+              Group number is required
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Copay (Number Input) -->
+          <mat-form-field appearance="fill" class="w-full">
+            <mat-label>Copay ($) </mat-label>
+            <input matInput type="number" placeholder="20.00" formControlName="copay" required min="0" />
+            <span matPrefix>$&nbsp;</span>
+            <mat-error *ngIf="patientsInusranceForm.get('copay')?.hasError('required')">
+              Copay is required
+            </mat-error>
+            <mat-error *ngIf="patientsInusranceForm.get('copay')?.hasError('min')">
+              Copay must be ≥ 0
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <!-- Row 3: Optional Fields (Policyholder DOB, Effective/Expiry Dates) -->
+        <div class="grid md:grid-cols-3 gap-4">
+          <!-- Policyholder DOB -->
+          <mat-form-field appearance="fill" class="w-full">
+            <mat-label>Policyholder DOB</mat-label>
+            <input matInput [matDatepicker]="dobPicker" formControlName="policyHolderDob" />
+            <mat-datepicker-toggle matSuffix [for]="dobPicker"></mat-datepicker-toggle>
+            <mat-datepicker #dobPicker></mat-datepicker>
+            <mat-hint *ngIf="patientsInusranceForm.get('relationship')?.value !== 'Self'">
+              Required if policyholder ≠ patient
+            </mat-hint>
+          </mat-form-field>
+
+          <!-- Effective Date -->
+          <mat-form-field appearance="fill" class="w-full">
+            <mat-label>Effective Date</mat-label>
+            <input matInput [matDatepicker]="effectiveDatePicker" formControlName="effectiveDate" />
+            <mat-datepicker-toggle matSuffix [for]="effectiveDatePicker"></mat-datepicker-toggle>
+            <mat-datepicker #effectiveDatePicker></mat-datepicker>
+          </mat-form-field>
+
+          <!-- Expiry Date -->
+          <mat-form-field appearance="fill" class="w-full">
+            <mat-label>Expiry Date</mat-label>
+            <input matInput [matDatepicker]="expiryDatePicker" formControlName="expiryDate" />
+            <mat-datepicker-toggle matSuffix [for]="expiryDatePicker"></mat-datepicker-toggle>
+            <mat-datepicker #expiryDatePicker></mat-datepicker>
+          </mat-form-field>
+        </div>
+
+        <!-- Save Button -->
+        <div class="text-right pt-2">
+          <button type="submit" class="customBtn-secondary" [disabled]="patientsInusranceForm.invalid">
+            <i class="fa-solid fa-floppy-disk mr-2"></i> Save
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+
+
+
+
+<ng-container *ngIf="showInsurancePopupView">
+  <div class="fixed inset-0 z-1000 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm">
+    <div *ngFor="let insurance of selectedInsurance" class="relative w-full max-w-4xl bg-white rounded-2xl shadow-xl overflow-hidden">
+
+      <!-- Header Section -->
+      <div class="flex items-center gap-4 p-6 bg-gray-50 border-b">
+        <img src="https://via.placeholder.com/60" alt="Patient" class="w-16 h-16 rounded-full border" />
+        <div>
+          <h2 class="text-xl font-semibold text-gray-800">{{ insurance.policyHolderName }}</h2>
+          <p class="text-sm text-gray-500">{{ insurance.relationship }} | DOB: {{ insurance.policyHolderDob || 'N/A' }}</p>
+        </div>
+        <div class="ml-auto text-right">
+          <p class="text-sm text-gray-500">Insurance Carrier</p>
+          <span class="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-medium">
+            {{ insurance.insuranceCarrier }}
+          </span>
+        </div>
+        <button (click)="showInsurancePopupView = false" class="ml-4 text-gray-500 hover:text-gray-700">
+          <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+      </div>
+
+      <!-- Content Section -->
+      <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <!-- Left Column -->
+        <div class="space-y-4">
+          <div class="p-4 rounded-lg border border-gray-100">
+            <p class="text-xs font-medium text-gray-500 uppercase">Patient ID</p>
+            <p class="text-gray-800 font-medium">{{ insurance.patientId }}</p>
+          </div>
+          <div class="p-4 rounded-lg border border-gray-100">
+            <p class="text-xs font-medium text-gray-500 uppercase">Member ID</p>
+            <p class="text-gray-800 font-medium">{{ insurance.memberId }}</p>
+          </div>
+          <div class="p-4 rounded-lg border border-gray-100">
+            <p class="text-xs font-medium text-gray-500 uppercase">Group Number</p>
+            <p class="text-gray-800 font-medium">{{ insurance.groupNumber }}</p>
+          </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="space-y-4">
+          <div class="p-4 rounded-lg bg-orange-50 border-l-4 border-orange-300">
+            <p class="text-xs font-medium text-gray-500 uppercase">Co-Pay</p>
+            <p class="text-gray-800 font-medium">{{ insurance.coPay }}</p>
+          </div>
+          <div class="p-4 rounded-lg bg-gray-50">
+            <p class="text-xs font-medium text-gray-500 uppercase">Effective Date</p>
+            <p class="text-gray-800 font-medium">{{ insurance.effectiveDate || 'N/A' }}</p>
+          </div>
+          <div class="p-4 rounded-lg bg-gray-50">
+            <p class="text-xs font-medium text-gray-500 uppercase">Expiry Date</p>
+            <p class="text-gray-800 font-medium">{{ insurance.expiryDate || 'N/A' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="px-6 py-4 bg-gray-50 flex justify-end">
+        <button 
+          (click)="showInsurancePopupView = false"
+          class="px-6 py-2 bg-orange-300 hover:bg-orange-400 text-white font-medium rounded-lg transition-all duration-200 flex items-center space-x-2"
+        >
+          <i class="fa-solid fa-check"></i>
+          <span>Confirm & Close</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</ng-container>
+
+

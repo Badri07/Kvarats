@@ -1,130 +1,154 @@
-<div class="dashboard-container">
-  <div class="animated-tabs">
-  <div class="slider"></div>
-
-  <div class="tab" [class.active]="selectedTab === 'slidingScaleAdd'" (click)="setTab('slidingScaleAdd')">
-    <i class="fas fa-plus-circle"></i>
-    <span>Add Sliding Scale</span>
+<div class="mt-5">
+  <div class="mb-6">
+    <h2 class="text-2xl font-bold text-gray-800">Sliding Scale Management</h2>
+    <p class="text-gray-600">
+      Manage income-based discounts, configure scales, and track patient savings effectively
+    </p>
   </div>
 
-   <div class="tab" [class.active]="selectedTab === 'slidingScaleList'" (click)="setTab('slidingScaleList')">
-    <i class="fas fa-calendar-days"></i>
-    <span>Sliding Scale List</span>
-  </div>
+  <div class="animated-tabs mt-5">
+    <div class="slider"></div>
+
+    <div class="tab" [class.active]="selectedTab === 'slidingScaleAdd'" (click)="setTab('slidingScaleAdd')">
+      <i class="fas fa-plus-circle"></i>
+      <span>Add Sliding Scale</span>
+    </div>
+
+    <div class="tab" [class.active]="selectedTab === 'slidingScaleList'" (click)="setTab('slidingScaleList')">
+      <i class="fas fa-calendar-days"></i>
+      <span>Sliding Scale List</span>
+    </div>
   </div>
 
   <div *ngIf="selectedTab === 'slidingScaleAdd'">
-  <form [formGroup]="slidingForm" (ngSubmit)="onSubmit()" class="common-card p-6 mb-3 mt-4">
-    <div class="row">
-      <div class="col-4">
- <label class="form-label">Min Income <span class="text-danger">*</span></label>
-      <input type="number" formControlName="minIncome" class="form-control" placeholder="Enter Minimum Income"
-      [ngClass]="{
-      'is-invalid': sliddingSubmitted && sliddingUser['minIncome'].invalid,
-      'is-valid': sliddingSubmitted && sliddingUser['minIncome'].valid
-    }"/> <div *ngIf="
-                    sliddingSubmitted && sliddingUser['minIncome']['errors']
-                  "
-                  class="invalid-feedback"
-                >
-                  <div *ngIf="sliddingUser['minIncome']['errors']['required']">
-                   minIncome is required
-                  </div>
- </div>
-
+    <form [formGroup]="slidingForm" (ngSubmit)="onSubmit()" class="common-card p-6 mb-3 mt-4 mobile-form">
+      <div class="row mobile-form-row">
+        <div class="col-4 mobile-form-col">
+          <label class="form-label">Min Income <span class="text-danger">*</span></label>
+          <input type="number" formControlName="minIncome" class="form-control" placeholder="Enter Minimum Income"
+          [ngClass]="{
+          'is-invalid': sliddingSubmitted && sliddingUser['minIncome'].invalid,
+          'is-valid': sliddingSubmitted && sliddingUser['minIncome'].valid
+          }"/> 
+          <div *ngIf="sliddingSubmitted && sliddingUser['minIncome']['errors']" class="invalid-feedback">
+            <div *ngIf="sliddingUser['minIncome']['errors']['required']">
+              minIncome is required
+            </div>
+          </div>
+        </div>
+        <div class="col-4 mobile-form-col">
+          <label class="form-label">Max Income <span class="text-danger">*</span></label>
+          <input type="number" formControlName="maxIncome" class="form-control"  placeholder="Enter Maximum income" [ngClass]="{
+          'is-invalid': sliddingSubmitted && sliddingUser['maxIncome'].invalid,
+          'is-valid': sliddingSubmitted && sliddingUser['maxIncome'].valid
+          }">
+          <div *ngIf="sliddingSubmitted && sliddingUser['maxIncome']['errors']" class="invalid-feedback">
+            <div *ngIf="sliddingUser['maxIncome'].errors['required']">
+              maxIncome is required
+            </div>
+          </div>
+        </div>
+        <div class="col-4 mobile-form-col">
+          <label class="form-label">Discount % <span class="text-danger">*</span></label>
+          <input type="number" formControlName="discountPercentage" class="form-control"  placeholder="Enter Discount Percentage" [ngClass]="{
+          'is-invalid': sliddingSubmitted && sliddingUser['discountPercentage'].invalid,
+          'is-valid': sliddingSubmitted && sliddingUser['discountPercentage'].valid
+          }"/>
+          <div *ngIf="sliddingSubmitted && sliddingUser['discountPercentage']['errors']" class="invalid-feedback">
+            <div *ngIf="sliddingUser['discountPercentage'].errors['required']">
+              maxIncome is required
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="col-4">
-  <label class="form-label">Max Income <span class="text-danger">*</span></label>
-      <input type="number" formControlName="maxIncome" class="form-control"  placeholder="Enter Minimum Income" [ngClass]="{
-      'is-invalid': sliddingSubmitted && sliddingUser['maxIncome'].invalid,
-      'is-valid': sliddingSubmitted && sliddingUser['maxIncome'].valid
-    }">
-       <div *ngIf="
-                    sliddingSubmitted && sliddingUser['maxIncome']['errors']
-                  "
-                  class="invalid-feedback"
-                >
-                  <div *ngIf="sliddingUser['maxIncome'].errors['required']">
-                   maxIncome is required
-                  </div>
- </div>
+      <div class="col-span-3 flex justify-end mt-2 mobile-form-button">
+        <button type="submit" class="custom-button">
+          <ng-container *ngIf="selectedRow; else saveIcon">Update</ng-container>
+          <ng-template #saveIcon>
+            <i class="fa-solid fa-floppy-disk me-1"></i> Save
+          </ng-template>
+        </button>
       </div>
-      <div class="col-4">
-  <label class="form-label">Discount % <span class="text-danger">*</span></label>
-      <input type="number" formControlName="discountPercentage" class="form-control"  placeholder="Enter Discount Percentage" [ngClass]="{
-      'is-invalid': sliddingSubmitted && sliddingUser['discountPercentage'].invalid,
-      'is-valid': sliddingSubmitted && sliddingUser['discountPercentage'].valid
-    }"/>
- <div *ngIf="
-                    sliddingSubmitted && sliddingUser['discountPercentage']['errors']
-                  "
-                  class="invalid-feedback"
-                >
-                  <div *ngIf="sliddingUser['discountPercentage'].errors['required']">
-                   maxIncome is required
-                  </div>
- </div>
-      </div>
-    </div>
-    <div class="col-span-3 flex justify-end mt-2">
-<button type="submit" class="customBtn">
-  <ng-container *ngIf="selectedRow; else saveIcon">Update</ng-container>
-  <ng-template #saveIcon>
-    <i class="fa-solid fa-floppy-disk me-1"></i> Save
-  </ng-template>
-</button>
-    </div>
-  </form>
+    </form>
   </div>
 
+  <div *ngIf="selectedTab === 'slidingScaleList'">
+    <div class="mt-4 rounded-xl bg-white">
+      <div class="flex gap-2 justify-between mb-3">
+        <div class="relative flex items-center">
+          <input
+            type="text"
+            id="searchInput"
+            class="w-full px-4 m-2 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-primary-border-color focus:border-transparent"
+            [(ngModel)]="searchValue"
+            (input)="onQuickFilterChanged()"
+            placeholder="Search discounts..">
+          <button
+            class="px-4 py-2 bg-gray-100 text-gray-600 border border-l-0 border-gray-300 rounded-r-lg hover:bg-primary-border-color hover:text-white transition-colors"
+            *ngIf="searchValue"
+            (click)="searchValue=''; onQuickFilterChanged()">
+            Clear
+          </button>
+        </div>
+      </div>
 
+      <ag-grid-angular
+        class="ag-theme-alpine ag-theme-alpine-dark ag-theme-alpine-compact"
+        [gridOptions]="gridOptions"
+        [rowData]="rowData"
+        [columnDefs]="columnDefs"
+        [defaultColDef]="defaultColDef"
+        [pagination]="true"
+        [paginationPageSize]="10"
+        [paginationPageSizeSelector]="[10, 20, 50, 100]"
+        [domLayout]="'autoHeight'"
+        (cellClicked)="onCellClicked($event)"
+        style="width: 100%;">
+      </ag-grid-angular>
+    </div>
+  </div>
+</div>
 
- <div *ngIf="selectedTab === 'slidingScaleList'">
-   <div class="mt-4 rounded-xl bg-white">
-     <div class="flex gap-2 justify-between mb-3">
-      <div class="relative flex items-center">
-      <input
-        type="text"
-        id="searchInput"
-        class="w-full px-4 m-2 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-primary-border-color focus:border-transparent"
-        [(ngModel)]="searchValue"
-        (input)="onQuickFilterChanged()"
-        placeholder="Search patients...">
-      <button
-        class="px-4 py-2 bg-gray-100 text-gray-600 border border-l-0 border-gray-300 rounded-r-lg hover:bg-primary-border-color hover:text-white transition-colors"
-        *ngIf="searchValue"
-        (click)="searchValue=''; onQuickFilterChanged()">
-        Clear
-      </button>
+<!-- Delete Confirmation Modal -->
+<app-modal 
+  [isOpen]="showDeleteModal"
+  title="Delete Sliding Scale"
+  size="sm"
+  (closed)="closeDeleteModal()">
+  
+  <div class="delete-confirmation">
+    <div class="warning-icon">
+      <svg class="w-12 h-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+      </svg>
     </div>
     
+    <h3 class="warning-title">Are you sure?</h3>
+    
+    <p class="warning-message">
+      This will permanently delete the sliding scale 
+      <strong>{{ scaleToDelete?.minIncome }} - {{ scaleToDelete?.maxIncome }}</strong>
+      ({{ scaleToDelete?.discountPercentage }}% discount).
+    </p>
+    
+    <p class="warning-message">
+      This action cannot be undone.
+    </p>
 
-   <button 
-  class="flex items-center gap-2 px-2.5 py-1 border border-green-600 text-green-600 rounded-md text-sm hover:bg-green-600 hover:text-white transition"
-  (click)="onExportClick()"
->
-  <i class="fas fa-file-excel text-sm"></i>
-  <span>Export Excel</span>
-</button>
-
-
-</div>
-
-  
-
-<ag-grid-angular
-  class="ag-theme-alpine ag-theme-alpine-dark ag-theme-alpine-compact"
-  [gridOptions]="gridOptions"
-  [rowData]="rowData"
-  [columnDefs]="columnDefs"
-  [defaultColDef]="defaultColDef"
-  [pagination]="true"
-  [paginationPageSize]="10"
-  [paginationPageSizeSelector]="[10, 20, 50, 100]"
-  [domLayout]="'autoHeight'"
-  (cellClicked)="onCellClicked($event)"
-  style="width: 100%;">
-</ag-grid-angular>
-</div>
- </div>
-</div>
+    <div class="confirmation-actions">
+      <app-button 
+        variant="outline" 
+        (click)="closeDeleteModal()"
+        [disabled]="isDeleting">
+        Cancel
+      </app-button>
+      
+      <app-button 
+        variant="danger" 
+        [loading]="isDeleting" 
+        (click)="confirmDelete()">
+        Delete Sliding Scale
+      </app-button>
+    </div>
+  </div>
+</app-modal>

@@ -1,0 +1,909 @@
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+  <div class="lg:col-span-1 bg-white rounded-lg shadow p-4">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-lg font-semibold text-gray-900">Assessments</h3>
+      <button
+        (click)="startCreate()"
+        [disabled]="!patientId || loading"
+        class="px-4 py-2 bg-orange-400 text-white rounded-md hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors">
+        New
+      </button>
+    </div>
+
+    <div *ngIf="error" class="mb-4 p-3 bg-red-50 text-red-700 rounded-md text-sm">
+      {{ error }}
+    </div>
+
+    <div *ngIf="!patientId" class="text-center text-gray-500 py-8 text-sm">
+      Select a patient to view assessments
+    </div>
+
+    <div *ngIf="loading" class="text-center text-gray-500 py-8 text-sm">
+      Loading...
+    </div>
+
+    <div *ngIf="patientId && !loading" class="space-y-2">
+      <div
+        *ngFor="let assessment of assessments"
+        (click)="selectAssessment(assessment)"
+        [class.bg-orange-500]="selectedAssessment?.id === assessment.id"
+        [class.bg-opacity-10]="selectedAssessment?.id === assessment.id"
+        [class.border-orange-500]="selectedAssessment?.id === assessment.id"
+        class="p-3 border rounded-md cursor-pointer hover:bg-gray-50 transition-colors">
+        <div class="flex justify-between items-start">
+          <div class="flex-1">
+            <div class="text-sm font-medium text-gray-900">
+              {{ assessment.createdAt | date: 'MMM d, y' }}
+            </div>
+            <div class="text-xs text-gray-500">
+              By: {{ assessment.createdByName }}
+              <span *ngIf="assessment.isDraft" class="ml-2 px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded">
+                Draft
+              </span>
+            </div>
+          </div>
+          <div class="text-xs text-gray-400">
+            v{{ assessment.version }}
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="assessments.length === 0" class="text-center text-gray-500 py-4 text-sm">
+        No assessments found
+      </div>
+    </div>
+  </div>
+
+  <div class="lg:col-span-2 bg-white rounded-lg shadow p-6">
+    <div *ngIf="!selectedAssessment && !isCreating" class="text-center text-gray-500 py-8">
+      Select an assessment to view details or create a new one
+    </div>
+
+    <div *ngIf="selectedAssessment && !isEditing">
+      <div class="flex justify-between items-start mb-6">
+        <div>
+          <h3 class="text-xl font-semibold text-gray-900">
+            Initial Assessment
+          </h3>
+          <p class="text-sm text-gray-500">
+            Created: {{ selectedAssessment.createdAt | date: 'MMMM d, y' }} by {{ selectedAssessment.createdByName }}
+          </p>
+        </div>
+       <div class="flex gap-2">
+
+        <button
+  *ngIf="selectedAssessment.isDraft"
+  (click)="openPublishPopup(selectedAssessment.id)"
+  class="relative group p-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+  </svg>
+  <div class="tooltip">Publish</div>
+</button>
+
+  <!-- Download PDF Button -->
+  <button
+    (click)="downloadPDF()"
+    class="relative group p-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+    </svg>
+    <div class="tooltip">Download PDF</div>
+  </button>
+
+  <!-- Edit Button -->
+  <button
+    *ngIf="selectedAssessment.isDraft"
+    (click)="startEdit()"
+    class="relative group p-2 bg-orange-400 text-white rounded-md hover:bg-orange-600 transition-colors">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+    </svg>
+    <div class="tooltip">Edit</div>
+  </button>
+
+  <!-- Delete Button -->
+  <button
+    (click)="confirmDelete(selectedAssessment)"
+    class="relative group p-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+    </svg>
+    <div class="tooltip">Delete</div>
+  </button>
+</div>
+      </div>
+
+      <div class="space-y-6">
+        <div class="border-b pb-4">
+          <h4 class="text-lg font-semibold text-gray-900 mb-3">Vitals</h4>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div *ngIf="selectedAssessment.bloodGroupName">
+              <span class="text-xs text-gray-500">Blood Group:</span>
+              <p class="text-sm font-medium">{{ selectedAssessment.bloodGroupName }}</p>
+            </div>
+            <div *ngIf="selectedAssessment.systolic || selectedAssessment.diastolic">
+              <span class="text-xs text-gray-500">BP:</span>
+              <p class="text-sm font-medium">{{ selectedAssessment.systolic }}/{{ selectedAssessment.diastolic }}</p>
+            </div>
+            <div *ngIf="selectedAssessment.heartRate">
+              <span class="text-xs text-gray-500">Heart Rate:</span>
+              <p class="text-sm font-medium">{{ selectedAssessment.heartRate }} bpm</p>
+            </div>
+            <div *ngIf="selectedAssessment.temperature">
+              <span class="text-xs text-gray-500">Temperature:</span>
+              <p class="text-sm font-medium">{{ selectedAssessment.temperature }}°F</p>
+            </div>
+            <div *ngIf="selectedAssessment.spO2">
+              <span class="text-xs text-gray-500">SpO2:</span>
+              <p class="text-sm font-medium">{{ selectedAssessment.spO2 }}%</p>
+            </div>
+            <div *ngIf="selectedAssessment.weight">
+              <span class="text-xs text-gray-500">Weight:</span>
+              <p class="text-sm font-medium">{{ selectedAssessment.weight }} kg</p>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="selectedAssessment.chiefComplaints.length > 0" class="border-b pb-4">
+          <h4 class="text-lg font-semibold text-gray-900 mb-3">Chief Complaints</h4>
+          <div class="space-y-2">
+            <div *ngFor="let complaint of selectedAssessment.chiefComplaints" class="p-2 bg-gray-50 rounded">
+              <p class="text-sm font-medium">{{ complaint.chiefComplaintName }}</p>
+              <p *ngIf="complaint.notes" class="text-xs text-gray-600 mt-1">{{ complaint.notes }}</p>
+              <div class="flex gap-4 text-xs text-gray-500 mt-1">
+                <span *ngIf="complaint.painScale">Pain: {{ complaint.painScale }}/10</span>
+                <span *ngIf="complaint.onsetDate">Onset: {{ complaint.onsetDate | date: 'short' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="selectedAssessment.allergies.length > 0" class="border-b pb-4">
+          <h4 class="text-lg font-semibold text-gray-900 mb-3">Allergies</h4>
+          <div class="space-y-2">
+            <div *ngFor="let allergy of selectedAssessment.allergies" class="p-2 bg-red-50 rounded">
+              <p class="text-sm font-medium">{{ allergy.allergyName }}</p>
+              <p class="text-xs text-gray-600">{{ allergy.allergyCategoryName }}</p>
+              <p *ngIf="allergy.severityName" class="text-xs text-red-600 font-medium">{{ allergy.severityName }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="selectedAssessment.medications.length > 0" class="border-b pb-4">
+          <h4 class="text-lg font-semibold text-gray-900 mb-3">Medications</h4>
+          <div class="space-y-2">
+            <div *ngFor="let medication of selectedAssessment.medications" class="p-2 bg-blue-50 rounded">
+              <p class="text-sm font-medium">{{ medication.medicationName }}</p>
+              <p *ngIf="medication.dosage" class="text-xs text-gray-600">{{ medication.dosage }} - {{ medication.frequency }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="selectedAssessment.chronicConditions.length > 0" class="border-b pb-4">
+          <h4 class="text-lg font-semibold text-gray-900 mb-3">Chronic Conditions</h4>
+          <div class="space-y-2">
+            <div *ngFor="let condition of selectedAssessment.chronicConditions" class="p-2 bg-yellow-50 rounded">
+              <p class="text-sm font-medium">{{ condition.chronicConditionName }}</p>
+              <p *ngIf="condition.isControlled !== null" class="text-xs" [class.text-green-600]="condition.isControlled" [class.text-orange-600]="!condition.isControlled">
+                {{ condition.isControlled ? 'Controlled' : 'Not Controlled' }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="isEditing || isCreating">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-semibold text-gray-900">
+          {{ isCreating ? 'New Initial Assessment' : 'Edit Initial Assessment' }}
+        </h3>
+        <div class="flex gap-2">
+          <button
+            (click)="cancelEdit()"
+            class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors text-sm">
+            Cancel
+          </button>
+          <button
+            (click)="saveAssessment()"
+            [disabled]="loading"
+            class="px-4 py-2 bg-orange-400 text-white rounded-md hover:bg-orange-600 disabled:bg-gray-300 transition-colors text-sm">
+            {{ loading ? 'Saving...' : 'Save' }}
+          </button>
+        </div>
+      </div>
+
+      <div class="mb-4 border-b">
+        <nav class="flex space-x-4">
+          <button
+            (click)="setActiveSection('vitals')"
+            [class.border-orange-500]="activeSection === 'vitals'"
+            [class.text-orange-500]="activeSection === 'vitals'"
+            class="pb-2 px-1 border-b-2 text-sm font-medium transition-colors"
+            [class.border-transparent]="activeSection !== 'vitals'">
+            Vitals
+          </button>
+          <button
+            (click)="setActiveSection('complaints')"
+            [class.border-orange-500]="activeSection === 'complaints'"
+            [class.text-orange-500]="activeSection === 'complaints'"
+            class="pb-2 px-1 border-b-2 text-sm font-medium transition-colors"
+            [class.border-transparent]="activeSection !== 'complaints'">
+            Complaints
+          </button>
+          <button
+            (click)="setActiveSection('allergies')"
+            [class.border-orange-500]="activeSection === 'allergies'"
+            [class.text-orange-500]="activeSection === 'allergies'"
+            class="pb-2 px-1 border-b-2 text-sm font-medium transition-colors"
+            [class.border-transparent]="activeSection !== 'allergies'">
+            Allergies
+          </button>
+          <button
+            (click)="setActiveSection('medications')"
+            [class.border-orange-500]="activeSection === 'medications'"
+            [class.text-orange-500]="activeSection === 'medications'"
+            class="pb-2 px-1 border-b-2 text-sm font-medium transition-colors"
+            [class.border-transparent]="activeSection !== 'medications'">
+            Medications
+          </button>
+          <button
+            (click)="setActiveSection('history')"
+            [class.border-orange-500]="activeSection === 'history'"
+            [class.text-orange-500]="activeSection === 'history'"
+            class="pb-2 px-1 border-b-2 text-sm font-medium transition-colors"
+            [class.border-transparent]="activeSection !== 'history'">
+            History
+          </button>
+          <button
+            (click)="setActiveSection('social')"
+            [class.border-orange-500]="activeSection === 'social'"
+            [class.text-orange-500]="activeSection === 'social'"
+            class="pb-2 px-1 border-b-2 text-sm font-medium transition-colors"
+            [class.border-transparent]="activeSection !== 'social'">
+            Social Habits
+          </button>
+        </nav>
+      </div>
+
+      <form class="space-y-4">
+        <!-- <div>
+          <label class="flex items-center">
+            <input
+              type="checkbox"
+              [(ngModel)]="assessmentForm.isDraft"
+              name="isDraft"
+              class="mr-2">
+            <span class="text-sm text-gray-700">Save as draft</span>
+          </label>
+        </div> -->
+
+        <div *ngIf="activeSection === 'vitals'">
+          <h4 class="text-lg font-semibold mb-4">Vitals</h4>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Blood Group</label>
+              <select
+                [(ngModel)]="assessmentForm.bloodGroupId"
+                name="bloodGroupId"
+                class="w-full form-select">
+                <option [ngValue]="null">Select Blood Group</option>
+                <option *ngFor="let bg of bloodGroups" [ngValue]="bg.id">{{ bg.code }}</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Systolic</label>
+              <input
+                type="number"
+                [(ngModel)]="assessmentForm.systolic"
+                name="systolic"
+                class="w-full form-control">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Diastolic</label>
+              <input
+                type="number"
+                [(ngModel)]="assessmentForm.diastolic"
+                name="diastolic"
+                class="w-full form-control">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Heart Rate</label>
+              <input
+                type="number"
+                [(ngModel)]="assessmentForm.heartRate"
+                name="heartRate"
+                class="w-full form-control">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Temperature</label>
+              <input
+                type="number"
+                step="0.1"
+                [(ngModel)]="assessmentForm.temperature"
+                name="temperature"
+                class="w-full form-control">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">SpO2 (%)</label>
+              <input
+                type="number"
+                [(ngModel)]="assessmentForm.spO2"
+                name="spO2"
+                class="w-full form-control">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Weight (kg)</label>
+              <input
+                type="number"
+                step="0.1"
+                [(ngModel)]="assessmentForm.weight"
+                (ngModelChange)="calculateBMI()"
+                name="weight"
+                class="w-full form-control">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Height (cm)</label>
+              <input
+                type="number"
+                step="0.1"
+                [(ngModel)]="assessmentForm.height"
+                (ngModelChange)="calculateBMI()"
+                name="height"
+                class="w-full form-control">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">BMI (Auto-calculated)</label>
+              <input
+                type="number"
+                step="0.1"
+                [(ngModel)]="assessmentForm.bmi"
+                name="bmi"
+                readonly
+                class="w-full form-control">
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="activeSection === 'complaints'">
+          <div class="flex justify-between items-center mb-4">
+            <h4 class="text-lg font-semibold">Chief Complaints</h4>
+            <button
+              type="button"
+              (click)="addChiefComplaint()"
+              class="px-3 py-1 bg-orange-400 text-white rounded-md hover:bg-orange-600 text-sm">
+              Add
+            </button>
+          </div>
+          <div class="space-y-3">
+            <div *ngFor="let complaint of assessmentForm.chiefComplaints; let i = index" class="p-3 border rounded-md">
+              <div class="flex justify-between mb-2">
+                <span class="text-sm font-medium">Complaint {{ i + 1 }}</span>
+                <button
+                  type="button"
+                  (click)="removeChiefComplaint(i)"
+                  class="text-red-600 hover:text-red-800 text-sm">
+                  Remove
+                </button>
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Complaint</label>
+                   <select
+                    [(ngModel)]="complaint.chiefComplaintId"
+                    [name]="'complaint_id_' + i"
+                    required
+                    class="w-full form-select">
+                    <option [ngValue]="null">Select Category</option>
+                    <option *ngFor="let _chiefComplaints of chiefComplaints" [ngValue]="_chiefComplaints.id">{{ _chiefComplaints.name }}</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Pain Scale (1-10)</label>
+                  <input
+                    type="number"
+                    [(ngModel)]="complaint.painScale"
+                    [name]="'pain_scale_' + i"
+                    min="1"
+                    max="10"
+                    class="w-full form-control">
+                </div>
+                <div class="col-span-2">
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Notes</label>
+                  <textarea
+                    [(ngModel)]="complaint.notes"
+                    [name]="'complaint_notes_' + i"
+                    rows="2"
+                    class="w-full form-control"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="activeSection === 'allergies'">
+          <div class="flex justify-between items-center mb-4">
+            <h4 class="text-lg font-semibold">Allergies</h4>
+            <button
+              type="button"
+              (click)="addAllergy()"
+              class="px-3 py-1 bg-orange-400 text-white rounded-md hover:bg-orange-600 text-sm">
+              Add
+            </button>
+          </div>
+          <div class="space-y-3">
+            <div *ngFor="let allergy of assessmentForm.allergies; let i = index" class="p-3 border rounded-md">
+              <div class="flex justify-between mb-2">
+                <span class="text-sm font-medium">Allergy {{ i + 1 }}</span>
+                <button
+                  type="button"
+                  (click)="removeAllergy(i)"
+                  class="text-red-600 hover:text-red-800 text-sm">
+                  Remove
+                </button>
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Allergy Category</label>
+                  <select
+                    [(ngModel)]="allergy.allergyCategoryId"
+                    [name]="'allergy_category_' + i"
+                    required
+                    class="w-full form-select">
+                    <option [ngValue]="null">Select Category</option>
+                    <option *ngFor="let category of allergyCategories" [ngValue]="category.id">{{ category.description }}</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Allergy Type</label>
+                  <select
+                    [(ngModel)]="allergy.allergyLookupId"
+                    [name]="'allergy_id_' + i"
+                    required
+                    [disabled]="!allergy.allergyCategoryId"
+                    class="w-full form-select">
+                    <option [ngValue]="null">Select Type</option>
+                    <option *ngFor="let type of getAllergyTypes(allergy.allergyCategoryId)" [ngValue]="type.id">{{ type.description }}</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Severity</label>
+                  <select
+                    [(ngModel)]="allergy.severityId"
+                    [name]="'severity_' + i"
+                    class="w-full form-select">
+                    <option [ngValue]="null">Select Severity</option>
+                    <option *ngFor="let severity of allergySeverities" [ngValue]="severity.id">{{ severity.description }}</option>
+                  </select>
+                </div>
+                <div class="col-span-2">
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Reaction Details</label>
+                  <textarea
+                    [(ngModel)]="allergy.reactionDetails"
+                    [name]="'reaction_' + i"
+                    rows="2"
+                    class="w-full px-2 py-1 border border-gray-300 rounded-md text-sm"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="activeSection === 'medications'">
+          <div class="flex justify-between items-center mb-4">
+            <h4 class="text-lg font-semibold">Medications</h4>
+            <button
+              type="button"
+              (click)="addMedication()"
+              class="px-3 py-1 bg-orange-400 text-white rounded-md hover:bg-orange-600 text-sm">
+              Add
+            </button>
+          </div>
+          <div class="space-y-3">
+            <div *ngFor="let medication of assessmentForm.medications; let i = index" class="p-3 border rounded-md">
+              <div class="flex justify-between mb-2">
+                <span class="text-sm font-medium">Medication {{ i + 1 }}</span>
+                <button
+                  type="button"
+                  (click)="removeMedication(i)"
+                  class="text-red-600 hover:text-red-800 text-sm">
+                  Remove
+                </button>
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Medication</label>
+                  <select
+                    [(ngModel)]="medication.medicationId"
+                    [name]="'medication_id_' + i"
+                    required
+                    class="w-full form-select">
+                    <option [ngValue]="null">Select Medication</option>
+                    <option *ngFor="let med of medications" [ngValue]="med.id">{{ med.name }}</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Dosage</label>
+                  <input
+                    type="text"
+                    [(ngModel)]="medication.dosage"
+                    [name]="'dosage_' + i"
+                    class="w-full form-control">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Frequency</label>
+                  <select
+                    [(ngModel)]="medication.frequency"
+                    [name]="'frequency_' + i"
+                    class="w-full form-select">
+                    <option value="">Select Frequency</option>
+                    <option *ngFor="let freq of medicationFrequencies" [value]="freq.description">{{ freq.description }}</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Reason</label>
+                  <input
+                    type="text"
+                    [(ngModel)]="medication.reason"
+                    [name]="'reason_' + i"
+                    class="w-full form-control">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="activeSection === 'history'">
+          <div class="space-y-6">
+            <div>
+              <div class="flex justify-between items-center mb-4">
+                <h4 class="text-lg font-semibold">Chronic Conditions</h4>
+                <button
+                  type="button"
+                  (click)="addChronicCondition()"
+                  class="px-3 py-1 bg-orange-400 text-white rounded-md hover:bg-orange-600 text-sm">
+                  Add
+                </button>
+              </div>
+              <div class="space-y-3">
+                <div *ngFor="let condition of assessmentForm.chronicConditions; let i = index" class="p-3 border rounded-md">
+                  <div class="flex justify-between mb-2">
+                    <span class="text-sm font-medium">Condition {{ i + 1 }}</span>
+                    <button
+                      type="button"
+                      (click)="removeChronicCondition(i)"
+                      class="text-red-600 hover:text-red-800 text-sm">
+                      Remove
+                    </button>
+                  </div>
+                         <div class="grid grid-cols-2 gap-4">
+  <div>
+    <label class="block text-sm font-medium text-gray-700 mb-2">Chronic Condition</label>
+    <select
+      [(ngModel)]="condition.chronicConditionLookupId"
+      [name]="'condition_id_' + i"
+      required
+      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+      <option [ngValue]="null">Select Condition</option>
+      <option *ngFor="let cc of chronicConditions" [ngValue]="cc.id">{{ cc.description }}</option>
+    </select>
+  </div>
+  
+  <div class="pt-6">
+    <div class="flex items-center space-x-4">
+      <span class="text-sm font-medium text-gray-700">Status:</span>
+      <label class="flex items-center">
+        <input
+          type="checkbox"
+          [(ngModel)]="condition.isControlled"
+          [name]="'controlled_' + i"
+          class="w-4 h-4 text-green-500 focus:ring-green-500 border-gray-300 rounded">
+        <span class="ml-2 text-sm text-gray-700">Condition is well controlled</span>
+      </label>
+    </div>
+    <p class="text-xs text-gray-500 mt-1">Check if symptoms are managed with current treatment</p>
+  </div>
+</div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between items-center mb-4">
+                <h4 class="text-lg font-semibold">Surgeries</h4>
+                <button
+                  type="button"
+                  (click)="addSurgery()"
+                  class="px-3 py-1 bg-orange-400 text-white rounded-md hover:bg-orange-600 text-sm">
+                  Add
+                </button>
+              </div>
+              <div class="space-y-3">
+                <div *ngFor="let surgery of assessmentForm.surgeries; let i = index" class="p-3 border rounded-md">
+                  <div class="flex justify-between mb-2">
+                    <span class="text-sm font-medium">Surgery {{ i + 1 }}</span>
+                    <button
+                      type="button"
+                      (click)="removeSurgery(i)"
+                      class="text-red-600 hover:text-red-800 text-sm">
+                      Remove
+                    </button>
+                  </div>
+                  <div class="grid grid-cols-2 gap-3">
+                    <div class="col-span-2">
+                      <label class="block text-xs font-medium text-gray-700 mb-1">Procedure</label>
+                      <input
+                        type="text"
+                        [(ngModel)]="surgery.procedure"
+                        [name]="'procedure_' + i"
+                        required
+                        class="w-full px-2 py-1 border border-gray-300 rounded-md text-sm">
+                    </div>
+                    <div>
+                      <label class="block text-xs font-medium text-gray-700 mb-1">Hospital</label>
+                      <input
+                        type="text"
+                        [(ngModel)]="surgery.hospital"
+                        [name]="'hospital_' + i"
+                        class="w-full px-2 py-1 border border-gray-300 rounded-md text-sm">
+                    </div>
+                    <div>
+                      <label class="block text-xs font-medium text-gray-700 mb-1">Surgeon</label>
+                      <input
+                        type="text"
+                        [(ngModel)]="surgery.surgeonName"
+                        [name]="'surgeon_' + i"
+                        class="w-full px-2 py-1 border border-gray-300 rounded-md text-sm">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="activeSection === 'social'">
+          <div class="flex justify-between items-center mb-4">
+            <h4 class="text-lg font-semibold">Social Habits</h4>
+            <button
+              type="button"
+              (click)="addSocialHabit()"
+              class="px-3 py-1 bg-orange-400 text-white rounded-md hover:bg-orange-600 text-sm">
+              Add
+            </button>
+          </div>
+          <div class="space-y-6">
+            <div *ngFor="let habit of assessmentForm.socialHabits; let i = index" class="p-4 border rounded-md bg-gray-50">
+              <div class="flex justify-between mb-3">
+                <span class="text-sm font-medium">Social Habit {{ i + 1 }}</span>
+                <button
+                  type="button"
+                  (click)="removeSocialHabit(i)"
+                  class="text-red-600 hover:text-red-800 text-sm">
+                  Remove
+                </button>
+              </div>
+
+               <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <div class="col-span-2 md:col-span-3">
+                  <h5 class="font-semibold text-sm text-gray-700">Smoking</h5>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Smoking Status</label>
+                  <select
+                    [(ngModel)]="habit.smokingStatusId"
+                    [name]="'smokingStatus_' + i"
+                    class="w-full form-select">
+                    <option [ngValue]="null">Select Status</option>
+                    <option *ngFor="let status of smokingStatuses" [ngValue]="status.id">{{ status.description }}</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Cigarettes/Day</label>
+                  <input
+                    type="number"
+                    [(ngModel)]="habit.cigarettesPerDay"
+                    [name]="'cigarettes_' + i"
+                    class="w-full form-control">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Years Smoking</label>
+                  <input
+                    type="number"
+                    [(ngModel)]="habit.yearsSmoking"
+                    [name]="'yearsSmoking_' + i"
+                    class="w-full form-control">
+                </div>
+              <div class="col-span-1 md:col-span-1 gap-4">
+  <label class="block text-xs font-medium text-gray-700 mb-2">Have you quit smoking?</label>
+  <div class="flex space-x-2">
+    <button
+      type="button"
+      [class]="'px-3 py-2 text-xs rounded border ' + (!habit.hasQuitSmoking ? 'bg-red-500 text-white border-red-500' : 'bg-white text-gray-700 border-gray-300')"
+      (click)="habit.hasQuitSmoking = false">
+      No, I still smoke
+    </button>
+    <button
+      type="button"
+      [class]="'px-4 py-2 text-xs rounded border ' + (habit.hasQuitSmoking ? 'bg-green-500 text-white border-green-500' : 'bg-white text-gray-700 border-gray-300')"
+      (click)="habit.hasQuitSmoking = true">
+      Yes, I quit
+    </button>
+  </div>
+</div>
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Quit Date</label>
+                  <input
+                    type="date"
+                    [(ngModel)]="habit.smokingQuitDate"
+                    [name]="'quitDate_' + i"
+                    class="w-full form-control">
+                </div>
+
+                <div class="col-span-2 md:col-span-3 mt-2">
+                  <h5 class="font-semibold text-sm text-gray-700">Alcohol</h5>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Alcohol Status</label>
+                  <select
+                    [(ngModel)]="habit.alcoholStatusId"
+                    [name]="'alcoholStatus_' + i"
+                    class="w-full form-select">
+                    <option [ngValue]="null">Select Status</option>
+                    <option *ngFor="let status of alcoholStatuses" [ngValue]="status.id">{{ status.description }}</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Frequency</label>
+                  <select
+                    [(ngModel)]="habit.alcoholFrequencyId"
+                    [name]="'alcoholFrequency_' + i"
+                    class="w-full form-select">
+                    <option [ngValue]="null">Select Frequency</option>
+                    <option *ngFor="let freq of alcoholFrequencies" [ngValue]="freq.id">{{ freq.description }}</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Years Drinking</label>
+                  <input
+                    type="number"
+                    [(ngModel)]="habit.yearsDrinking"
+                    [name]="'yearsDrinking_' + i"
+                    class="w-full form-control">
+                </div>
+
+                <div class="col-span-2 md:col-span-3 mt-1">
+                  <h5 class="font-semibold text-sm text-gray-700 mb-2">Beverage (Coffee/Tea)</h5>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Beverage Status</label>
+                  <select
+                    [(ngModel)]="habit.beverageStatusId"
+                    [name]="'beverageStatus_' + i"
+                    class="w-full form-select">
+                    <option [ngValue]="null">Select Status</option>
+                    <option *ngFor="let status of beverageStatuses" [ngValue]="status.id">{{ status.description }}</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Cups/Day</label>
+                  <input
+                    type="number"
+                    [(ngModel)]="habit.cupsPerDay"
+                    [name]="'cups_' + i"
+                    class="w-full form-control">
+                </div>
+
+                <div class="col-span-2 md:col-span-3 mt-1">
+                  <h5 class="font-semibold text-sm text-gray-700">Drug Use</h5>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Drug Usage Status</label>
+                  <select
+                    [(ngModel)]="habit.drugUsageStatusId"
+                    [name]="'drugStatus_' + i"
+                    class="w-full form-select">
+                    <option [ngValue]="null">Select Status</option>
+                    <option *ngFor="let status of drugUsageStatuses" [ngValue]="status.id">{{ status.description }}</option>
+                  </select>
+                </div>
+                <div class="col-span-2">
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Drug Details</label>
+                  <textarea
+                    [(ngModel)]="habit.drugDetails"
+                    [name]="'drugDetails_' + i"
+                    rows="2"
+                    class="w-full border border-gray-300 rounded-md px-2 py-1 text-sm"></textarea>
+                </div>
+              </div>
+            </div>
+            <div *ngIf="assessmentForm.socialHabits.length === 0" class="text-center py-8 text-gray-500 text-sm">
+              No social habits added yet. Click "Add" to add one.
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- Delete Confirmation Modal -->
+<app-modal 
+  [isOpen]="showDeleteModal" 
+  title="Delete Assessment" 
+  size="sm" 
+  (closed)="showDeleteModal = false">
+  <div class="delete-confirmation">
+    <div class="warning-icon flex justify-center mb-4">
+      <svg class="w-12 h-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+      </svg>
+    </div>
+    <h3 class="warning-title text-lg font-semibold text-gray-900 text-center mb-2">Are you sure?</h3>
+    <p class="warning-message text-sm text-gray-600 text-center mb-6">
+      This will permanently delete the assessment from {{ assessmentToDelete?.createdAt | date:'MMM d, y' }} 
+      created by {{ assessmentToDelete?.createdByName }}. 
+      This action cannot be undone.
+    </p>
+    <div class="confirmation-actions flex justify-end gap-3">
+      <app-button variant="outline" (click)="showDeleteModal = false">Cancel</app-button>
+      <app-button 
+        variant="danger" 
+        [loading]="isDeleting" 
+        (click)="deleteAssessment()">
+        Delete Assessment
+      </app-button>
+    </div>
+  </div>
+</app-modal>
+
+
+<!-- Publish Confirmation Popup -->
+<div *ngIf="showPublishPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  <div class="bg-white rounded-lg shadow-xl w-96 p-6">
+    <!-- Header -->
+    <div class="flex items-center mb-4">
+      <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
+        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-900">Publish Assessment</h3>
+    </div>
+
+    <!-- Content -->
+    <div class="mb-6">
+      <p class="text-gray-700 mb-4">Are you sure you want to publish this assessment?</p>
+      
+      <!-- Important Note -->
+      <div class="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+        <div class="flex">
+          <svg class="w-5 h-5 text-yellow-600 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+          </svg>
+          <div>
+            <p class="text-sm text-yellow-800 font-medium">Important Note</p>
+            <p class="text-sm text-yellow-700 mt-1">Published assessment version cannot be edited.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex justify-end space-x-3">
+      <button
+        (click)="showPublishPopup = false"
+        class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+        Cancel
+      </button>
+      <button
+        (click)="confirmPublish()"
+        class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors">
+        Publish Assessment
+      </button>
+    </div>
+  </div>
+</div>

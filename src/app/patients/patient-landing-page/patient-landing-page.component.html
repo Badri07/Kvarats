@@ -1,0 +1,656 @@
+<!-- Navigation -->
+<nav class="sticky top-0 z-50 bg-white/90 backdrop-blur-md shadow-sm border-b border-gray-100">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center py-2">
+      <!-- Logo -->
+      <div class="flex items-center space-x-3 cursor-pointer" (click)="scrollToSection('hero')">
+        <div>
+            <img [src]="logo" alt="CureSlot Logo" class="w-40">
+        </div>
+      </div>
+      
+      <!-- Navigation Links -->
+      <div class="hidden md:flex items-center space-x-8">
+        <a (click)="scrollToSection('features')" class="text-gray-700 hover:text-[#fb923c] font-medium cursor-pointer">Features</a>
+        <a (click)="scrollToSection('how-it-works')" class="text-gray-700 hover:text-[#fb923c] font-medium cursor-pointer">How It Works</a>
+        <a (click)="scrollToSection('vitals')" class="text-gray-700 hover:text-[#fb923c] font-medium cursor-pointer">Track Vitals</a>
+        <a (click)="scrollToSection('testimonials')" class="text-gray-700 hover:text-[#fb923c] font-medium cursor-pointer">Testimonials</a>
+      </div>
+      
+      <!-- CTA Button -->
+      <!-- <button (click)="navigateToSignUp()" 
+              class="bg-[#fb923c] text-white px-3 py-2 rounded-lg font-semibold hover:shadow-lg transition-shadow">
+        Start Registratio
+      </button> -->
+    </div>
+  </div>
+</nav>
+
+<!-- Hero Section -->
+<section id="hero" class="pt-20 pb-24 overflow-hidden" style="background: linear-gradient(135deg, #FFF5F0 0%, #FEF7FF 50%, #F0F9FF 100%)">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid lg:grid-cols-2 gap-12 items-center">
+      <!-- Left Content -->
+      <div class="relative">
+        <!-- Stats Badge -->
+        <div class="inline-flex items-center px-4 py-2 bg-white rounded-full shadow-sm mb-8 border">
+          <span class="w-2 h-2 bg-[#fb923c] rounded-full mr-2 animate-pulse"></span>
+          <span class="text-sm font-medium text-gray-700">Trusted by 50,000+ Patients</span>
+        </div>
+        <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6">
+          Your Complete
+          <span class="text-[#fb923c]">Healthcare</span>
+          Companion — Patient Portal
+        </h1>
+        
+        <p class="text-lg text-gray-600 mb-8 max-w-2xl">
+          Book appointments, track your health, connect with therapists, and manage everything from one secure patient portal. Your health management simplified.
+        </p>
+        
+        <div class="flex flex-col sm:flex-row gap-4">
+         <button (click)="navigateToSignUp()" 
+        class="px-6 py-3 rounded-xl font-semibold bg-[#fb923c] text-white relative overflow-hidden group shadow-lg hover:shadow-xl transition-all duration-300">
+  <span class="relative z-10 flex items-center">
+    <i class="fas fa-user-plus mr-3"></i> Start Registration
+  </span>
+  <span class="absolute inset-0 bg-gradient-to-r from-[#ff9034] to-[#fb923c] transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300"></span>
+</button>
+          <button [routerLink]="['/patient/login']"
+                  class="bg-white text-orange-600 px-8 py-3 rounded-xl font-semibold text-lg border-2 border-gray-200 hover:border-[#fb923c] transition-colors flex items-center justify-center">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+              </svg> Login
+          </button>
+        </div>
+        
+        <!-- Stats -->
+        <div class="grid grid-cols-3 gap-4 mt-12">
+          <div *ngFor="let stat of stats" class="text-center">
+            <div class="text-3xl font-bold text-[#fb923c]">{{stat.value}}</div>
+            <div class="text-gray-600 text-sm">{{stat.label}}</div>
+          </div>
+        </div>
+        
+        <!-- Trust Indicators -->
+        <div class="flex items-center mt-12 space-x-6">
+          <div class="flex -space-x-3">
+            <div class="w-10 h-10 rounded-full bg-blue-500 border-2 border-white"></div>
+            <div class="w-10 h-10 rounded-full bg-green-500 border-2 border-white"></div>
+            <div class="w-10 h-10 rounded-full bg-purple-500 border-2 border-white"></div>
+            <div class="w-10 h-10 rounded-full bg-orange-500 border-2 border-white flex items-center justify-center text-white text-xs font-bold">+5K</div>
+          </div>
+          <div class="text-sm text-gray-600">
+            <div class="font-semibold">Join thousands of happy patients</div>
+            <div class="flex items-center mt-1">
+              <i class="fas fa-star text-yellow-400 mr-1"></i>
+              <i class="fas fa-star text-yellow-400 mr-1"></i>
+              <i class="fas fa-star text-yellow-400 mr-1"></i>
+              <i class="fas fa-star text-yellow-400 mr-1"></i>
+              <i class="fas fa-star text-yellow-400 mr-1"></i>
+              <span class="ml-2">4.9/5 from 2,500+ reviews</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Right Content - Visual Demo -->
+      <div class="relative">
+        <!-- Floating Card 1: Appointment Booking -->
+        <div class="bg-white rounded-2xl p-6 shadow-2xl mb-8" style="animation: floating 3s ease-in-out infinite; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2)">
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <h3 class="font-bold text-xl text-gray-800">Book Appointments</h3>
+              <p class="text-gray-600">Schedule with ease</p>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
+              <i class="fas fa-calendar-check text-[#fb923c] text-xl"></i>
+            </div>
+          </div>
+          
+          <!-- Calendar Visual -->
+          <div class="grid grid-cols-7 gap-1 mb-4">
+            <div class="text-center text-gray-400 text-sm py-2">M</div>
+            <div class="text-center text-gray-400 text-sm py-2">T</div>
+            <div class="text-center text-gray-400 text-sm py-2">W</div>
+            <div class="text-center text-gray-400 text-sm py-2">T</div>
+            <div class="text-center text-gray-400 text-sm py-2">F</div>
+            <div class="text-center text-gray-400 text-sm py-2">S</div>
+            <div class="text-center text-gray-400 text-sm py-2">S</div>
+            
+            <!-- Calendar days -->
+            <div class="text-center py-2">25</div>
+            <div class="text-center py-2">26</div>
+            <div class="text-center py-2">27</div>
+            <div class="text-center py-2">28</div>
+            <div class="text-center py-2">29</div>
+            <div class="text-center py-2">30</div>
+            <div class="text-center py-2 bg-[#fb923c] text-white rounded-full animate-pulse">1</div>
+          </div>
+          
+          <!-- Time Slots Visual -->
+          <div class="grid grid-cols-3 gap-2">
+            <div class="text-center py-2 bg-gray-100 rounded text-gray-700 text-sm">9:00 AM</div>
+            <div class="text-center py-2 bg-gray-100 rounded text-gray-700 text-sm">10:00 AM</div>
+            <div class="text-center py-2 bg-[#fb923c] text-white rounded animate-pulse text-sm">11:00 AM</div>
+          </div>
+        </div>
+        
+        <!-- Floating Card 2: Vitals Tracking -->
+        <div class="bg-white rounded-2xl p-6 shadow-2xl" style="animation: floating 3s ease-in-out 1s infinite; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2)">
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <h3 class="font-bold text-xl text-gray-800">Track Vitals</h3>
+              <p class="text-gray-600">Monitor your health</p>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+              <i class="fas fa-heartbeat text-blue-600 text-xl"></i>
+            </div>
+          </div>
+          
+          <!-- Vitals Visual -->
+          <div class="grid grid-cols-2 gap-4">
+            <div class="text-center p-3 bg-blue-50 rounded-lg">
+              <div class="text-2xl font-bold text-blue-600">120/80</div>
+              <div class="text-sm text-gray-600">Blood Pressure</div>
+            </div>
+            <div class="text-center p-3 bg-green-50 rounded-lg">
+              <div class="text-2xl font-bold text-green-600">72</div>
+              <div class="text-sm text-gray-600">Heart Rate</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Decorative Elements -->
+        <div class="absolute -top-4 -right-4 w-24 h-24 bg-[#fb923c]/10 rounded-full"></div>
+        <div class="absolute -bottom-4 -left-4 w-32 h-32 bg-[#4F46E5]/10 rounded-full"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Key Features Section -->
+<section id="features" class="py-20 bg-gray-50">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-16">
+      <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+        Everything You Need in One Place
+      </h2>
+      <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+        Our patient portal is designed to make your healthcare journey seamless and stress-free
+      </p>
+    </div>
+    
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <!-- Feature 1: Easy Registration -->
+      <div class="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:border-[#fb923c] transition-all duration-300 hover:-translate-y-2">
+        <div class="w-16 h-16 rounded-xl bg-gradient-to-r from-[#fb923c] to-[#ff9034] flex items-center justify-center mb-6" style="transition: all 0.3s ease">
+          <i class="fas fa-user-plus text-white text-2xl"></i>
+        </div>
+        <h3 class="text-xl font-bold text-gray-900 mb-4">Easy Registration</h3>
+        <p class="text-gray-600 mb-6">
+          Complete your registration in three simple steps: Enter personal details, choose your therapist, and get started.
+        </p>
+        <!-- <div class="flex items-center text-[#fb923c] font-medium">
+          <span>Get Started</span>
+          <i class="fas fa-arrow-right ml-2"></i>
+        </div> -->
+      </div>
+      
+      <!-- Feature 2: Find Therapists -->
+      <div class="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:border-[#fb923c] transition-all duration-300 hover:-translate-y-2">
+        <div class="w-16 h-16 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C73FF] flex items-center justify-center mb-6" style="transition: all 0.3s ease">
+          <i class="fas fa-search-location text-white text-2xl"></i>
+        </div>
+        <h3 class="text-xl font-bold text-gray-900 mb-4">Find Nearby Therapists</h3>
+        <p class="text-gray-600 mb-6">
+          Browse qualified therapists in your area. See specialties, availability, and patient reviews before choosing.
+        </p>
+        <!-- <div class="flex items-center text-[#4F46E5] font-medium">
+          <span>Browse Professionals</span>
+          <i class="fas fa-arrow-right ml-2"></i>
+        </div> -->
+      </div>
+      
+      <!-- Feature 3: Save Notes & Assessments -->
+      <div class="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:border-[#fb923c] transition-all duration-300 hover:-translate-y-2">
+        <div class="w-16 h-16 rounded-xl bg-gradient-to-r from-[#10B981] to-[#34D399] flex items-center justify-center mb-6" style="transition: all 0.3s ease">
+          <i class="fas fa-file-medical text-white text-2xl"></i>
+        </div>
+        <h3 class="text-xl font-bold text-gray-900 mb-4">Save Health Notes</h3>
+        <p class="text-gray-600 mb-6">
+          Keep private notes and save your initial assessments. Your health journey documented securely for future reference.
+        </p>
+        <!-- <div class="flex items-center text-[#10B981] font-medium">
+          <span>Document Your Journey</span>
+          <i class="fas fa-arrow-right ml-2"></i>
+        </div> -->
+      </div>
+      
+      <!-- Feature 4: Track Vitals -->
+      <div class="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:border-[#fb923c] transition-all duration-300 hover:-translate-y-2">
+        <div class="w-16 h-16 rounded-xl bg-gradient-to-r from-[#F59E0B] to-[#FBBF24] flex items-center justify-center mb-6" style="transition: all 0.3s ease">
+          <i class="fas fa-heartbeat text-white text-2xl"></i>
+        </div>
+        <h3 class="text-xl font-bold text-gray-900 mb-4">Track Your Vitals</h3>
+        <p class="text-gray-600 mb-6">
+          Monitor your health metrics daily. Add and track blood pressure, heart rate, temperature, and other vital signs.
+        </p>
+        <!-- <div class="flex items-center text-[#F59E0B] font-medium">
+          <span>Monitor Health Metrics</span>
+          <i class="fas fa-arrow-right ml-2"></i>
+        </div> -->
+      </div>
+      
+      <!-- Feature 5: Secure Payments -->
+      <div class="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:border-[#fb923c] transition-all duration-300 hover:-translate-y-2">
+        <div class="w-16 h-16 rounded-xl bg-gradient-to-r from-[#8B5CF6] to-[#A78BFA] flex items-center justify-center mb-6" style="transition: all 0.3s ease">
+          <i class="fas fa-credit-card text-white text-2xl"></i>
+        </div>
+        <h3 class="text-xl font-bold text-gray-900 mb-4">Secure Online Payments</h3>
+        <p class="text-gray-600 mb-6">
+          Pay for appointments securely with multiple payment options. Get instant receipts and manage payment history.
+        </p>
+        <!-- <div class="flex items-center text-[#8B5CF6] font-medium">
+          <span>Easy & Secure Payments</span>
+          <i class="fas fa-arrow-right ml-2"></i>
+        </div> -->
+      </div>
+      
+      <!-- Feature 6: Download PDF Reports -->
+      <div class="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:border-[#fb923c] transition-all duration-300 hover:-translate-y-2">
+        <div class="w-16 h-16 rounded-xl bg-gradient-to-r from-[#EF4444] to-[#F87171] flex items-center justify-center mb-6" style="transition: all 0.3s ease">
+          <i class="fas fa-file-pdf text-white text-2xl"></i>
+        </div>
+        <h3 class="text-xl font-bold text-gray-900 mb-4">Download Health Reports</h3>
+        <p class="text-gray-600 mb-6">
+          Download your health reports, appointment summaries, and payment receipts as PDF files for your records.
+        </p>
+        <!-- <div class="flex items-center text-[#EF4444] font-medium">
+          <span>Export Your Data</span>
+          <i class="fas fa-arrow-right ml-2"></i>
+        </div> -->
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How It Works -->
+<section id="how-it-works" class="py-20 bg-white">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-16">
+      <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Simple & Intuitive Process</h2>
+      <p class="text-lg text-gray-600 max-w-3xl mx-auto">Get started with your healthcare journey in three simple steps</p>
+    </div>
+    
+    <!-- Registration Process Steps -->
+    <div class="grid md:grid-cols-3 gap-8">
+      <!-- Step 1 -->
+      <div class="text-center">
+        <div class="relative mb-6">
+          <div class="w-24 h-24 mx-auto rounded-full bg-gradient-to-r from-[#fb923c] to-[#ff9034] flex items-center justify-center text-white text-2xl font-bold">
+            1
+          </div>
+          <div class="absolute top-0 right-1/4 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg">
+            <i class="fas fa-user-circle text-[#fb923c]"></i>
+          </div>
+        </div>
+        <h3 class="text-xl font-bold text-gray-900 mb-3">Personal Info</h3>
+        <p class="text-gray-600">Enter your basic details and health information to create your profile</p>
+      </div>
+      
+      <!-- Step 2 -->
+      <div class="text-center">
+        <div class="relative mb-6">
+          <div class="w-24 h-24 mx-auto rounded-full bg-gradient-to-r from-[#4F46E5] to-[#7C73FF] flex items-center justify-center text-white text-2xl font-bold">
+            2
+          </div>
+          <div class="absolute top-0 right-1/4 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg">
+            <i class="fas fa-user-md text-[#4F46E5]"></i>
+          </div>
+        </div>
+        <h3 class="text-xl font-bold text-gray-900 mb-3">Choose Therapist</h3>
+        <p class="text-gray-600">Browse and select from verified therapists in your nearby area</p>
+      </div>
+      
+      <!-- Step 3 -->
+      <div class="text-center">
+        <div class="relative mb-6">
+          <div class="w-24 h-24 mx-auto rounded-full bg-gradient-to-r from-[#10B981] to-[#34D399] flex items-center justify-center text-white text-2xl font-bold">
+            3
+          </div>
+          <div class="absolute top-0 right-1/4 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg">
+            <i class="fas fa-check-circle text-[#10B981]"></i>
+          </div>
+        </div>
+        <h3 class="text-xl font-bold text-gray-900 mb-3">Complete Registration</h3>
+        <p class="text-gray-600">Review your details and complete registration to access all features</p>
+      </div>
+    </div>
+    
+    <!-- After Registration Features -->
+    <div class="mt-20 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-8">
+      <h3 class="text-2xl font-bold text-gray-900 mb-6 text-center">After Registration, You Can:</h3>
+      
+      <div class="grid md:grid-cols-2 gap-6 mt-8">
+        <!-- Feature 1 -->
+        <div class="flex items-start">
+          <div class="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center mr-4">
+            <i class="fas fa-calendar-alt text-green-600 text-xl"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-gray-900 text-lg mb-2">Book Appointments</h4>
+            <p class="text-gray-600">Schedule appointments with your chosen therapist at convenient times</p>
+          </div>
+        </div>
+        
+        <!-- Feature 2 -->
+        <div class="flex items-start">
+          <div class="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center mr-4">
+            <i class="fas fa-heartbeat text-purple-600 text-xl"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-gray-900 text-lg mb-2">Track Your Vitals</h4>
+            <p class="text-gray-600">Monitor and record your health metrics in your personal health dashboard</p>
+          </div>
+        </div>
+        
+        <!-- Feature 3 -->
+        <div class="flex items-start">
+          <div class="w-12 h-12 rounded-lg bg-orange-100 flex items-center justify-center mr-4">
+            <i class="fas fa-file-medical text-orange-600 text-xl"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-gray-900 text-lg mb-2">Save Health Notes</h4>
+            <p class="text-gray-600">Keep personal notes and assessments about your health journey</p>
+          </div>
+        </div>
+        
+        <!-- Feature 4 -->
+        <div class="flex items-start">
+          <div class="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center mr-4">
+            <i class="fas fa-credit-card text-blue-600 text-xl"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-gray-900 text-lg mb-2">Secure Payments</h4>
+            <p class="text-gray-600">Make safe online payments for appointments and services</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- CTA -->
+    <div class="text-center mt-12">
+      <button (click)="navigateToSignUp()" 
+        class="px-6 py-3 rounded-xl font-semibold bg-[#fb923c] text-white relative overflow-hidden group shadow-lg hover:shadow-xl transition-all duration-300">
+  <span class="relative z-10 flex items-center">
+    <i class="fas fa-user-plus mr-3"></i> Start Registration
+  </span>
+  <span class="absolute inset-0 bg-gradient-to-r from-[#ff9034] to-[#fb923c] transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300"></span>
+</button>
+      <p class="text-gray-600 mt-4">Complete registration in just 5 minutes</p>
+    </div>
+  </div>
+</section>
+
+<!-- Vitals Tracking Showcase -->
+<section id="vitals" class="py-20" style="background: linear-gradient(135deg, #EFF6FF 0%, #F0F9FF 100%)">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-16">
+      <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Track Your Health Vitals</h2>
+      <p class="text-lg text-gray-600 max-w-3xl mx-auto">Monitor important health metrics with beautiful visualizations</p>
+    </div>
+    
+    <div class="grid lg:grid-cols-2 gap-12 items-center">
+      <!-- Left Side - Vitals Display -->
+      <div>
+        <div class="grid grid-cols-2 gap-6">
+          <!-- Blood Pressure -->
+          <div class="bg-white rounded-2xl p-8 shadow-lg relative overflow-hidden">
+            <div class="flex items-center mb-4">
+              <div class="w-16 h-16 rounded-xl bg-red-100 flex items-center justify-center mr-4">
+                <i class="fas fa-tachometer-alt text-red-600 text-2xl"></i>
+              </div>
+              <div>
+                <h4 class="font-bold text-gray-900 text-lg">Blood Pressure</h4>
+                <p class="text-gray-600 text-sm">Daily monitoring</p>
+              </div>
+            </div>
+            <div class="text-3xl font-bold text-gray-900 mb-2">120/80</div>
+            <div class="text-sm text-green-600 font-medium">
+              <i class="fas fa-check-circle mr-2"></i> Normal
+            </div>
+          </div>
+          
+          <!-- Heart Rate -->
+          <div class="bg-white rounded-2xl p-8 shadow-lg relative overflow-hidden">
+            <div class="flex items-center mb-4">
+              <div class="w-16 h-16 rounded-xl bg-pink-100 flex items-center justify-center mr-4">
+                <i class="fas fa-heartbeat text-pink-600 text-2xl"></i>
+              </div>
+              <div>
+                <h4 class="font-bold text-gray-900 text-lg">Heart Rate</h4>
+                <p class="text-gray-600 text-sm">BPM monitoring</p>
+              </div>
+            </div>
+            <div class="text-3xl font-bold text-gray-900 mb-2">72</div>
+            <div class="text-sm text-green-600 font-medium">
+              <i class="fas fa-check-circle mr-2"></i> Optimal
+            </div>
+          </div>
+          
+          <!-- Temperature -->
+          <div class="bg-white rounded-2xl p-8 shadow-lg relative overflow-hidden">
+            <div class="flex items-center mb-4">
+              <div class="w-16 h-16 rounded-xl bg-blue-100 flex items-center justify-center mr-4">
+                <i class="fas fa-thermometer-half text-blue-600 text-2xl"></i>
+              </div>
+              <div>
+                <h4 class="font-bold text-gray-900 text-lg">Temperature</h4>
+                <p class="text-gray-600 text-sm">Body temperature</p>
+              </div>
+            </div>
+            <div class="text-3xl font-bold text-gray-900 mb-2">98.6°F</div>
+            <div class="text-sm text-green-600 font-medium">
+              <i class="fas fa-check-circle mr-2"></i> Normal
+            </div>
+          </div>
+          
+          <!-- Oxygen Level -->
+          <div class="bg-white rounded-2xl p-8 shadow-lg relative overflow-hidden">
+            <div class="flex items-center mb-4">
+              <div class="w-16 h-16 rounded-xl bg-green-100 flex items-center justify-center mr-4">
+                <i class="fas fa-lungs text-green-600 text-2xl"></i>
+              </div>
+              <div>
+                <h4 class="font-bold text-gray-900 text-lg">Oxygen Level</h4>
+                <p class="text-gray-600 text-sm">Blood oxygen</p>
+              </div>
+            </div>
+            <div class="text-3xl font-bold text-gray-900 mb-2">98%</div>
+            <div class="text-sm text-green-600 font-medium">
+              <i class="fas fa-check-circle mr-2"></i> Excellent
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Right Side - Health Trends -->
+      <div class="bg-white rounded-2xl p-8 shadow-xl">
+        <h3 class="text-2xl font-bold text-gray-900 mb-6">Health Trends Overview</h3>
+        
+        <!-- Chart Visualization -->
+        <div class="mb-8">
+          <div class="h-48 flex items-end space-x-2">
+            <div class="flex-1 bg-gradient-to-t from-blue-400 to-blue-200 rounded-t" style="height: 70%"></div>
+            <div class="flex-1 bg-gradient-to-t from-blue-300 to-blue-100 rounded-t" style="height: 65%"></div>
+            <div class="flex-1 bg-gradient-to-t from-blue-400 to-blue-200 rounded-t" style="height: 75%"></div>
+            <div class="flex-1 bg-gradient-to-t from-blue-500 to-blue-300 rounded-t" style="height: 85%"></div>
+            <div class="flex-1 bg-gradient-to-t from-blue-400 to-blue-200 rounded-t" style="height: 80%"></div>
+            <div class="flex-1 bg-gradient-to-t from-blue-300 to-blue-100 rounded-t" style="height: 70%"></div>
+            <div class="flex-1 bg-gradient-to-t from-blue-400 to-blue-200 rounded-t" style="height: 90%"></div>
+          </div>
+          <div class="flex justify-between text-sm text-gray-600 mt-4">
+            <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+          </div>
+        </div>
+        
+        <!-- PDF Download Section -->
+        <div class="border-t pt-6">
+          <h4 class="font-bold text-gray-900 mb-4">Download Health Reports</h4>
+          <div class="flex items-center space-x-4">
+            <div class="flex items-center px-4 py-3 bg-red-50 text-red-600 rounded-lg">
+              <i class="fas fa-file-pdf text-xl mr-3"></i>
+              <div>
+                <div class="font-semibold">Download PDF</div>
+                <div class="text-xs">Complete health report</div>
+              </div>
+            </div>
+            <div class="text-sm text-gray-600">
+              Export your health data<br>for personal records or<br>to share with doctors
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Testimonials -->
+<section id="testimonials" class="py-20 bg-gray-50">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-16">
+      <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">What Patients Are Saying</h2>
+      <p class="text-lg text-gray-600 max-w-3xl mx-auto">Hear from real patients who transformed their healthcare experience</p>
+    </div>
+    
+    <div class="grid md:grid-cols-3 gap-8">
+      <!-- Testimonial 1 -->
+      <div class="bg-white rounded-2xl p-8 shadow-lg hover:scale-105 transition-transform duration-300">
+        <div class="flex items-center mb-6">
+          <div class="w-14 h-14 rounded-full bg-gradient-to-r from-[#fb923c] to-[#ff9034] flex items-center justify-center text-white font-bold text-lg mr-4">
+            SJ
+          </div>
+          <div>
+            <h4 class="font-bold text-gray-900">Sarah Johnson</h4>
+            <p class="text-gray-600 text-sm">Patient since 2024</p>
+          </div>
+        </div>
+        <p class="text-gray-600 italic mb-6">
+          "The registration process was so straightforward. I entered my details, chose a therapist near me, and was ready to book my first appointment!"
+        </p>
+        <div class="flex text-[#fb923c]">
+          <i class="fas fa-star"></i>
+          <i class="fas fa-star"></i>
+          <i class="fas fa-star"></i>
+          <i class="fas fa-star"></i>
+          <i class="fas fa-star"></i>
+        </div>
+      </div>
+      
+      <!-- Testimonial 2 -->
+      <div class="bg-white rounded-2xl p-8 shadow-lg hover:scale-105 transition-transform duration-300">
+        <div class="flex items-center mb-6">
+          <div class="w-14 h-14 rounded-full bg-gradient-to-r from-[#4F46E5] to-[#7C73FF] flex items-center justify-center text-white font-bold text-lg mr-4">
+            RD
+          </div>
+          <div>
+            <h4 class="font-bold text-gray-900">Robert Davis</h4>
+            <p class="text-gray-600 text-sm">Patient since 2023</p>
+          </div>
+        </div>
+        <p class="text-gray-600 italic mb-6">
+          "Being able to choose my therapist based on location and specialty made all the difference. The three-step registration was quick and easy."
+        </p>
+        <div class="flex text-[#fb923c]">
+          <i class="fas fa-star"></i>
+          <i class="fas fa-star"></i>
+          <i class="fas fa-star"></i>
+          <i class="fas fa-star"></i>
+          <i class="fas fa-star-half-alt"></i>
+        </div>
+      </div>
+      
+      <!-- Testimonial 3 -->
+      <div class="bg-white rounded-2xl p-8 shadow-lg hover:scale-105 transition-transform duration-300">
+        <div class="flex items-center mb-6">
+          <div class="w-14 h-14 rounded-full bg-gradient-to-r from-[#10B981] to-[#34D399] flex items-center justify-center text-white font-bold text-lg mr-4">
+            ME
+          </div>
+          <div>
+            <h4 class="font-bold text-gray-900">Maria Evans</h4>
+            <p class="text-gray-600 text-sm">Patient since 2024</p>
+          </div>
+        </div>
+        <p class="text-gray-600 italic mb-6">
+          "I love that I can track my vitals and download PDF reports. The portal makes managing my healthcare so much easier."
+        </p>
+        <div class="flex text-[#fb923c]">
+          <i class="fas fa-star"></i>
+          <i class="fas fa-star"></i>
+          <i class="fas fa-star"></i>
+          <i class="fas fa-star"></i>
+          <i class="fas fa-star"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- Footer -->
+<footer class="bg-gray-900 text-white py-12">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid md:grid-cols-4 gap-8">
+      <div>
+        <div class="flex items-center space-x-3 mb-4">
+         
+          <div>
+                     <img [src]="logo" alt="CureSlot Logo" class="w-40">
+          </div>
+        </div>
+        <p class="text-gray-400 mb-6">Empowering patients to take control of their healthcare journey.</p>
+        <div class="flex space-x-4">
+          <a class="text-gray-400 hover:text-[#fb923c] cursor-pointer"><i class="fab fa-facebook-f"></i></a>
+          <a class="text-gray-400 hover:text-[#fb923c] cursor-pointer"><i class="fab fa-twitter"></i></a>
+          <a class="text-gray-400 hover:text-[#fb923c] cursor-pointer"><i class="fab fa-linkedin-in"></i></a>
+          <a class="text-gray-400 hover:text-[#fb923c] cursor-pointer"><i class="fab fa-instagram"></i></a>
+        </div>
+      </div>
+      
+      <div>
+        <h4 class="font-bold text-lg mb-4">Registration Process</h4>
+        <ul class="space-y-2">
+          <li><span class="text-gray-400 cursor-pointer hover:text-[#fb923c]">1. Personal Info</span></li>
+          <li><span class="text-gray-400 cursor-pointer hover:text-[#fb923c]">2. Choose Therapist</span></li>
+          <li><span class="text-gray-400 cursor-pointer hover:text-[#fb923c]">3. Complete</span></li>
+          <!-- <li><span class="text-gray-400 cursor-pointer hover:text-[#fb923c]">Get Started</span></li> -->
+        </ul>
+      </div>
+      
+      <div>
+        <h4 class="font-bold text-lg mb-4">Features</h4>
+        <ul class="space-y-2">
+          <li><span class="text-gray-400 cursor-pointer hover:text-[#fb923c]">Book Appointments</span></li>
+          <li><span class="text-gray-400 cursor-pointer hover:text-[#fb923c]">Track Vitals</span></li>
+          <li><span class="text-gray-400 cursor-pointer hover:text-[#fb923c]">Save Health Notes</span></li>
+          <li><span class="text-gray-400 cursor-pointer hover:text-[#fb923c]">Secure Payments</span></li>
+        </ul>
+      </div>
+      
+      <div>
+        <h4 class="font-bold text-lg mb-4">Company</h4>
+        <ul class="space-y-2">
+          <li><span class="text-gray-400 cursor-pointer hover:text-[#fb923c]">About Us</span></li>
+          <li><span class="text-gray-400 cursor-pointer hover:text-[#fb923c]">Privacy Policy</span></li>
+          <li><span class="text-gray-400 cursor-pointer hover:text-[#fb923c]">Terms of Service</span></li>
+          <li><span class="text-gray-400 cursor-pointer hover:text-[#fb923c]">Contact Support</span></li>
+        </ul>
+      </div>
+    </div>
+    
+    <div class="border-t border-gray-800 mt-10 pt-8 text-center text-gray-400">
+      <p>&copy; 2025 CureSlot Patient Portal. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+

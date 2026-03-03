@@ -1,489 +1,246 @@
-import { Component, inject } from '@angular/core';
-import { ColDef, Column, GridApi, GridReadyEvent } from 'ag-grid-community';
-import * as XLSX from 'xlsx';
-import * as FileSaver from 'file-saver';
+import { Component, inject, OnInit } from '@angular/core';
+import { PaymentService } from '../../service/patient/payment.service';
+import { PatientPaymentRequestDto, PaymentSubmissionDto } from '../../models/payment.models';
 import { AuthService } from '../../service/auth/auth.service';
-import { PatientService } from '../../service/patient/patients-service';
-import { InvoicePatients, Payment } from '../../models/patients-interface';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { environment } from '../../../environments/environment';
-import { products } from '../../../stripe-config';
 
 @Component({
   selector: 'app-payments',
-  standalone: false,
   templateUrl: './payments.component.html',
-  styleUrl: './payments.component.scss'
+  styleUrls: ['./payments.component.scss'],
+  standalone:false
 })
-export class PaymentsComponent {
-  private retryCount = 0;
-  private maxRetries = 3;
-  rowData: any[] = [];
-  searchValue: string = '';
-  gridApi!: GridApi;
-  gridColumnApi!: Column;
-  paginationPageSize = 10;
-  paginationPageSizeSelector: number[] = [10, 20, 50, 100];
-
-  selectedTransaction: any = null;
-  showTransactionPopup: boolean = false;
-
-  defaultColDef: ColDef = {
-    sortable: true,
-    resizable: true,
-    flex: 1,
-    minWidth: 130
-  };
-
-  paymentMethod: string = 'CREDIT_CARD';
-transactionId: string = '';
-showPaymentProcessing: boolean = false;
-paymentError: string | null = null;
-
-  // Stripe integration properties
-  private supabase: SupabaseClient;
-  products = products;
-  checkoutLoading = false;
-
-  public patientService = inject(PatientService);
+export class PaymentsComponent implements OnInit {
   public authService = inject(AuthService);
 
-  constructor() {
-    this.supabase = createClient(environment.supabaseUrl, environment.supabaseAnonKey, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: false,
-        flowType: 'pkce'
+  selectedPatientId!: string;
+  paymentRequests: PatientPaymentRequestDto[] = [];
+  filteredPaymentRequests: PatientPaymentRequestDto[] = [];
+  paginatedPayments: PatientPaymentRequestDto[] = [];
+  selectedPayment: PatientPaymentRequestDto | null = null;
+  paymentRequestForPayment: PatientPaymentRequestDto | null = null;
+
+  loading = false;
+  searchQuery = '';
+  statusFilter = '';
+  showPaymentPopup = false;
+
+  // Pagination
+  currentPage = 1;
+  itemsPerPage = 10;
+  totalPages = 0;
+
+  constructor(private paymentService: PaymentService) {}
+
+  ngOnInit() {
+  // Get patientId first, then load payments
+  this.selectedPatientId = this.authService.getPatientId();
+  console.log('Patient ID from auth service:', this.selectedPatientId);
+  
+  if (this.selectedPatientId) {
+    this.loadPaymentRequests();
+  } else {
+    console.error('Patient ID not found!');
+    // Test with mock data
+    this.paymentRequests = [
+      {
+        id: "test-id-123",
+        patientId: "test-patient",
+        invoiceDate: new Date(),
+        totalAmount: 100,
+        discountAmount: 10,
+        finalAmount: 90,
+        status: "pending",
+        notes: "test note",
+        services: [],
+        transactions: [],
+        balance: 90
+      }
+    ];
+    this.filteredPaymentRequests = [...this.paymentRequests];
+    this.updatePagination();
+  }
+}
+
+loadPaymentRequests() {
+  this.loading = true;
+  console.log('Loading payments for patientId:', this.selectedPatientId);
+
+  this.paymentService.getPaymentRequestsByPatientId(this.selectedPatientId)
+    .subscribe({
+      next: (response) => {
+        console.log('Payment requests response:', response);
+
+        // Check if response is an array (direct response) or has data property
+        if (Array.isArray(response)) {
+          // API returned array directly
+          console.log('API returned array directly, length:', response.length);
+          this.handleSuccessfulResponse(response);
+        } else if (response?.success && Array.isArray(response.data)) {
+          // API returned {success: true, data: [...]}
+          console.log('API returned success object with data, length:', response.data.length);
+          this.handleSuccessfulResponse(response.data);
+        } else if (response?.data && Array.isArray(response.data)) {
+          // API returned {data: [...]} without success property
+          console.log('API returned data array, length:', response.data.length);
+          this.handleSuccessfulResponse(response.data);
+        } else {
+          // No data found or unexpected format
+          console.log('No payment data found or unexpected format');
+          this.handleNoData();
+        }
+
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error loading payments:', err);
+        this.loading = false;
+        this.handleNoData();
       }
     });
-    this.supabase = createClient(
-      environment.supabaseUrl,
-      environment.supabaseAnonKey
+}
+
+private handleSuccessfulResponse(data: any[]) {
+  if (data && data.length > 0) {
+    this.paymentRequests = data;
+    this.filteredPaymentRequests = [...this.paymentRequests];
+    this.currentPage = 1;
+    this.updatePagination();
+    console.log('Payment data loaded successfully:', this.paymentRequests.length);
+  } else {
+    console.log('Empty data array received');
+    this.handleNoData();
+  }
+}
+
+private handleNoData() {
+  this.paymentRequests = [];
+  this.filteredPaymentRequests = [];
+  this.paginatedPayments = [];
+  this.totalPages = 0;
+  console.log('Payment data cleared');
+}
+
+
+  /** Filters */
+  onSearchChange() { this.applyFilters(); }
+  onFilterChange() { this.applyFilters(); }
+
+  private applyFilters() {
+    let filtered = [...this.paymentRequests];
+
+    // Search filter
+    if (this.searchQuery.trim()) {
+      const query = this.searchQuery.toLowerCase();
+      filtered = filtered.filter(pr =>
+        pr.id.toLowerCase().includes(query) ||
+        pr.notes.toLowerCase().includes(query) ||
+        pr.services.some(s =>
+          s.description?.toLowerCase().includes(query) ||
+          s.cptCode?.toLowerCase().includes(query)
+        )
+      );
+    }
+
+    // Status filter
+    if (this.statusFilter) {
+      filtered = filtered.filter(pr =>
+        pr.status.toLowerCase() === this.statusFilter.toLowerCase()
+      );
+    }
+
+    this.filteredPaymentRequests = filtered;
+    this.currentPage = 1;
+    this.updatePagination();
+  }
+
+  /** Pagination */
+  updatePagination() {
+  console.log('Updating pagination with filtered payments:', this.filteredPaymentRequests.length);
+  this.totalPages = Math.ceil(this.filteredPaymentRequests.length / this.itemsPerPage);
+  console.log('Total pages:', this.totalPages);
+  
+  this.goToPage(this.currentPage);
+}
+
+goToPage(page: number) {
+  if (page < 1 || page > this.totalPages) return;
+  this.currentPage = page;
+
+  const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+  const endIndex = Math.min(this.currentPage * this.itemsPerPage, this.filteredPaymentRequests.length);
+
+  this.paginatedPayments = this.filteredPaymentRequests.slice(startIndex, endIndex);
+  console.log('Paginated payments:', this.paginatedPayments.length);
+  console.log('Current page items:', this.paginatedPayments);
+}
+
+getStartIndex(): number {
+  return (this.currentPage - 1) * this.itemsPerPage + 1;
+}
+
+getEndIndex(): number {
+  return Math.min(this.currentPage * this.itemsPerPage, this.filteredPaymentRequests.length);
+}
+
+
+
+
+  getPageNumbers(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  }
+
+  
+
+  onItemsPerPageChange() {
+    this.currentPage = 1;
+    this.updatePagination();
+  }
+
+  /** Actions */
+  onPaymentSelect(payment: PatientPaymentRequestDto) {
+    this.selectedPayment = payment;
+  }
+
+  onBackToList() {
+    this.selectedPayment = null;
+  }
+
+  onMakePayment(payment: PatientPaymentRequestDto) {
+    this.paymentRequestForPayment = payment;
+    this.showPaymentPopup = true;
+  }
+
+  onClosePaymentPopup() {
+    this.showPaymentPopup = false;
+    this.paymentRequestForPayment = null;
+  }
+
+  onPaymentSubmitted(paymentData: PaymentSubmissionDto) {
+    console.log('Payment submitted:', paymentData);
+    alert('Payment submitted successfully!');
+    this.loadPaymentRequests();
+  }
+
+  /** Calculations for summary cards */
+  getTotalOutstanding(): number {
+    return this.paymentRequests.reduce((sum, pr) => sum + pr.balance, 0);
+  }
+
+  getTotalPaid(): number {
+    return this.paymentRequests.reduce((sum, pr) =>
+      sum + pr.transactions
+        .filter(t => t.isSuccessful)
+        .reduce((txnSum, t) => txnSum + t.amountPaid, 0), 0
     );
   }
 
-  async ngOnInit(): Promise<void> {
-    await this.initializeWithRetry();
+  getPendingCount(): number {
+    return this.paymentRequests.filter(pr =>
+      pr.status.toLowerCase() === 'pending' || pr.balance > 0
+    ).length;
   }
 
-  private async initializeWithRetry(): Promise<void> {
-    try {
-      await this.initializeSupabase();
-    } catch (error: any) {
-      if (error.message?.includes('lock') && this.retryCount < this.maxRetries) {
-        this.retryCount++;
-        console.log(`Retrying Supabase initialization (attempt ${this.retryCount}/${this.maxRetries})`);
-        
-        // Wait before retry with exponential backoff
-        await new Promise(resolve => setTimeout(resolve, 1000 * this.retryCount));
-        await this.initializeWithRetry();
-      } else {
-        console.warn('Supabase initialization failed, continuing without auth:', error);
-        // Continue without authentication for now
-      }
-    }
+  trackByPaymentId(index: number, payment: PatientPaymentRequestDto): string {
+    return payment.id;
   }
-
-  private async initializeSupabase(): Promise<void> {
-    try {
-      // Try to get the current session with timeout
-      const sessionPromise = this.supabase.auth.getSession();
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Session timeout')), 5000)
-      );
-      
-      await Promise.race([sessionPromise, timeoutPromise]);
-    } catch (error) {
-      throw error;
-    }
-    this.getInvoiceByPatients();
-    this.getUserDetails();
-  }
-
-  loadTransactions(): void {
-    // this._adminService.getAllTransaction().subscribe({
-    //   next: (data) => (this.rowData = data),
-    //   error: (err) => console.error('Failed to load transactions:', err)
-    // });
-  }
-
-  onGridReady(params: GridReadyEvent): void {
-    this.gridApi = params.api;
-    this.gridApi.sizeColumnsToFit();
-  }
-
-  onQuickFilterChanged(): void {
-    if (this.gridApi) {
-      this.gridApi.setGridOption('quickFilterText', this.searchValue);
-    }
-  }
-
-
-
-columnDefs: ColDef[] = [
-  { 
-    field: 'invoiceNumber', 
-    headerName: 'INVOICE #',
-    width: 120,
-    cellClass: 'font-medium text-orange-500',
-     filter:false,
-    filterParams: {
-      suppressAndOrCondition: true
-    }
-  },
-  { 
-    field: 'appointmentDate', 
-    headerName: 'APPOINTMENT DATE', 
-    width: 160,
-    valueFormatter: this.dateFormatter,
-     filter:false,
-    filterParams: {
-      comparator: (filterLocalDate: Date, cellValue: string) => {
-      }
-    }
-  },
-  {
-  headerName: 'TOTAL',
-  width: 120,
-  valueGetter: params => {
-    const original = params.data.originalAmount || 0;
-    const discount = params.data.discountAmount || 0;
-    return original - discount;
-  },
-  valueFormatter: this.currencyFormatter,
-  cellClass: 'font-semibold',
-  filter: false
-},
-  { 
-    field: 'amountPaid', 
-    headerName: 'PAID', 
-    width: 120,
-    valueFormatter: this.currencyFormatter,
-    cellClass: (params) => params.value > 0 ? 'text-success' : 'text-muted',
-     filter:false
-  },
-  { 
-    field: 'balanceDue', 
-    headerName: 'BALANCE', 
-    width: 120,
-    valueFormatter: this.currencyFormatter,
-    cellClass: (params) => params.value > 0 ? 'text-danger font-semibold' : 'text-success',
-     filter:false
-  },
-  {
-    field: 'invoiceStatus',
-    headerName: 'STATUS',
-    width: 140,
-    cellRenderer: (params: any) => {
-  const status = params.value?.toLowerCase() || '';
-
-  // Inline color mapping
-  const statusStyles: Record<string, { background: string; color: string }> = {
-    paid:    { background: '#dcfce7', color: '#166534' }, 
-    pending: { background: '#fef3c7', color: '#92400e' },
-    overdue: { background: '#fee2e2', color: '#991b1b' },
-    partial: { background: '#dbeafe', color: '#1e40af' } 
-  };
-
-  const span = document.createElement('span');
-  span.style.padding = '2px 8px';
-  span.style.borderRadius = '9999px';
-  span.style.fontSize = '12px';
-  span.style.backgroundColor = statusStyles[status]?.background || '#f3f4f6'; // default gray
-  span.style.color = statusStyles[status]?.color || '#111827';
-  
-  span.innerText = params.value || '';
-  return span;
-    },
-    filter:false
-  },
-  { 
-    field: 'dueDate', 
-    headerName: 'DUE DATE', 
-    width: 140,
-    valueFormatter: this.dateFormatter,
-    cellClass: (params) => {
-      const dueDate = new Date(params.value);
-      return dueDate < new Date() ? 'text-danger' : '';
-    },
-     filter:false
-  },
-  {
-  headerName: 'ACTIONS',
-  field: 'action',
-  width: 100,  // Reduced width
-  pinned: 'right',
-  cellRenderer: (params: any) => {
-    const isPayable = params.data.balanceDue > 0 && 
-                     params.data.invoiceStatus !== 'Paid';
-    
-    return isPayable ? `
-      <button class="px-3 py-1 bg-orange-500 text-white text-xs rounded hover:bg-orange-600 transition-colors"
-        data-action="pay" data-invoice="${params.data.invoiceNumber}">
-        <i class="fas fa-credit-card mr-1"></i> Pay
-      </button>
-    ` : '<span class="text-gray-400">Paid</span>';
-  },
-  filter: false
-}
-];
-
-
-
-
-  dateFormatter(params: any): string {
-    return params.value ? new Date(params.value).toLocaleDateString() : '';
-  }
-
-  currencyFormatter(params: any): string {
-    return `$${params.value?.toFixed(2)}`;
-  }
-
-  statusBadgeClass(status: string): string {
-    switch ((status || '').toLowerCase()) {
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'completed':
-        return 'bg-green-100 text-green-800';
-      case 'written off':
-        return 'bg-gray-200 text-gray-600';
-      default:
-        return 'bg-blue-100 text-blue-800';
-    }
-  }
-isshowPayment:boolean = false;
-isshowpaymentConfirmation:boolean = false;
-  gridOptions: any = {
-  rowSelection: 'multiple',
-  suppressRowClickSelection: true,
-  onCellClicked: (event: any) => {
-    if (event.colDef.field === 'action') {
-      const action = event.event.target?.getAttribute('data-action');
-      if (action === 'pay') {
-        const invoiceData = event.data;
-        this.onPayClick(invoiceData);
-      }
-    }
-  }
-};
-  
-  onPayClick(invoiceData: any) {
-  this.invoicePayload = {
-    ...this.invoicePayload,
-    invoiceNumber: invoiceData.invoiceNumber,
-    balanceDue: invoiceData.balanceDue // Use balanceDue consistently
-  };
-  this.paymentAmount = invoiceData.balanceDue; // Use balanceDue consistently
-  this.isshowPayment = true;
-}
-
-  onExportClick(): void {
-    const worksheet = XLSX.utils.json_to_sheet(this.rowData);
-    const workbook = { Sheets: { data: worksheet }, SheetNames: ['data'] };
-    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-    const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
-    FileSaver.saveAs(blob, 'transactions.xlsx');
-  }
-
-      image:string ='/images/LogoLatest.png';
-
-
-  downloadPDF(): void {
-  const element = document.getElementById('pdf-content');
-  if (!element) {
-    console.error('PDF content element not found');
-    return;
-  }
- 
-  const opt = {
-    margin:       0.5,
-    filename:     `Transaction-list-${new Date().toISOString().slice(0, 10)}.pdf`,
-    image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { scale: 2 },
-    jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
-  };
- 
-  html2pdf().set(opt).from(element).save();
-}
-
-getPatientId!: string;
-paymentAmount: number = 0;
-invoicePayload!: any;
-
-getInvoiceByPatients() {
-  this.getPatientId = this.authService.getPatientId();
-  this.patientService.GetInvoicesByPatient(this.getPatientId)
-    .subscribe((res: any[]) => {
-      if (res && res.length > 0) {
-        const invoice = res[0];
-        this.invoicePayload = {
-          invoiceNumber: invoice.invoiceNumber,
-          appointmentDate: invoice.appointmentDate,
-          totalAmount: invoice.totalAmount,
-          amountPaid: invoice.amountPaid,
-          balanceDue: Number(invoice.balanceDue ?? invoice.balancedue ?? 0), // Standardize to balanceDue
-          invoiceStatus: invoice.invoiceStatus,
-          transactionType: invoice.transactionType,
-          transactionStatus: invoice.transactionStatus,
-          dueDate: invoice.dueDate,
-          notes: invoice.notes
-        };
-
-        this.paymentAmount = this.invoicePayload.balanceDue; // Use balanceDue consistently
-        this.rowData = res;
-      }
-    });
-}
-
-
-userName!:string;
-email!:string;
-paymentNote: string = 'Notes';
-editNote: boolean = false;
-onNoteBlur() {
-  this.editNote = false;
-}
-getUserDetails(){
-  debugger
-  this.userName = this.authService.getPatientUsername();
-  this.email = this.authService.getPatientEmail();
-}
-
-
-async onNextPayment() {
-  this.showPaymentProcessing = true;
-  this.paymentError = null;
-
-  const paymentPayload: Payment = {
-    patientId: this.getPatientId,
-    invoiceNumber: this.invoicePayload.invoiceNumber,
-    amount: this.paymentAmount,
-    paymentMethod: this.paymentMethod,
-    paymentReference: 'PAY-' + Math.random().toString(36).substring(2, 10).toUpperCase(),
-    paymentDate: new Date().toISOString(),
-    notes: this.paymentNote,
-    cardLastFour: this.paymentMethod.includes('CARD') ? '4242' : null,
-    billingZip: '600001', // Mock value
-    email: this.email
-  };
-
-  try {
-    const res = await this.patientService.AddPaymentsByPatient(paymentPayload).toPromise();
-    this.transactionId = res.transactionId;
-    this.isshowpaymentConfirmation = true;
-    this.isshowPayment = false;
-    
-    // Refresh the invoice data
-    this.getInvoiceByPatients();
-  } catch (error) {
-    console.error('Payment failed:', error);
-    this.paymentError = 'Payment processing failed. Please try again.';
-  } finally {
-    this.showPaymentProcessing = false;
-  }
-}
-
-// Add this new method
-closePaymentConfirmation() {
-  this.isshowpaymentConfirmation = false;
-  this.transactionId = '';
-  this.paymentError = null;
-}
-
-  // Stripe Payment Methods
-  async onStripePayClick(invoiceData: any) {
-    this.checkoutLoading = true;
-    
-    try {
-      const { data: { session } } = await this.supabase.auth.getSession();
-      
-      if (!session?.access_token) {
-        throw new Error('Please log in to make a payment');
-      }
-
-      // Find the appointment product from our config
-      const appointmentProduct = this.products.find(p => p.name === 'Appointment');
-      
-      if (!appointmentProduct) {
-        throw new Error('Appointment product not found');
-      }
-
-      const response = await fetch(`${environment.supabaseUrl}/functions/v1/stripe-checkout`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          price_id: appointmentProduct.priceId,
-          success_url: `${window.location.origin}/patient/payment?success=true&invoice=${invoiceData.invoiceNumber}`,
-          cancel_url: `${window.location.origin}/patient/payment?canceled=true`,
-          mode: appointmentProduct.mode,
-          metadata: {
-            invoiceNumber: invoiceData.invoiceNumber,
-            patientId: this.getPatientId,
-            amount: invoiceData.balanceDue
-          }
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create checkout session');
-      }
-
-      const { url } = await response.json();
-      
-      if (url) {
-        // Redirect to Stripe Checkout
-        window.location.href = url;
-      } else {
-        throw new Error('No checkout URL received');
-      }
-    } catch (error: any) {
-      console.error('Stripe checkout error:', error);
-      this.paymentError = error.message;
-      
-      // Show error to user
-      setTimeout(() => {
-        this.paymentError = null;
-      }, 5000);
-    } finally {
-      this.checkoutLoading = false;
-    }
-  }
-
-  // Handle success/cancel redirects
-  ngAfterViewInit() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const success = urlParams.get('success');
-    const canceled = urlParams.get('canceled');
-    const invoiceNumber = urlParams.get('invoice');
-
-    if (success === 'true') {
-      this.showSuccessMessage(invoiceNumber);
-      // Refresh the invoice data
-      this.getInvoiceByPatients();
-    } else if (canceled === 'true') {
-      this.showCancelMessage();
-    }
-
-    // Clean up URL parameters
-    if (success || canceled) {
-      const cleanUrl = window.location.pathname;
-      window.history.replaceState({}, document.title, cleanUrl);
-    }
-  }
-
-  private showSuccessMessage(invoiceNumber: string | null) {
-    // You can implement a toast notification or modal here
-    console.log(`Payment successful for invoice: ${invoiceNumber}`);
-  }
-
-  private showCancelMessage() {
-    // You can implement a toast notification here
-    console.log('Payment was canceled');
-  }
-
 }

@@ -1,49 +1,252 @@
-<!-- <div class="dashboard-container">
-  <div class="d-flex justify-content-between align-items-center">
+<div class="p-6 min-h-screen">
 
-    <div>
-      <h2>QuickBooks Connections</h2>
+  <!-- Tabs -->
+  <div class="animated-tabs mt-4">
+    <div class="slider"></div>
+    <div class="tab" [class.active]="selectedTab === 'connection'" (click)="setTab('connection')">
+      <i class="fa-solid fa-link md:mt-1"></i>
+      <span>Connection</span>
     </div>
-
-    <div>
-      <h6 class="mb-2" [ngClass]="statusConnected ? 'connected' : 'disconnected'">
-        <span class="status">Status:</span> {{ statusConnected ? 'Connected' : 'Disconnected' }}
-      </h6>
-
-      <button class="customBtn" (click)="connectQuickBooks()">
-        {{ statusConnected ? 'Disconnect' : 'Connect to QuickBooks' }}
-      </button>
-    </div>
-
-  </div>
-</div> -->
-
-
-<div class="bg-white shadow-sm rounded-md p-4 flex items-center justify-between w-full mt-4">
-  <div class="flex justify-between w-1/2">
-    <div class="flex items-center">
-      <img src="{{logoImg}}" alt="Calendarly" class="w-[300px] object-contain" />
-
-    </div>
-    <div class="flex items-center">
-  <i *ngIf="statusConnected" class="fas fa-check-circle text-green-500 text-[24px]"></i>
-  <i *ngIf="!statusConnected" class="fas fa-times-circle text-red-500 text-[24px]"></i>
-</div>
-
-    <div class="flex items-center">
-      <img src="{{subLogoImg}}" alt="QuickBooks" class="w-[180px]  object-contain" />
+    <div class="tab" [class.active]="selectedTab === 'products'" (click)="setTab('products')">
+      <i class="fa-regular fa-clipboard"></i>
+      <span>Products</span>
     </div>
   </div>
-<div class="w-px h-24 border border-primary-border-color"></div>
-  <div class="flex flex-col space-y-2">
-    <div class="text-sm">
-      <span class="font-semibold text-black" [ngClass]="statusConnected ? 'connected' : 'disconnected'">Status : </span>
-      <span class="font-semibold" [ngClass]="statusConnected ? 'text-green-600' : 'text-red-600'"> {{ statusConnected ? 'Connected' : 'Disconnected' }}</span>
+
+  <!-- Connection Tab -->
+<div *ngIf="selectedTab === 'connection'" class="bg-white shadow-sm rounded-xl p-8 mt-6 w-full mx-auto">
+  <!-- Header with Status -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+    <div class="flex items-center gap-4">
+      <!-- <div class="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-500 rounded-lg flex items-center justify-center">
+        <i class="fa-solid fa-link text-white text-lg"></i>
+      </div> -->
+      <div>
+        <h1 class="text-2xl font-bold text-gray-800">QuickBooks Integration</h1>
+        <p class="text-gray-600 text-sm mt-1">Sync your therapy services with QuickBooks</p>
+      </div>
     </div>
-    <button class="bg-green-600 text-white text-sm px-4 py-1 rounded hover:bg-green-700 transition" (click)="connectQuickBooks()">
-   <i class="fa-solid fa-plug"></i>     {{ statusConnected ? 'Disconnect' : 'Connect to QuickBooks' }}
+    
+    <div 
+      class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border"
+      [ngClass]="statusConnected ? 
+        'bg-green-50 text-green-700 border-green-200' : 
+        'bg-gray-50 text-gray-700 border-gray-200'">
+      <span 
+        class="w-2 h-2 rounded-full"
+        [ngClass]="statusConnected ? 'bg-green-500' : 'bg-gray-500'">
+      </span>
+      {{ statusConnected ? 'Connected' : 'Disconnected' }}
+    </div>
+  </div>
+
+  <!-- Benefits Section -->
+  <div class="bg-orange-50 rounded-lg p-6 mb-8">
+    <h3 class="font-semibold text-gray-800 mb-4">Integration Benefits</h3>
+    <ul class="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <li class="flex items-center gap-3 text-gray-700">
+        <svg class="w-5 h-5 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+        </svg>
+        <span class="text-sm">Automatic service synchronization</span>
+      </li>
+      <li class="flex items-center gap-3 text-gray-700">
+        <svg class="w-5 h-5 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+        </svg>
+        <span class="text-sm">Real-time pricing updates</span>
+      </li>
+      <li class="flex items-center gap-3 text-gray-700">
+        <svg class="w-5 h-5 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+        </svg>
+        <span class="text-sm">Streamlined invoicing workflow</span>
+      </li>
+      <li class="flex items-center gap-3 text-gray-700">
+        <svg class="w-5 h-5 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+        </svg>
+        <span class="text-sm">Reduced manual data entry</span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Description -->
+  <!-- <div class="text-center mb-8">
+    <p class="text-gray-600 leading-relaxed">
+      Sync your Therapy services and pricing with QuickBooks Online to streamline your billing and accounting workflow.
+    </p>
+  </div> -->
+
+  <!-- Action Button -->
+  <div class="flex justify-center">
+    <button 
+      class="custom-button"
+      [ngClass]="statusConnected ? 
+        'bg-red-500 hover:bg-red-600' : 
+        'bg-orange-400 hover:bg-orange-500'"
+      (click)="connectQuickBooks()">
+      <i class="fa-solid fa-plug"></i> 
+      {{ statusConnected ? 'Disconnect' : 'Connect to QuickBooks' }}
     </button>
   </div>
 </div>
 
+  <!-- Products & Services Tab -->
+  <div *ngIf="selectedTab === 'products'" class="bg-white shadow-md rounded-lg p-6 mt-4">
+    
+    <!-- Top tagline -->
+    <div class="row">
+      <div class="col-12">
+        <p class="text-gray-500 mt-1">
+          Sync your services and pricing with QuickBooks Online
+        </p>
+      </div>
+    </div>
 
+    <!-- Status Cards -->
+    <div class="row mt-4">
+      <div class="col-12 col-sm-6 col-lg-3 mb-3">
+        <div class="bg-white shadow-md rounded-lg p-4 h-100 d-flex align-items-center justify-content-between">
+          <div>
+            <p class="text-gray-500 text-sm">Total Services</p>
+            <p class="text-2xl font-semibold">{{ totalServices }}</p>
+          </div>
+          <i class="fa-solid fa-clipboard-list text-blue-500 text-3xl"></i>
+        </div>
+      </div>
+
+      <div class="col-12 col-sm-6 col-lg-3 mb-3">
+        <div class="bg-white shadow-md rounded-lg p-4 h-100 d-flex align-items-center justify-content-between">
+          <div>
+            <p class="text-gray-500 text-sm">Synced Services</p>
+            <p class="text-2xl font-semibold">{{ syncedServices }}</p>
+          </div>
+          <i class="fa-solid fa-check-circle text-green-500 text-3xl"></i>
+        </div>
+      </div>
+
+      <div class="col-12 col-sm-6 col-lg-3 mb-3">
+        <div class="bg-white shadow-md rounded-lg p-4 h-100 d-flex align-items-center justify-content-between">
+          <div>
+            <p class="text-gray-500 text-sm">Pending Sync</p>
+            <p class="text-2xl font-semibold">{{ pendingServices }}</p>
+          </div>
+          <i class="fa-solid fa-clock text-yellow-500 text-3xl"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section Heading -->
+    <div class="row mt-5">
+      <div class="col-12">
+        <h3 class="text-xl font-bold">Products & Services</h3>
+        <p class="text-gray-500 mt-2">
+          Manage & sync your organization's therapy services with QuickBooks
+        </p>
+      </div>
+    </div>
+
+    <!-- Services List -->
+    <div class="row mt-4">
+      <div class="col-12">
+        <!-- Header -->
+        <div class="row align-items-center mb-4">
+          <div class="col-12 col-md-6">
+            <h2 class="text-2xl font-semibold">Therapy Services</h2>
+          </div>
+          <div class="col-12 col-md-6 mt-2 mt-md-0">
+            <div class="d-flex justify-content-md-end">
+              <button
+                class="btn font-medium px-4 py-2 rounded-lg border transition"
+                [ngClass]="statusConnected ? 'bg-red-500 text-white border-red-500 hover:bg-red-600' : 'bg-yellow-100 text-yellow-800 border-yellow-300 hover:bg-yellow-200'"
+                (click)="connectQuickBooks()">
+                {{ statusConnected ? 'Disconnect' : 'Connect to QuickBooks to sync services' }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div *ngIf="loadingServices" class="text-gray-500">Loading services...</div>
+
+        <!-- No services -->
+        <div *ngIf="!loadingServices && services.length === 0" class="text-gray-500">
+          No services found.
+        </div>
+
+        <!-- Service Cards -->
+        <div *ngFor="let item of services" class="row mb-4">
+          <div class="col-12">
+            <div class="border rounded-xl p-4 h-100"
+                [ngClass]="item.isActive ? 'bg-green-50 border-green-100' : 'bg-white border-gray-200'">
+              <div class="row">
+                <!-- Left Section -->
+                <div class="col-12 col-md-8">
+                  <div class="d-flex align-items-start mb-2">
+                    <div class="bg-blue-100 p-2 rounded-lg me-3 flex-shrink-0">
+                      <svg xmlns="http://www.w3.org/2000/svg"
+                          class="h-6 w-6 text-blue-600"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M8 7V3m8 4V3M5 11h14M5 19h14M5 15h14" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 class="text-lg font-semibold">{{ item.label }}</h3>
+                      <p class="text-gray-500 text-sm">{{ item.description }}</p>
+                      <span class="inline-block bg-blue-100 text-blue-700 text-xs font-medium px-2 py-1 rounded mt-1">
+                        Therapy Service
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Sync Status -->
+                  <div class="d-flex align-items-center text-sm mt-2"
+                      [ngClass]="item.isSynced ? 'text-green-600' : 'text-gray-500'">
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                        class="h-4 w-4 me-1"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor">
+                      <path *ngIf="item.isSynced"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M5 13l4 4L19 7" />
+                      <path *ngIf="!item.isSynced"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M6 6l12 12M6 18L18 6" />
+                    </svg>
+                    {{ item.isSynced ? 'Synced' : 'Not Synced' }}
+                    <span *ngIf="item.isSynced" class="ms-1 text-gray-500">(Recently synced)</span>
+                  </div>
+                </div>
+
+                <!-- Right Section with Price and Sync Button -->
+                <div class="col-12 col-md-4 mt-3 mt-md-0">
+                  <div class="d-flex flex-column align-items-start align-items-md-end h-100">
+                    <!-- Price -->
+                    <div class="text-2xl font-bold text-gray-900 mb-2">
+                      ${{ item.price || '0.00' }}
+                    </div>
+                    <!-- Sync Button (Only show if NOT synced) -->
+                    <button *ngIf="!item.isSynced"
+                            class="btn bg-green-500 text-white px-4 py-1 rounded-lg text-sm hover:bg-green-600 transition"
+                            (click)="syncService(item)">
+                      Sync
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

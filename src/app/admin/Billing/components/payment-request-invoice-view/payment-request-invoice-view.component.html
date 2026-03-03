@@ -1,0 +1,138 @@
+<div class="max-w-7xl mx-auto mt-10 p-10 bg-white rounded-2xl shadow-lg">
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="text-center py-16">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-400 mx-auto"></div>
+    <p class="mt-4 text-gray-600 text-sm">Loading bill...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error && !loading" class="text-center text-red-600 py-10">
+    {{ error }}
+  </div>
+
+  <!-- Invoice Content -->
+  <ng-container *ngIf="payment && !loading">
+
+    <!-- Header -->
+<div class="flex justify-between items-start mb-10">
+
+  <!-- Left: Logo + details -->
+  <div class="flex flex-col items-start gap-2">
+
+    <!-- Logo -->
+    <img
+      [src]="logo"
+      alt="Company Logo"
+      class="h-12 w-auto object-contain"
+    />
+
+    <!-- Text block (slightly indented) -->
+    <div class="ml-12">
+      <p class="text-lg font-bold text-gray-700">
+        {{ payment.patientName }}
+      </p>
+
+      <p class="text-sm text-gray-500">
+        Billing Date: {{ payment.invoiceDate | date:'MMM dd, yyyy' }}
+      </p>
+    </div>
+
+  </div>
+
+  <!-- Right: Status -->
+  <span
+    class="px-4 py-1.5 rounded-full text-sm font-semibold"
+    [ngClass]="{
+      'bg-green-100 text-green-700': payment.status === 'paid',
+      'bg-yellow-100 text-yellow-700': payment.status !== 'paid'
+    }">
+    {{ payment.status | titlecase }}
+  </span>
+
+</div>
+
+
+
+
+    <!-- Services + Totals -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-10 mb-10">
+
+      <!-- Services Table -->
+      <div class="lg:col-span-2">
+        <table class="w-full text-sm border rounded-lg overflow-hidden">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="p-4 text-left font-semibold">Service</th>
+              <th class="p-4 text-left font-semibold">CPT</th>
+              <th class="p-4 text-center font-semibold">Units</th>
+              <th class="p-4 text-right font-semibold">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let s of payment.services" class="border-t">
+              <td class="p-4">{{ s.serviceName }}</td>
+              <td class="p-4">{{ s.cptCode }}</td>
+              <td class="p-4 text-center">{{ s.units }}</td>
+              <td class="p-4 text-right font-medium">
+                {{ s.chargedAmount | currency }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Totals -->
+      <div class="bg-gray-50 rounded-lg p-6 text-sm space-y-3">
+        <div class="flex justify-between">
+          <span>Total</span>
+          <span>{{ payment.totalAmount | currency }}</span>
+        </div>
+
+        <div class="flex justify-between text-red-600">
+          <span>Discount ({{ payment.slidingScalePercentage }}%)</span>
+          <span>-{{ payment.discountAmount | currency }}</span>
+        </div>
+
+        <hr />
+
+        <div class="flex justify-between font-semibold text-base">
+          <span>Final Amount</span>
+          <span>{{ payment.finalAmount | currency }}</span>
+        </div>
+
+        <div class="flex justify-between text-green-600">
+          <span>Paid</span>
+          <span>{{ payment.amountPaid | currency }}</span>
+        </div>
+
+        <div class="flex justify-between font-bold text-lg">
+          <span>Amount Due</span>
+          <span>{{ payment.amountDue | currency }}</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Payment Details -->
+    <div *ngIf="payment.transactions?.length" class="mb-10">
+      <h3 class="font-semibold text-gray-800 mb-2">Payment Details</h3>
+      <p class="text-sm text-gray-700 leading-6">
+        <strong>Method:</strong> {{ payment.transactions[0].paymentMethod | titlecase }} <br />
+        <strong>Reference:</strong> {{ payment.transactions[0].transactionReference }} <br />
+        <strong>Paid On:</strong> {{ payment.transactions[0].paymentDate | date:'MMM dd, yyyy' }}
+      </p>
+    </div>
+
+    <!-- Footer -->
+    <div class="flex justify-end">
+      <button
+        class="px-6 py-2 rounded-md bg-orange-400 text-white font-medium
+               hover:bg-orange-500 transition-colors"
+        (click)="back()">
+        Back
+      </button>
+    </div>
+
+  </ng-container>
+</div>

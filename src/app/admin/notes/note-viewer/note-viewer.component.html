@@ -1,0 +1,261 @@
+<div class="note-viewer-container">
+  @if (isLoading()) {
+    <div class="loading-state">
+      <div class="loading-spinner"></div>
+      <p>Loading note...</p>
+    </div>
+  } @else if (note()) {
+    <!-- Header -->
+    <div class="viewer-header">
+      <button type="button" class="back-button" (click)="goBack()">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+        Back to Notes
+      </button>
+      
+      <div class="header-content">
+        <div class="note-info">
+          <h1 class="note-title">{{ note()!.title }}</h1>
+          <div class="note-meta">
+            <span class="note-type-badge" [ngClass]="'type-' + note()!.type">
+              {{ getNoteTypeLabel() }}
+            </span>
+            <span class="note-status" [ngClass]="getStatusColor()">
+              {{ note()!.status | titlecase }}
+            </span>
+            <span class="note-date">{{ note()!.createdAt | date:'MMM d, y - h:mm a' }}</span>
+          </div>
+          @if (patient()) {
+            <p class="note-client">Client: {{ patient()!.firstName }} {{ patient()!.lastName }}</p>
+          }
+        </div>
+        
+        <div class="header-actions">
+          @if (canEdit()) {
+            <app-button variant="outline" (click)="editNote()">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+              </svg>
+              Edit Note
+            </app-button>
+          }
+          
+          <app-button variant="outline" (click)="duplicateNote()">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+            </svg>
+            Duplicate
+          </app-button>
+
+          @if (canSign()) {
+            <app-button variant="primary" (click)="signNote()">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              Sign Note
+            </app-button>
+          }
+
+          @if (canDelete()) {
+            <app-button variant="danger" (click)="confirmDelete()">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+              </svg>
+              Delete
+            </app-button>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Note Content -->
+    <div class="note-content">
+      <div class="content-card">
+        @switch (note()!.type) {
+          @case ('soap') {
+            <div class="soap-content">
+              <div class="content-section">
+                <h3 class="section-title">Subjective</h3>
+                <div class="section-content">
+                  {{ note()!.content.subjective || 'No subjective data recorded' }}
+                </div>
+              </div>
+              
+              <div class="content-section">
+                <h3 class="section-title">Objective</h3>
+                <div class="section-content">
+                  {{ note()!.content.objective || 'No objective data recorded' }}
+                </div>
+              </div>
+              
+              <div class="content-section">
+                <h3 class="section-title">Assessment</h3>
+                <div class="section-content">
+                  {{ note()!.content.assessment || 'No assessment recorded' }}
+                </div>
+              </div>
+              
+              <div class="content-section">
+                <h3 class="section-title">Plan</h3>
+                <div class="section-content">
+                  {{ note()!.content.plan || 'No plan recorded' }}
+                </div>
+              </div>
+            </div>
+          }
+
+          @case ('dap') {
+            <div class="dap-content">
+              <div class="content-section">
+                <h3 class="section-title">Data</h3>
+                <div class="section-content">
+                  {{ note()!.content.data || 'No data recorded' }}
+                </div>
+              </div>
+              
+              <div class="content-section">
+                <h3 class="section-title">Assessment</h3>
+                <div class="section-content">
+                  {{ note()!.content.assessment || 'No assessment recorded' }}
+                </div>
+              </div>
+              
+              <div class="content-section">
+                <h3 class="section-title">Plan</h3>
+                <div class="section-content">
+                  {{ note()!.content.plan || 'No plan recorded' }}
+                </div>
+              </div>
+            </div>
+          }
+
+          @default {
+            <div class="general-content">
+              <div class="content-section">
+                <h3 class="section-title">Note Content</h3>
+                <div class="section-content">
+                  {{ note()!.content.customFields?.['generalContent'] || 
+                     note()!.content.customFields?.['progressContent'] || 
+                     note()!.content.customFields?.['treatmentPlanContent'] || 
+                     'No content recorded' }}
+                </div>
+              </div>
+            </div>
+          }
+        }
+
+        <!-- Risk Assessment -->
+        @if (note()!.content.riskAssessment) {
+          <div class="risk-assessment">
+            <h3 class="section-title">Risk Assessment</h3>
+            <div class="risk-grid">
+              <div class="risk-item">
+                <span class="risk-label">Suicidal Ideation:</span>
+                <span class="risk-value" [ngClass]="'risk-' + note()!.content.riskAssessment!.suicidalIdeation">
+                  {{ note()!.content.riskAssessment!.suicidalIdeation | titlecase }}
+                </span>
+              </div>
+              <div class="risk-item">
+                <span class="risk-label">Homicidal Ideation:</span>
+                <span class="risk-value" [ngClass]="'risk-' + note()!.content.riskAssessment!.homicidalIdeation">
+                  {{ note()!.content.riskAssessment!.homicidalIdeation | titlecase }}
+                </span>
+              </div>
+              <div class="risk-item">
+                <span class="risk-label">Self-Harm Risk:</span>
+                <span class="risk-value" [ngClass]="'risk-' + note()!.content.riskAssessment!.selfHarm">
+                  {{ note()!.content.riskAssessment!.selfHarm | titlecase }}
+                </span>
+              </div>
+              <div class="risk-item">
+                <span class="risk-label">Overall Risk:</span>
+                <span class="risk-value" [ngClass]="'risk-' + note()!.content.riskAssessment!.overallRisk">
+                  {{ note()!.content.riskAssessment!.overallRisk | titlecase }}
+                </span>
+              </div>
+            </div>
+            @if (note()!.content.riskAssessment!.safetyPlan) {
+              <div class="safety-plan">
+                <h4 class="safety-plan-title">Safety Plan</h4>
+                <div class="safety-plan-content">
+                  {{ note()!.content.riskAssessment!.safetyPlan }}
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Tags -->
+        @if (note()!.tags.length > 0) {
+          <div class="note-tags-section">
+            <h3 class="section-title">Tags</h3>
+            <div class="tags-list">
+              @for (tag of note()!.tags; track tag) {
+                <span class="tag">{{ tag }}</span>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Note Metadata -->
+        <div class="note-metadata">
+          <div class="metadata-grid">
+            <div class="metadata-item">
+              <span class="metadata-label">Created:</span>
+              <span class="metadata-value">{{ note()!.createdAt | date:'MMM d, y - h:mm a' }}</span>
+            </div>
+            <div class="metadata-item">
+              <span class="metadata-label">Last Updated:</span>
+              <span class="metadata-value">{{ note()!.updatedAt | date:'MMM d, y - h:mm a' }}</span>
+            </div>
+            @if (note()!.signedAt) {
+              <div class="metadata-item">
+                <span class="metadata-label">Signed:</span>
+                <span class="metadata-value">{{ note()!.signedAt | date:'MMM d, y - h:mm a' }}</span>
+              </div>
+            }
+            <div class="metadata-item">
+              <span class="metadata-label">Version:</span>
+              <span class="metadata-value">{{ note()!.version }}</span>
+            </div>
+            <div class="metadata-item">
+              <span class="metadata-label">Confidential:</span>
+              <span class="metadata-value">{{ note()!.isConfidential ? 'Yes' : 'No' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  } @else {
+    <div class="error-state">
+      <h2>Note Not Found</h2>
+      <p>The requested note could not be found.</p>
+      <app-button variant="primary" (click)="goBack()">Back to Notes</app-button>
+    </div>
+  }
+</div>
+
+<!-- Delete Confirmation Modal -->
+<app-modal 
+  [isOpen]="showDeleteModal()"
+  title="Delete Note"
+  size="sm"
+  (closed)="showDeleteModal.set(false)">
+  
+  <div class="delete-confirmation">
+    <div class="warning-icon">
+      <svg class="w-12 h-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+      </svg>
+    </div>
+    <h3 class="warning-title">Are you sure?</h3>
+    <p class="warning-message">
+      This will permanently delete this note. This action cannot be undone.
+    </p>
+    <div class="confirmation-actions">
+      <app-button variant="outline" (click)="showDeleteModal.set(false)">Cancel</app-button>
+      <app-button variant="danger" [loading]="isDeleting()" (click)="deleteNote()">Delete Note</app-button>
+    </div>
+  </div>
+</app-modal>

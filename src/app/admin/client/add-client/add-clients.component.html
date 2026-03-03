@@ -1,288 +1,425 @@
-<div class="dashboard-container container">
-<div class="animated-tabs">
-  <div class="slider"></div>
-  <div class="tab" [class.active]="selectedTab === 'Addclient'" (click)="setTab('Addclient')">
-    <i class="fas fa-home"></i>
-    <span>Add Client</span>
+<div class="dashboard-containers">
+  <!-- Modern Header -->
+  <div class="dashboard-header">
+    <h1>Client Management</h1>
+    <p>Manage your client database</p>
   </div>
 
-  <div class="tab" [class.active]="selectedTab === 'Listclient'" (click)="setTab('Listclient')">
-    <i class="fas fa-calendar-days"></i>
-    <span>List Client</span>
-  </div>
-
-</div>
-
-
-
-<div *ngIf="selectedTab === 'Addclient'">
-  <div class="card-body mt-4">
-    <!-- <h3 class="card-title">{{ isEditMode ? 'Update Client' : 'Add Client' }}</h3> -->
-    <form [formGroup]="clientForm" (ngSubmit)="onSubmit()">
-      <div class="row ">
-        <div class="col-md-4 col-12">
-          <label for="name" class="form-label">Client Name</label>
-          <input type="text" id="name" formControlName="name"
-            class="form-control" placeholder="Enter Client Name"
-            [ngClass]="{
-              'is-invalid': clientSubmitted && addUser['name'].invalid,
-              'is-valid': clientSubmitted && addUser['name'].valid
-            }" />
-          <div *ngIf="clientSubmitted && addUser['name'].errors" class="invalid-feedback">
-            <div *ngIf="addUser['name'].errors['required']">Client Name is required</div>
+  <!-- Client List Section -->
+  <div class="list-card">
+    <div class="card-headers">
+      <!-- Search and Controls -->
+      <div class="list-controls" *ngIf="isshowcardList">
+        <div class="search-container">
+          <div class="search-box">
+            <input
+              type="text"
+              id="searchInput"
+              class="search-input"
+              [(ngModel)]="searchValue"
+              (input)="filterClients()"
+              placeholder="Search clients by name, email, or phone...">
+            <button
+              class="clear-btn"
+              *ngIf="searchValue"
+              (click)="clearSearch()">
+              <i class="fas fa-times"></i>
+            </button>
           </div>
         </div>
-
-        <div class="col-md-4 col-12">
-          <label for="contactPerson" class="form-label">Contact Person</label>
-          <input type="text" id="contactPerson" formControlName="contactPerson"
-            class="form-control" placeholder="Enter Contact Person"
-            [ngClass]="{
-              'is-invalid': clientSubmitted && addUser['contactPerson'].invalid,
-              'is-valid': clientSubmitted && addUser['contactPerson'].valid
-            }" />
-          <div *ngIf="clientSubmitted && addUser['contactPerson'].errors" class="invalid-feedback">
-            <div *ngIf="addUser['contactPerson'].errors['required']">Contact Person is required</div>
-          </div>
-        </div>
-
-         <div class="col-md-4 col-12">
-          <label for="email" class="form-label">Email</label>
-          <input type="email" id="email" formControlName="email"
-            class="form-control" placeholder="Enter Email"
-            [ngClass]="{
-              'is-invalid': clientSubmitted && addUser['email'].invalid,
-              'is-valid': clientSubmitted && addUser['email'].valid
-            }" />
-          <div *ngIf="clientSubmitted && addUser['email'].errors" class="invalid-feedback">
-            <div *ngIf="addUser['email'].errors['required']">Email is required</div>
-            <div *ngIf="addUser['email'].errors['email']">
-      Email is invalid
-    </div>
+        
+        <div class="action-buttons">
+          <div class="">
+            <select class="form-select" [(ngModel)]="selectedFilter" (change)="onFilterChange()">
+              <option value="all">All Clients</option>
+              <option value="solo">Solo Providers</option>
+              <option value="multi">Multi Providers</option>
+            </select>
           </div>
         </div>
       </div>
 
-      <div class="row mt-3">
-        <div class="col-md-4 col-12">
-          <label for="phoneNumber" class="form-label">Phone Number</label>
-          <input type="text" id="phoneNumber" formControlName="phoneNumber"
-            class="form-control" placeholder="Enter Phone Number"
-            [ngClass]="{
-              'is-invalid': clientSubmitted && addUser['phoneNumber'].invalid,
-              'is-valid': clientSubmitted && addUser['phoneNumber'].valid
-            }" />
-          <div *ngIf="clientSubmitted && addUser['phoneNumber'].errors" class="invalid-feedback">
-            <div *ngIf="addUser['phoneNumber'].errors['required']">Phone Number is required</div>
+      <div *ngIf="isshowcardList">
+        <!-- Client Cards Grid -->
+      <div class="clients-grid" *ngIf="filteredClients.length > 0">
+        <div class="client-card" *ngFor="let client of getPaginatedClients()">
+          <div class="client-header">
+            <div class="client-avatar">
+              <div class="avatar-initials" [style.background]="getAvatarColor(client.initials)">
+                {{ client.initials }}
+              </div>
+            </div>
+            <div class="client-info">
+              <h3>{{ client.name }}</h3>
+              <p class="client-contact">{{ client.contactPerson }}</p>
+            </div>
+            <div class="client-status">
+              <span class="status-badge" [class.solo]="client.isSoloProvider">
+                {{ client.isSoloProvider ? 'Solo Provider' : 'Multi Provider' }}
+              </span>
+            </div>
+          </div>
+          
+          <div class="client-details">
+            <!-- <div class="detail-item">
+              <i class="fas fa-envelope"></i>
+              <span class="truncate">{{ client.email }}</span>
+            </div> -->
+            <div class="detail-item">
+              <i class="fas fa-phone"></i>
+              <span>(+{{ client.mobilePrefixCode }}) {{ client.phoneNumber }}</span>
+            </div>
+            <div class="detail-item">
+              <i class="fas fa-map-marker-alt"></i>
+              <span class="truncate">{{ client.address }}, {{ client.cityName }}</span>
+            </div>
+            <div class="detail-item">
+              <i class="fas fa-globe"></i>
+              <span>{{ client.countryName }}</span>
+            </div>
+          </div>
+          
+          <div class="client-actions">
+            <button class="btn-action edit" (click)="editClient(client)" title="Edit Client">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button class="btn-action view" (click)="viewClient(client)" title="View Details">
+              <i class="fas fa-eye"></i>
+            </button>
+            <button class="btn-action delete" (click)="openDeleteModal(client)" title="Delete Client">
+              <i class="fas fa-trash"></i>
+            </button>
           </div>
         </div>
- <div class="col-md-4 col-12">
-          <label for="address" class="form-label">Address</label>
-          <input id="address" rows="3" formControlName="address"
-            class="form-control"  placeholder="Enter Address"
-            [ngClass]="{
-              'is-invalid': clientSubmitted && addUser['address'].invalid,
-              'is-valid': clientSubmitted && addUser['address'].valid
-            }">
-          <div *ngIf="clientSubmitted && addUser['address'].errors" class="invalid-feedback">
-            <div *ngIf="addUser['address'].errors['required']">Address is required</div>
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state" *ngIf="filteredClients.length === 0">
+        <div class="empty-icon">
+          <i class="fas fa-users"></i>
+        </div>
+        <h3>No Clients Found</h3>
+        <p *ngIf="searchValue || selectedFilter !== 'all'">No clients match your search criteria. Try different keywords or clear filters.</p>
+        <p *ngIf="!searchValue && selectedFilter === 'all'">There are no clients in your database yet.</p>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination-container" *ngIf="filteredClients.length > 0">
+        <div class="pagination-info dark-mode-text">
+          Showing {{ getStartIndex() + 1 }}-{{ getEndIndex() }} of {{ filteredClients.length }} clients
+        </div>
+        <div class="pagination-controls">
+          <button 
+            class="pagination-btn" 
+            [disabled]="currentPage === 1"
+            (click)="previousPage()">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          
+          <div class="pagination-numbers">
+            <span 
+              *ngFor="let page of getVisiblePages()" 
+              class="page-number"
+              [class.active]="page === currentPage"
+              (click)="goToPage(page)">
+              {{ page }}
+            </span>
+            <span *ngIf="showEllipsis" class="page-ellipsis">...</span>
           </div>
-        </div>
-        <div class="col-md-4 col-12">
-        <label class="form-label">Zip Code</label>
-        <select formControlName="countryDataId" class="form-control">
-          <option [ngValue]="null" disabled>Select Zip Code</option>
-          <option *ngFor="let zip of zipCodes" [value]="zip.id">{{ zip.zipCode }}</option>
-        </select>
-      </div>
-      </div>
-
-      <div class="row mt-3">
-      <div class="col-md-4">
-        <label class="form-label">Country</label>
-       <select formControlName="Country" class="form-control" (change)="onCountryChange()">
-  <option [ngValue]="null" disabled>Select Country</option>
-  <option *ngFor="let country of countryList" [ngValue]="country">
-    {{ country.country }}
-  </option>
-</select>
-
-      </div>
-
-      <div class="col-md-4">
-        <label class="form-label">State</label>
-        <select formControlName="state" class="form-control" (change)="onStateChange()">
-          <option [ngValue]="null" disabled>Select State</option>
-          <option *ngFor="let state of states" [value]="state.stateCode">{{ state.stateName }}</option>
-        </select>
-      </div>
-
-      <div class="col-md-4">
-        <label class="form-label">City</label>
-        <select formControlName="city" class="form-control" (change)="onCityChange()">
-          <option [ngValue]="null" disabled>Select City</option>
-          <option *ngFor="let city of cities" [value]="city.cityName">{{ city.cityName }}</option>
-        </select>
-      </div>
-    </div>
-
-
-
-<div class="row mt-3">
-<div class="col-2">
-        <label class="form-label">Solo Provider</label>
-<ul class="items-center w-full text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg sm:flex dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-    <li class="w-full border-b border-gray-200 sm:border-b-0 sm:border-r dark:border-gray-600">
-        <div class="flex items-center ps-3">
-            <input type="radio"
-        id="soloYes"
-        name="isSoloProvider"
-        [value]="true"
-        formControlName="isSoloProvider" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300">
-            <label for="horizontal-list-radio-license" class="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Yes</label>
-        </div>
-    </li>
-    <li class="w-full border-b border-gray-200 sm:border-b-0 sm:border-r dark:border-gray-600">
-        <div class="flex items-center ps-3">
-            <input id="horizontal-list-radio-id"  type="radio"
-        id="soloNo"
-        name="isSoloProvider"
-        [value]="false"
-        formControlName="isSoloProvider" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300">
-            <label for="horizontal-list-radio-id" class="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">No</label>
-        </div>
-    </li>
-</ul>
-</div>
-      </div>
-
-      <div class="row mt-3">
-        <div class="col-md-12 text-end">
-          <button type="submit" class="btn customBtn">
-            <i class="fa-solid fa-floppy-disk me-1"></i>
-            {{ isEditMode ? 'Update Client' : 'Save Client' }}
+          
+          <button 
+            class="pagination-btn" 
+            [disabled]="currentPage === totalPages"
+            (click)="nextPage()">
+            <i class="fas fa-chevron-right"></i>
           </button>
         </div>
+        <div class="page-size-selector">
+          <label>Show:</label>
+          <select [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+            <option value="6">6</option>
+            <option value="12">12</option>
+            <option value="24">24</option>
+            <option value="48">48</option>
+          </select>
+        </div>
       </div>
-    </form>
-  </div>
-</div>
-
-
-<div *ngIf="selectedTab === 'Listclient'">
-<div class=" mt-1">
-   <div class="mt-4 rounded-xl bg-white">
-     <div class="flex gap-2 justify-between mb-3">
-      <div class="relative flex items-center">
-      <input
-        type="text"
-        id="searchInput"
-        class="w-full px-4 m-2 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-primary-border-color focus:border-transparent"
-        [(ngModel)]="searchValue"
-        (input)="onQuickFilterChanged()"
-        placeholder="Search patients...">
-      <button
-        class="px-4 py-2 bg-gray-100 text-gray-600 border border-l-0 border-gray-300 rounded-r-lg hover:bg-primary-border-color hover:text-white transition-colors"
-        *ngIf="searchValue"
-        (click)="searchValue=''; onQuickFilterChanged()">
-        Clear
-      </button>
     </div>
-    
- <button 
-  class="flex items-center gap-2 px-2.5 py-1 border border-green-600 text-green-600 rounded-md text-sm hover:bg-green-600 hover:text-white transition"
-  (click)="onExportClick()"
->
-  <i class="fas fa-file-excel text-sm"></i>
-  <span>Export Excel</span>
-</button>
+  </div>
 
-</div>
+      </div>
+  <!-- Client Details View -->
+  <div class="client-details-container" *ngIf="showClientDetails">
+    <div class="details-header">
+      <button class="back-btn" (click)="backToList()">
+        <i class="fas fa-arrow-left"></i>
+        Back to Clients
+      </button>
+      <!-- <h2>Client Details</h2> -->
+      <div class="header-actions">
+        <button class="custom-button btn-info edit" (click)="editSelectedClient()" title="Edit Client">
+          <i class="fas fa-edit pr-2"></i> Edit
+        </button>
+        <button class="custom-button btn-warning delete" disabled  title="Delete Client">
+          <i class="fas fa-trash pr-2"></i> Delete
+        </button>
+      </div>
+    </div>
 
-  
+    <div class="details-card" *ngIf="selectedClient">
+      <div class="client-profile-header">
+        <div class="profile-avatar">
+          <div class="avatar-large" [style.background]="getAvatarColor(selectedClient.initials)">
+            {{ selectedClient.initials }}
+          </div>
+        </div>
+        <div class="profile-info">
+          <h1>{{ selectedClient.name }}</h1>
+          <p class="contact-person">{{ selectedClient.contactPerson }}</p>
+          <span class="status-badge large" [class.solo]="selectedClient.isSoloProvider">
+            {{ selectedClient.isSoloProvider ? 'Solo Provider' : 'Multi Provider' }}
+          </span>
+        </div>
+      </div>
 
-<ag-grid-angular
-  class="ag-theme-alpine ag-theme-custom"
-  [gridOptions]="gridOptions"
-  [rowData]="rowData"
-  [columnDefs]="columnDefs"
-  [defaultColDef]="defaultColDef"
-  [pagination]="true"
-  [paginationPageSize]="paginationPageSize"
-  style="width: 100%; height: 500px;">
-</ag-grid-angular>
+      <div class="details-grid">
+        <div class="detail-section">
+          <h3><i class="fas fa-info-circle"></i> Basic Information</h3>
+          <div class="detail-row">
+            <div class="detail-label">Company Name</div>
+            <div class="detail-value">{{ selectedClient.name }}</div>
+          </div>
+      
+          <div class="detail-row">
+            <div class="detail-label">Provider Type</div>
+            <div class="detail-value">
+              <span class="status-badge" [class.solo]="selectedClient.isSoloProvider">
+                {{ selectedClient.isSoloProvider ? 'Solo Provider' : 'Multi Provider' }}
+              </span>
+            </div>
+          </div>
+        </div>
 
+        <div class="detail-section">
+          <h3><i class="fas fa-address-book"></i> Contact Information</h3>
+          
+          <div class="detail-row">
+            <div class="detail-label">Phone Number</div>
+            <div class="detail-value">
+              <i class="fas fa-phone"></i>
+              (+{{ selectedClient.mobilePrefixCode }}) {{ selectedClient.phoneNumber }}
+            </div>
+          </div>
+        </div>
 
-</div>
+        <div class="detail-section">
+          <h3><i class="fas fa-map-marker-alt"></i> Address Information</h3>
+          <div class="detail-row">
+            <div class="detail-label">Address</div>
+            <div class="detail-value">
+              <i class="fas fa-map-pin"></i>
+              {{ selectedClient.address }}
+            </div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-label">City</div>
+            <div class="detail-value">{{ selectedClient.cityName }}</div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-label">State</div>
+            <div class="detail-value">{{ selectedClient.stateName || 'N/A' }}</div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-label">Country</div>
+            <div class="detail-value">
+              <i class="fas fa-globe"></i>
+              {{ selectedClient.countryName }}
+            </div>
+          </div>
+          <div class="detail-row" *ngIf="selectedClient.zipCode">
+            <div class="detail-label">ZIP Code</div>
+            <div class="detail-value">{{ selectedClient.zipCode }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-</div>
-</div>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<!-- <div class="max-w-4xl mx-auto p-6 bg-white rounded-xl shadow-md">
-  <h2 class="text-2xl font-semibold mb-6">➕ Add Client</h2>
-
+  <!-- Edit Client Popup Modal -->
+  <div class="modal-backdrop" *ngIf="showEditForm" (click)="closeEditForm()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <i class="fas fa-edit me-2"></i>
+          {{ isEditMode ? 'Edit Client' : 'Add New Client' }}
+        </h3>
+        <button type="button" class="btn-close" (click)="closeEditForm()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+    <div class="modal-body">
   <form [formGroup]="clientForm" (ngSubmit)="onSubmit()">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div>
-        <label for="name" class="block text-sm font-medium text-gray-700">Client Name</label>
-        <input id="name" type="text" formControlName="name"
-               class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-primary focus:border-primary" />
+    <!-- Row 1 -->
+    <div class="row">
+      <div class="col-md-4 col-12">
+        <label for="name" class="form-label">Client Name</label>
+        <input type="text" id="name" formControlName="name"
+          class="form-control" placeholder="Enter Client Name"
+          [ngClass]="{
+            'is-invalid': clientSubmitted && addUser['name'].invalid,
+            'is-valid': clientSubmitted && addUser['name'].valid
+          }" />
+        <div *ngIf="clientSubmitted && addUser['name'].errors" class="invalid-feedback">
+          <div *ngIf="addUser['name'].errors['required']">Client Name is required</div>
+        </div>
       </div>
 
-      <div>
-        <label for="contactPerson" class="block text-sm font-medium text-gray-700">Contact Person</label>
-        <input id="contactPerson" type="text" formControlName="contactPerson"
-               class="mt-1 block w-full border border-gray-300 rounded-md p-2" />
+      <div class="col-md-4 col-12">
+        <label for="phoneNumber" class="form-label">Phone Number</label>
+        <input type="text" id="phoneNumber" formControlName="phoneNumber"
+          class="form-control" placeholder="Enter Phone Number"
+          [ngClass]="{
+            'is-invalid': clientSubmitted && addUser['phoneNumber'].invalid,
+            'is-valid': clientSubmitted && addUser['phoneNumber'].valid
+          }" />
+        <div *ngIf="clientSubmitted && addUser['phoneNumber'].errors" class="invalid-feedback">
+          <div *ngIf="addUser['phoneNumber'].errors['required']">Phone Number is required</div>
+        </div>
       </div>
 
-      <div>
-        <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-        <input id="email" type="email" formControlName="email"
-               class="mt-1 block w-full border border-gray-300 rounded-md p-2" />
+      <div class="col-md-4 col-12">
+        <label for="address" class="form-label">Address</label>
+        <input id="address" formControlName="address"
+          class="form-control" placeholder="Enter Address"
+          [ngClass]="{
+            'is-invalid': clientSubmitted && addUser['address'].invalid,
+            'is-valid': clientSubmitted && addUser['address'].valid
+          }">
+        <div *ngIf="clientSubmitted && addUser['address'].errors" class="invalid-feedback">
+          <div *ngIf="addUser['address'].errors['required']">Address is required</div>
+        </div>
       </div>
+    </div>
 
-      <div>
-        <label for="phoneNumber" class="block text-sm font-medium text-gray-700">Phone Number</label>
-        <input id="phoneNumber" type="text" formControlName="phoneNumber"
-               class="mt-1 block w-full border border-gray-300 rounded-md p-2" />
-      </div>
-
-      <div>
-        <label for="country" class="block text-sm font-medium text-gray-700">Country</label>
-        <select id="country" formControlName="countryDataId"
-                class="mt-1 block w-full border border-gray-300 rounded-md p-2">
-          <option value="">-- Select Country --</option>
-          <option *ngFor="let country of countryList" [value]="country.id">
-            {{ country.country }} ({{ country.mobilePrefixCode }})
+    <!-- Row 2 -->
+    <div class="row mt-3">
+      <div class="col-md-4 col-12">
+        <label class="form-label">Country</label>
+        <select formControlName="Country" class="form-control" (change)="onCountryChange()">
+          <option [ngValue]="null" disabled>Select Country</option>
+          <option *ngFor="let country of countryList" [ngValue]="country">
+            {{ country.country }}
           </option>
         </select>
       </div>
 
-      <div class="md:col-span-2">
-        <label for="address" class="block text-sm font-medium text-gray-700">Address</label>
-        <textarea id="address" rows="3" formControlName="address"
-                  class="mt-1 block w-full border border-gray-300 rounded-md p-2"></textarea>
+      <div class="col-md-4 col-12">
+        <label class="form-label">State</label>
+        <select formControlName="state" class="form-control" (change)="onStateChange()">
+          <option [ngValue]="null" disabled>Select State</option>
+          <option *ngFor="let state of states" [ngValue]="state.stateCode">
+            {{ state.stateName }}
+          </option>
+        </select>
+      </div>
+
+      <div class="col-md-4 col-12">
+        <label class="form-label">City</label>
+        <select formControlName="city" class="form-control" (change)="onCityChange()">
+          <option [ngValue]="null" disabled>Select City</option>
+          <option *ngFor="let city of cities" [ngValue]="city.cityName">
+            {{ city.cityName }}
+          </option>
+        </select>
       </div>
     </div>
 
-    <div class="mt-6">
-      <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-              [disabled]="clientForm.invalid">
-        Save Client
-      </button>
+    <!-- Row 3 -->
+    <div class="row mt-3">
+      <div class="col-md-4 col-12">
+        <label class="form-label">Zip Code</label>
+       <select formControlName="countryDataId" class="form-control">
+  <option [ngValue]="null" disabled>Select Zip Code</option>
+  <option *ngFor="let zip of zipCodes" [ngValue]="zip.id">{{ zip.zipCode }}</option>
+</select>
+
+      </div>
+
+      <div class="col-md-4 col-12">
+        <label class="form-label">Solo Provider</label>
+        <ul
+          class="items-center w-full text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg sm:flex dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+          <li class="w-full border-b border-gray-200 sm:border-b-0 sm:border-r dark:border-gray-600">
+            <div class="flex items-center ps-3">
+              <input type="radio" id="soloYes" name="isSoloProvider" [value]="true"
+                formControlName="isSoloProvider" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300">
+              <label for="soloYes"
+                class="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Yes</label>
+            </div>
+          </li>
+          <li class="w-full border-b border-gray-200 sm:border-b-0 sm:border-r dark:border-gray-600">
+            <div class="flex items-center ps-3">
+              <input id="soloNo" type="radio" name="isSoloProvider" [value]="false"
+                formControlName="isSoloProvider" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300">
+              <label for="soloNo"
+                class="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">No</label>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Submit Row -->
+    <div class="row mt-4">
+      <div class="col-md-12 text-end">
+        <button type="button" class="custom-button btn-outline me-2" (click)="closeEditForm()">
+          <i class="fas fa-times me-1"></i>
+          Cancel
+        </button>
+        <button type="submit" class="custom-button" [disabled]="isSubmitting">
+          <i class="fa-solid fa-floppy-disk me-1"></i>
+          {{ isEditMode ? 'Update Client' : 'Save Client' }}
+          <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm ms-2"></span>
+        </button>
+      </div>
     </div>
   </form>
-</div> -->
+</div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div *ngIf="showDeleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-1000">
+  <div class="bg-white rounded-xl shadow-2xl max-w-md w-full transform transition-all">
+    <div class="p-6 border-b border-gray-200">
+      <div class="flex items-center gap-3 text-red-500">
+        <i class="fas fa-exclamation-triangle text-xl"></i>
+        <h3 class="text-xl font-semibold">Delete Client</h3>
+      </div>
+    </div>
+
+    <div class="p-6">
+      <p class="text-gray-700 mb-2 dark-mode-text">
+        Are you sure you want to delete the client 
+        <strong>"{{ selectedClientForDelete?.name }}"</strong>?
+      </p>
+      <p class="text-sm text-gray-500">This action cannot be undone.</p>
+
+      <div class="flex justify-content-end gap-2 mt-3 pt-3 border-t border-gray-200">
+        <button 
+          (click)="closeDeleteModal()"
+          class="custom-button btn-outline transition">
+          Cancel
+        </button>
+        <button 
+          (click)="confirmDelete()"
+          class="bg-red-500 text-white py-2 px-3 rounded-lg font-medium hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center gap-2">
+          <i class="fas fa-trash"></i>
+          Delete Client
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

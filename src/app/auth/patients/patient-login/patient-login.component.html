@@ -1,173 +1,217 @@
 <div class="min-h-screen flex items-center justify-center p-4">
-  <div class="flex flex-col md:flex-row bg-white shadow-md rounded-md overflow-hidden w-full max-w-5xl">
-    <div class="w-full md:w-3/5 bg-orange-400 flex items-center justify-center p-6 sm:p-8">
-      <div class="relative w-full max-w-xs overflow-hidden rounded-sm">
-      <div class="slider flex transition-transform duration-1000 ease-in-out">
+  <div class="flex flex-col md:flex-row bg-white shadow-xl rounded-xl overflow-hidden w-full max-w-6xl">
+
+    <!-- Image Section -->
+    <div class="w-full md:w-2/5 bg-gradient-to-br from-orange-300 to-orange-400 flex items-center justify-center p-6 md:p-8">
+      <div class="w-full max-w-xs text-center">
+        <div class="relative w-full overflow-hidden rounded-xl bg-opacity-20 p-3 shadow-lg">
           <div
-          #sliderRef
-          class="slider flex transition-transform duration-1000 ease-in-out"
-          [style.transform]="'translateX(-' + currentIndex * 100 + '%)'"
-          [style.transition]="isTransitionEnabled ? 'transform 1s ease-in-out' : 'none'"
-        >
-          <img
-            *ngFor="let img of imageList"
-            [src]="img"
-            alt="Doctor"
-            
-            class="w-full h-auto object-contain flex-shrink-0"
-          />
-          <img
-            [src]="imageList[0]"
-            alt="Clone"
-            class="w-full h-auto object-contain flex-shrink-0"
-          />
+            #sliderRef
+            class="slider flex transition-transform duration-1000 ease-in-out"
+            [style.transform]="'translateX(-' + currentIndex * 100 + '%)'"
+            [style.transition]="isTransitionEnabled ? 'transform 1s ease-in-out' : 'none'"
+          >
+            <img
+              *ngFor="let img of imageList"
+              [src]="img"
+              alt="Patient"
+              class="w-56 h-56 object-contain flex-shrink-0 mx-auto rounded-lg"
+            />
+            <img
+              [src]="imageList[0]"
+              alt="Clone"
+              class="w-56 h-56 object-contain flex-shrink-0 mx-auto rounded-lg"
+            />
+          </div>
         </div>
+
+        <div class="mt-6 text-white">
+          <h3 class="text-xl font-bold">Welcome Back, Patient!</h3>
+          <p class="mt-2 text-sm opacity-90">Log in to access your health records and services</p>
+        </div>
+
+        <!-- Slider indicators -->
+        <div class="flex justify-center mt-4 space-x-2">
+          <div *ngFor="let img of imageList; let i = index"
+               class="w-2 h-2 rounded-full bg-white transition-all duration-300"
+               [class]="{'opacity-100': currentIndex === i, 'opacity-40': currentIndex !== i}">
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="w-full md:w-1/2 p-6 sm:p-8">
-      <h2 class="text-1xl sm:text-2xl font-semibold text-orange-400 mb-1 mt-2 sm:mt-3 text-center">
-            Sign in to your account
- 
-      </h2>
+    <!-- Form Section -->
+    <div class="w-full md:w-3/5 p-6 sm:p-8 md:p-10 flex flex-col justify-center">
+      <div class="text-center mb-6">
+        <h2 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">Patient Login</h2>
+        <p class="text-gray-600 text-sm">Access your personalized health dashboard</p>
+      </div>
 
-      <form class="space-y-4"  [formGroup]="patientsLoginForm" (ngSubmit)="onloginSubmit()">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-          <input
-            type="email"
-            formControlName="usernameOrEmail"
-            placeholder="Enter your email"
-            name="email"
-class="form-control"              [ngClass]="{
-              'is-invalid': loginSubmitted && loginUser['usernameOrEmail'].invalid,
-              'is-valid': loginSubmitted && loginUser['usernameOrEmail'].valid
-            }"
-          />
-             <div *ngIf="loginSubmitted && loginUser['usernameOrEmail'].errors" class="text-sm text-red-500 mt-1">
+      <form class="space-y-5" [formGroup]="patientsLoginForm" (ngSubmit)="onloginSubmit()">
+
+        <!-- Email -->
+        <div class="email">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+          <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <input type="email" placeholder="Enter your email" formControlName="usernameOrEmail"
+                   class="form-control"
+                   [ngClass]="{
+                      'border-red-500': loginSubmitted && loginUser['usernameOrEmail'].invalid,
+                      'border-green-500': loginSubmitted && loginUser['usernameOrEmail'].valid
+                   }"
+            />
+          </div>
+          <div *ngIf="loginSubmitted && loginUser['usernameOrEmail'].errors" class="text-sm text-red-500 mt-1 ml-1">
             <div *ngIf="loginUser['usernameOrEmail'].errors['required']">Email is required</div>
-            <div *ngIf="loginUser['usernameOrEmail'].errors['email']">Email is invalid</div>
+            <div *ngIf="loginUser['usernameOrEmail'].errors['email']">Enter valid email</div>
           </div>
         </div>
 
-        <div>
+        <!-- Password -->
+        <div class="pass">
           <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
-          <input
-            [type]="showPassword ? 'text' : 'password'"
-            placeholder="Enter your password"
-            formControlName="password"
-            name="password"
-class="form-control"             [ngClass]="{
-              'is-invalid': loginSubmitted && loginUser['password'].invalid,
-              'is-valid': loginSubmitted && loginUser['password'].valid
-            }"
-          />
-           <div *ngIf="PasswordValue?.length > 0"
-      class="absolute inset-y-0 right-3 flex items-center text-gray-400 cursor-pointer"
-      (click)="togglePasswordVisibility()"
-    >
-      <i [class]="showPassword ? 'fas fa-eye' : 'fas fa-eye-slash'"></i>
-    </div>
-             <div *ngIf="loginSubmitted && loginUser['password'].errors" class="text-sm text-red-500 mt-1">
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+            <input
+              [type]="showPassword ? 'text' : 'password'"
+              placeholder="Enter your password"
+              formControlName="password"
+              class="form-control"
+              (input)="onPasswordInput()"
+              [ngClass]="{
+                'border-red-500': loginSubmitted && loginUser['password'].invalid,
+                'border-green-500': loginSubmitted && loginUser['password'].valid
+              }"
+            />
+            <!-- Eye Icon -->
+            <div class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 cursor-pointer hover:text-gray-600 transition"
+                 (click)="togglePasswordVisibility()">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path *ngIf="showPassword" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                <path *ngIf="!showPassword" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+              </svg>
+            </div>
+          </div>
+          <div *ngIf="loginSubmitted && loginUser['password'].errors" class="text-sm text-red-500 mt-1 ml-1">
             <div *ngIf="loginUser['password'].errors['required']">Password is required</div>
           </div>
         </div>
 
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between text-sm text-gray-600 gap-2">
-          <label class="inline-flex items-center">
-            <input type="checkbox" class="form-checkbox text-orange-600" />
-            <span class="ml-2">Remember me for 30 days</span>
+        <!-- Remember & Forgot -->
+        <div class="flex items-center justify-between text-sm">
+          <label class="flex items-center space-x-2 cursor-pointer">
+            <!-- <div class="relative">
+              <input type="checkbox" class="sr-only peer" id="remember">
+              <div class="w-4 h-4 bg-gray-100 border border-gray-300 rounded peer-checked:bg-orange-300 peer-checked:border-orange-300 transition"></div>
+              <svg class="absolute top-0.5 left-0.5 w-3 h-3 text-white opacity-0 peer-checked:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+            </div> -->
+            <!-- <span class="text-gray-600 select-none">Remember me for 30 days</span> -->
           </label>
-          <a  class="text-orange-600 hover:text-orange-500 transition">
-            Forgot Password?
+          <a [routerLink]="['/forgot-password']" class="text-orange-300 hover:text-orange-400 transition font-medium cursor-pointer">
+            Forgot password?
           </a>
         </div>
-        <button type="submit" class="w-full bg-orange-400 text-white py-2 rounded-md hover:bg-orange-600 transition">
-          Log In <i class="fas fa-arrow-right ml-3"></i>
+
+        <!-- Login Button -->
+        <button type="submit"
+                class="w-full custom-button hover:bg-orange-400 focus:ring-4 focus:ring-orange-200 transition flex items-center justify-center">
+          Log In 
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+          </svg>
         </button>
-        <div class="text-center text-sm mt-4">
-          Don’t have an account?
-          <a class="text-orange-600 hover:text-orange-500 transition">
+
+        <!-- <p class="text-center text-sm text-gray-600">
+          Don't have an account?
+          <a class="text-orange-300 hover:text-orange-400 transition font-medium ml-1 cursor-pointer">
             Sign up
           </a>
-        </div>
+        </p> -->
       </form>
-       <p class="text-xs text-center text-gray-400 mt-6 ">
+
+      <div class="mt-3 pt-3 border-t border-gray-200">
+        <!-- <p class="text-xs text-center text-gray-500">
           By signing in, you agree to our
-          <a  class="text-orange-500 hover:text-primary-orange cursor-pointer">Terms of Service</a>
+          <a class="text-orange-300 hover:text-orange-400 cursor-pointer">Terms of Service</a>
           and
-          <a  class="text-orange-500 hover:text-primary-orange cursor-pointer">Privacy Policy</a>.
-        </p>
+          <a class="text-orange-300 hover:text-orange-400 cursor-pointer">Privacy Policy</a>.
+        </p> -->
+      </div>
     </div>
   </div>
 </div>
 
-<!-- <div *ngIf="showInitialPopup" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-  <div class="bg-white rounded-xl shadow-xl p-8 w-full max-w-xl text-center animate-fadeIn">
-    <h2 class="text-2xl font-bold text-gray-800 mb-6">CHOOSE AN OPTION</h2>
+<!-- ================= EMAIL OTP MODAL ================= -->
 
-    <div class="flex flex-col md:flex-row gap-6 justify-center">
-      <div (click)="openPdfUpload('uploadPdf')"
-           class="card-customBtn cursor-pointer w-40 h-40 flex flex-col items-center justify-center rounded-xl bg-white border-orange-600 border-2 hover:border-primary-border-color  shadow-lg transition">
-        <i class="fas fa-file-upload text-4xl text-orange-600 mb-3"></i>
-        <p class="font-medium text-gray-700 hover:text-white">Upload PDF</p>
-      </div>
+<div
+  class="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50"
+  *ngIf="step === 'emailOtp'">
 
-      <div class="cursor-pointer w-40 h-40 flex flex-col items-center card-customBtn justify-center rounded-xl bg-white border-orange-600 border-2 hover:border-primary-border-color shadow-lg transition" (click)="openAssessmentForm('assessment')">
-        <i class="fas fa-clipboard-list text-4xl text-orange-500 mb-3"></i>
-        <p class="font-medium text-gray-700 hover:text-white">Assessment Form</p>
-      </div>
+  <div class="bg-white p-6 rounded-xl w-full max-w-sm shadow-2xl mx-4 relative">
+
+    <!-- CLOSE BUTTON -->
+    <button
+  type="button"
+  class="absolute top-3 right-3 text-red-600 hover:text-red-800 font-bold text-xl leading-none transition"
+  aria-label="Close"
+  (click)="closeOtpModal()">
+  ✕
+</button>
+
+
+    <h2 class="text-2xl font-bold text-gray-800 mb-2 text-center">
+      Email Verification
+    </h2>
+
+    <p class="text-sm text-gray-600 text-center mb-6">
+      An OTP has been sent to your registered email address
+    </p>
+
+    <!-- OTP INPUTS -->
+    <div class="flex justify-center space-x-3 mb-6">
+      <ng-container *ngFor="let d of [0,1,2,3,4,5]; let i = index">
+        <input
+          type="text"
+          maxlength="1"
+          class="w-12 h-12 text-center text-lg border rounded-lg form-control"
+          inputmode="numeric"
+          (input)="handle2FAInput($event, i)"
+          (keydown)="onOtpKeyDown($event, i)"
+        />
+      </ng-container>
     </div>
-    <div class="mt-6">
-      <button class="text-gray-500 hover:text-gray-800 customBtn-secondary" (click)="closeAll()">Cancel</button>
-    </div>
-  </div>
-</div> -->
 
-<!-- <div *ngIf="isshowupload">
-<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-  
-  <div class="bg-white rounded-xl shadow-lg max-w-4xl w-full mx-4 p-6 animate-fadeIn">
-    <h2 class="text-xl font-semibold mb-4 text-orange-600">Upload Files</h2>
+    <!-- VERIFY BUTTON -->
+    <button
+      type="button"
+      class="w-full custom-button"
+      [disabled]="otpCode.length !== 6"
+      (click)="verifyOtp()">
+      Verify & Login
+    </button>
 
-    <div class="flex flex-col md:flex-row gap-6">
-<div class="flex-1 border-2 border-dashed border-orange-300 rounded-lg flex flex-col items-center justify-center p-6 text-center text-gray-600 relative">
-  <i class="fas fa-file-upload text-4xl text-orange-600 mb-3"></i>
-  <p class="font-medium">Drag & Drop your files here</p>
-  <p class="text-sm mt-1">
-    or 
-    <span class="text-orange-500 underline cursor-pointer" (click)="fileInput.click()">Browse</span>
-  </p>
-  <p class="text-xs text-gray-500 mt-2">Only PDF, Excel, and .jpg formats allowed. Max size: 10 MB</p>
-  <input #fileInput type="file" multiple (change)="onFileSelected($event)" class="hidden" />
-</div>
-
-      <div class="flex-1">
-        <table class="w-full text-left text-sm">
-          <thead>
-            <tr class="text-gray-500 border-b">
-              <th class="py-2">File Name</th>
-              <th class="py-2">Status</th>
-            </tr>
-          </thead>
-         <tbody>
-  <tr *ngFor="let file of selectedFiles" class="border-b">
-    <td class="py-2">{{ file.name }}</td>
-    <td class="py-2" [ngClass]="file.status === 'Success' ? 'text-green-600' : 'text-red-500'">
-      {{ file.status }}
-    </td>
-  </tr>
-</tbody>
-
-        </table>
-      </div>
-    </div>
-    <div class="mt-6 flex justify-end">
-      <button class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-md" (click)="closeAll()">
-        Close
+    <!-- RESEND OTP -->
+    <div class="mt-4 text-center">
+      <button
+        type="button"
+        class="text-sm text-orange-300 hover:text-orange-400"
+        (click)="resendOtp()">
+        Resend OTP
       </button>
     </div>
+
   </div>
 </div>
-</div> -->

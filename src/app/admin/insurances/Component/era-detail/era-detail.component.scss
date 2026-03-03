@@ -1,0 +1,272 @@
+.era-detail-container {
+  @apply p-6 max-w-6xl mx-auto;
+}
+
+.loading-state, .error-state {
+  @apply flex flex-col items-center justify-center py-16 space-y-4;
+}
+
+.loading-spinner {
+  @apply w-8 h-8 border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin;
+}
+
+.back-button {
+  @apply flex items-center gap-2 text-gray-600 hover:text-gray-800 mb-6 transition-colors;
+}
+
+.detail-header {
+  @apply mb-8;
+}
+
+.header-content {
+  @apply flex items-start justify-between;
+}
+
+.era-info {
+  @apply space-y-3;
+}
+
+.era-title {
+  @apply text-3xl font-bold text-gray-900;
+}
+
+.era-meta {
+  @apply flex items-center gap-4 flex-wrap;
+}
+
+.era-check {
+  @apply text-lg font-semibold text-gray-700;
+}
+
+.era-date {
+  @apply text-gray-600;
+}
+
+.era-status {
+  @apply px-3 py-1 text-sm font-medium rounded-full;
+}
+
+.header-actions {
+  @apply flex items-center gap-3;
+}
+
+.era-summary {
+  @apply bg-white rounded-2xl shadow-lg border border-primary-100 p-6 mb-8;
+  box-shadow: 0 8px 24px rgba(255, 161, 87, 0.08);
+}
+
+.summary-grid {
+  @apply grid grid-cols-1 md:grid-cols-4 gap-6;
+}
+
+.summary-item {
+  @apply text-center p-4 bg-gray-50 rounded-xl;
+}
+
+.summary-label {
+  @apply text-sm font-medium text-gray-600 mb-2;
+}
+
+.summary-value {
+  @apply text-xl font-bold text-gray-900;
+}
+
+.claims-section {
+  @apply space-y-6;
+}
+
+.section-title {
+  @apply text-2xl font-bold text-gray-900 mb-6;
+}
+
+.claims-list {
+  @apply space-y-6;
+}
+
+.claim-card {
+  @apply bg-white rounded-2xl shadow-lg border border-primary-100 overflow-hidden;
+  box-shadow: 0 8px 24px rgba(255, 161, 87, 0.08);
+}
+
+.claim-header {
+  @apply flex items-start justify-between p-6 border-b border-gray-100 bg-gray-50;
+}
+
+.claim-info {
+  @apply space-y-1;
+}
+
+.claim-patient {
+  @apply text-lg font-bold text-gray-900;
+}
+
+.claim-control {
+  @apply text-sm text-gray-600;
+}
+
+.claim-service-date {
+  @apply text-sm text-gray-500;
+}
+
+.claim-status-section {
+  @apply text-right space-y-2;
+}
+
+.claim-status {
+  @apply px-3 py-1 text-sm font-medium rounded-full;
+}
+
+.claim-amount {
+  @apply text-xl font-bold text-gray-900;
+}
+
+.claim-details {
+  @apply p-6 space-y-6;
+}
+
+.amounts-grid {
+  @apply grid grid-cols-1 md:grid-cols-3 gap-4;
+}
+
+.amount-item {
+  @apply flex justify-between items-center p-3 bg-gray-50 rounded-lg;
+}
+
+.amount-label {
+  @apply text-sm font-medium text-gray-600;
+}
+
+.amount-value {
+  @apply text-sm font-bold text-gray-900;
+  
+  &.paid {
+    @apply text-green-600;
+  }
+  
+  &.responsibility {
+    @apply text-orange-400;
+  }
+}
+
+.services-section {
+  @apply space-y-4;
+}
+
+.services-title {
+  @apply text-lg font-semibold text-gray-900;
+}
+
+.services-list {
+  @apply space-y-3;
+}
+
+.service-item {
+  @apply p-4 bg-blue-50 rounded-xl border border-blue-200;
+}
+
+.service-info {
+  @apply flex items-center gap-3 mb-3;
+}
+
+.service-code {
+  @apply px-2 py-1 bg-blue-500 text-white text-sm font-mono rounded;
+}
+
+.service-modifiers {
+  @apply px-2 py-1 bg-gray-200 text-gray-700 text-xs font-mono rounded;
+}
+
+.service-units {
+  @apply text-sm text-gray-600;
+}
+
+.service-amounts {
+  @apply grid grid-cols-1 md:grid-cols-3 gap-3;
+}
+
+.service-amount-item {
+  @apply flex justify-between items-center;
+}
+
+.service-amount-label {
+  @apply text-xs font-medium text-gray-600;
+}
+
+.service-amount-value {
+  @apply text-sm font-semibold text-gray-900;
+  
+  &.paid {
+    @apply text-green-600;
+  }
+}
+
+.adjustments-section {
+  @apply space-y-3;
+}
+
+.adjustments-title {
+  @apply text-lg font-semibold text-gray-900;
+}
+
+.adjustments-list {
+  @apply space-y-2;
+}
+
+.adjustment-item {
+  @apply flex items-center justify-between p-3 bg-yellow-50 rounded-lg border border-yellow-200;
+}
+
+.adjustment-code {
+  @apply px-2 py-1 bg-yellow-500 text-white text-xs font-mono rounded;
+}
+
+.adjustment-reason {
+  @apply flex-1 mx-3 text-sm text-gray-700;
+}
+
+.adjustment-amount {
+  @apply text-sm font-semibold text-yellow-700;
+}
+
+.remarks-section {
+  @apply space-y-3;
+}
+
+.remarks-title {
+  @apply text-lg font-semibold text-gray-900;
+}
+
+.remarks-list {
+  @apply space-y-2;
+}
+
+.remark-item {
+  @apply p-3 bg-gray-50 rounded-lg text-sm text-gray-700;
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .header-content {
+    @apply flex-col gap-4;
+  }
+  
+  .era-meta {
+    @apply flex-col items-start gap-2;
+  }
+  
+  .header-actions {
+    @apply w-full justify-end;
+  }
+  
+  .summary-grid {
+    @apply grid-cols-1 md:grid-cols-2;
+  }
+  
+  .amounts-grid {
+    @apply grid-cols-1;
+  }
+  
+  .service-amounts {
+    @apply grid-cols-1;
+  }
+}

@@ -48,7 +48,7 @@ export class CommonAgGridComponent {
   }
 
   onCellClicked(event: any) {
-    debugger
+    
     if (event.colDef.field !== 'actions') return;
 
     const id = event.data.id;

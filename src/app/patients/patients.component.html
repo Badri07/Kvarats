@@ -1,117 +1,114 @@
 <div style="background-color: #F9F4F1;">
 
   <!-- Navbar -->
-  <nav class="flex justify-between items-center px-8 py-4 shadow" style="background-color: #FFFFFF;">
+  <nav class="flex justify-between items-center px-8 py-3 shadow-sm" style="background-color: #FFFFFF;">
     <div class="flex items-center space-x-2">
       <!-- Logo -->
       <img [src]="logo" alt="CareSlot Logo" class="w-40">
     </div>
 
-    <ul class="flex space-x-6" style="color: #555555;">
-      <li>
-        <a
-          routerLink="dashboard"
-          routerLinkActive="active-menu"
-          [routerLinkActiveOptions]="{ exact: true }"
-          class="px-4 py-2 rounded hover:text-white hover:bg-[#FFA157] transition-colors">
-          Dashboard
-        </a>
-      </li>
-      <li>
-        <a
-          routerLink="patients-appointments"
-          routerLinkActive="active-menu"
-          class="px-4 py-2 rounded hover:text-white hover:bg-[#FFA157] transition-colors">
-          Appointment
-        </a>
-      </li>
-      <li>
-        <a
-          routerLink="payment"
-          routerLinkActive="active-menu"
-          class="px-4 py-2 rounded hover:text-white hover:bg-[#FFA157] transition-colors">
-          Payments
-        </a>
-      </li>
-      <li>
-        <a
-          routerLink="service"
-          routerLinkActive="active-menu"
-          class="px-3 py-1 rounded hover:text-white hover:bg-[#FFA157] transition-colors">
-          Service
-        </a>
-      </li>
-    </ul>
+     <ul class="nav-menu">
+        <li>
+          <a
+            routerLink="dashboard"
+            routerLinkActive="active-menu"
+            [routerLinkActiveOptions]="{ exact: true }"
+            class="nav-link">
+            <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+            <span>Dashboard</span>
+          </a>
+        </li>
+          <li>
+          <a
+            routerLink="file-upload"
+            routerLinkActive="active-menu"
+            class="nav-link">
+            <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" 
+     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" 
+     stroke-linecap="round" stroke-linejoin="round">
+  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+  <polyline points="14 2 14 8 20 8"/>
+  <line x1="16" y1="13" x2="8" y2="13"/>
+  <line x1="16" y1="17" x2="8" y2="17"/>
+</svg>
 
-    <!-- User avatar + name container wrapped in relative -->
-    <div class="relative" #menuToggle>
+            <span>Patients File</span>
+          </a>
+        </li>
+        <li>
+          <a
+            routerLink="patients-appointments"
+            routerLinkActive="active-menu"
+            class="nav-link">
+            <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            <span>Consultation</span>
+          </a>
+        </li>
+
+          <li>
+          <a
+            routerLink="notes"
+            routerLinkActive="active-menu"
+            class="nav-link">
+            <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            <span>Notes</span>
+          </a>
+        </li>
+
+        <li>
+          <a
+            routerLink="payment"
+            routerLinkActive="active-menu"
+            class="nav-link">
+            <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            <span>Payments</span>
+          </a>
+        </li>
+      </ul>
+
+    <!-- User avatar with initials -->
+    <div class="relative">
       <div
         class="flex items-center space-x-3 text-gray-800 cursor-pointer"
         (click)="toggleMenu($event)">
-        <div class="w-8 h-8 rounded-full overflow-hidden">
-          <img
-            src="https://randomuser.me/api/portraits/women/31.jpg"
-            alt="User"
-            class="w-full h-full object-cover" />
+        <div class="w-8 h-8 rounded-full bg-orange-400 flex items-center justify-center text-white font-semibold text-xs">
+          {{ getUserInitials() }}
         </div>
-        <span>{{ userName }}</span>
+        <span class="text-sm">{{ userName }}</span>
       </div>
 
-      <!-- Dropdown menu aligned relative to above container -->
+      <!-- Logout popup -->
       <div
         *ngIf="menuOpen"
-        class="absolute right-0 mt-2 w-96 bg-white border rounded shadow-lg z-50"
+        class="absolute right-0 mt-2 w-48 bg-white border rounded shadow-lg z-50"
         (click)="$event.stopPropagation()">
-        <div class="bg-white rounded-lg  p-6 shadow-lg relative w-full">
-          <!-- Close button -->
-          <button aria-label="Close" class="absolute top-4 right-4 text-black hover:text-gray-700">
+        <div class="p-2">
+          <button 
+            (click)="logout()"
+            class="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100 rounded flex items-center space-x-2">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7" />
             </svg>
+            <span>Logout</span>
           </button>
-
-          <!-- Email -->
-          <p class="text-center font-semibold mb-4 truncate text-black">{{email}}</p>
-
-          <!-- Profile image -->
-          <div class="flex justify-center mb-4 relative">
-            <img
-              src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&auto=format&fit=crop&w=64&q=80"
-              alt="Profile"
-              class="w-16 h-16 rounded-full object-cover" />
-            
-          </div>
-
-          <!-- Greeting -->
-          <h2 class="text-center text-xl font-semibold mb-4 text-black">Hi, {{ userName }}!</h2>
-
-          <!-- Manage Account Button -->
-          <button class="w-full border border-gray-400 rounded-full py-2 mb-6 text-black hover:bg-gray-100 transition">
-            Manage your Google Account
-          </button>
-
-          <!-- Actions -->
-          <div class="flex space-x-2">
-            <button
-              class="flex-1 bg-white border border-gray-300 rounded-full py-2 text-black hover:bg-gray-100 transition flex items-center justify-center space-x-2">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-              </svg>
-              <span>Add account</span>
-            </button>
-            <button (click)="logout()"
-              class="flex-1 bg-white border border-gray-300 rounded-full py-2 text-black hover:bg-gray-100 transition flex items-center justify-center space-x-2">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7" />
-              </svg>
-              <span>Sign out</span>
-            </button>
-          </div>
-
-          <!-- Footer -->
-          <p class="text-center text-xs text-gray-500 mt-6">
-            Privacy policy &middot; Terms of Service
-          </p>
         </div>
       </div>
     </div>

@@ -22,6 +22,8 @@ export interface DropdownModel{
 
 
 export interface Client {
+  data?:any;
+  Message?:any;
   firstName: string;
   middleName?: string;
   lastName: string;
@@ -78,4 +80,6 @@ export interface UploadedFile {
 export interface InsuranceCarrier {
   id: number;
   name: string;
+  description: string;
+  data:string;
 }

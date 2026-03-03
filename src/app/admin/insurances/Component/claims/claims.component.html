@@ -1,0 +1,389 @@
+<div class="claims-container">
+  <!-- Header -->
+  <div class="claims-header">
+    <div class="header-content">
+      <h1 class="claims-title">Insurance Claims</h1>
+      <p class="claims-subtitle">Submit and track insurance claims for therapy services</p>
+    </div>
+    <div class="header-actions">
+      <app-button variant="outline" (click)="clearFilters()">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+        </svg>
+        Clear Filters
+      </app-button>
+      <app-button variant="primary" (click)="createClaim()">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+        </svg>
+        Create Claim
+      </app-button>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-state">
+      <div class="loading-spinner"></div>
+      <p>Loading claims...</p>
+    </div>
+  } @else {
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-blue">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ totalClaims() }}</div>
+          <div class="stat-label">Total Claims</div>
+          <div class="stat-change positive">{{ formatCurrency(totalBilled()) }} billed</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-yellow">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ pendingClaims() }}</div>
+          <div class="stat-label">Pending Claims</div>
+          <div class="stat-change neutral">Awaiting processing</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-green">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ approvedClaims() }}</div>
+          <div class="stat-label">Approved Claims</div>
+          <div class="stat-change positive">{{ formatCurrency(totalPaid()) }} paid</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-red">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ deniedClaims() }}</div>
+          <div class="stat-label">Denied Claims</div>
+          <div class="stat-change negative">{{ totalClaims() > 0 ? Math.round((deniedClaims() / totalClaims()) * 100) : 0 }}% denial rate</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-card">
+      <form [formGroup]="filterForm" class="filters-form">
+        <div class="filters-grid">
+          <div class="filter-group">
+            <label for="search" class="filter-label">Search</label>
+            <input 
+              type="text"
+              id="search"
+              formControlName="search"
+              class="filter-input"
+              placeholder="Search claims...">
+          </div>
+
+          <div class="filter-group">
+            <label for="patientId" class="filter-label">Patient</label>
+            <select id="patientId" formControlName="patientId" class="filter-select" (change)="onSelectPatients($event)">
+              <option value="">All Patients</option>
+              @for (patient of patientList; track patient.id) {
+                <option [value]="patient.id">
+                  {{ patient.firstName }} {{ patient.lastName }}
+                </option>
+              }
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label for="status" class="filter-label">Status</label>
+            <select id="status" formControlName="status" class="filter-select">
+              <option value="">All Status</option>
+              <option value="submitted">Submitted</option>
+              <option value="pending">Pending</option>
+              <option value="approved">Approved</option>
+              <option value="denied">Denied</option>
+              <option value="paid">Paid</option>
+              <option value="appealed">Appealed</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label for="dateFrom" class="filter-label">From Date</label>
+            <input 
+              type="date"
+              id="dateFrom"
+              formControlName="dateFrom"
+              class="filter-input">
+          </div>
+
+          <div class="filter-group">
+            <label for="dateTo" class="filter-label">To Date</label>
+            <input 
+              type="date"
+              id="dateTo"
+              formControlName="dateTo"
+              class="filter-input">
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Claims List -->
+   <div class="claims-grid">
+  @for (claim of filteredClaims(); track claim.id) {
+    <div class="claim-card">
+      <div class="claim-header">
+        <div class="claim-number">{{ claim.claimNumber || 'Pending Assignment' }}</div>
+        <div class="claim-status" [ngClass]="getStatusColor(claim.status)">
+          {{ claim.status | titlecase }}
+        </div>
+      </div>
+
+      <div class="claim-content" (click)="viewClaim(claim.id)">
+        <div class="claim-patient">
+          <h3 class="patient-name">{{ getPatientName(claim.patientId) }}</h3>
+          <p class="service-date">Service Date: {{ claim.serviceDate | date:'MMM d, y' }}</p>
+        </div>
+
+        <div class="claim-amounts">
+          <div class="amount-item">
+            <span class="amount-label">Billed:</span>
+            <span class="amount-value">{{ formatCurrency(claim.totalAmount) }}</span>
+          </div>
+          @if (claim.patientResponsibility) {
+            <div class="amount-item">
+              <span class="amount-label">Patient Responsibility:</span>
+              <span class="amount-value responsibility">{{ formatCurrency(claim.patientResponsibility) }}</span>
+            </div>
+          }
+        </div>
+
+        <div class="claim-services">
+          <h4 class="services-title">Services ({{ claim.servicesCount || 0 }})</h4>
+          <div class="services-list">
+            <div class="service-item">
+              <span class="service-more">View details to see services</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="claim-actions">
+        <button class="action-btn view-btn" (click)="viewClaim(claim.id)">
+          View
+        </button>
+        
+        @if (canEdit(claim)) {
+          <button class="action-btn edit-btn" (click)="editClaim(claim.id)">
+            Edit
+          </button>
+        }
+
+        @if (canSubmit(claim)) {
+          <button class="action-btn submit-btn" (click)="submitClaim(claim.id)">
+            Submit
+          </button>
+        }
+
+        @if (canDelete(claim)) {
+          <button class="action-btn delete-btn" (click)="confirmDelete(claim)">
+            Delete
+          </button>
+        }
+      </div>
+    </div>
+  } @empty {
+    <div class="empty-state">
+      <h3 class="empty-title">No claims found for this patient</h3>
+      <p class="empty-description">Try selecting a different patient or create a new claim.</p>
+    </div>
+  }
+</div>
+  }
+</div>
+
+<!-- Delete Confirmation Modal -->
+<app-modal 
+  [isOpen]="showDeleteModal()"
+  title="Delete Claim"
+  size="sm"
+  (closed)="showDeleteModal.set(false)">
+  
+  <div class="delete-confirmation">
+    <div class="warning-icon">
+      <svg class="w-12 h-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+      </svg>
+    </div>
+    <h3 class="warning-title">Are you sure?</h3>
+    <p class="warning-message">
+      This will permanently delete claim {{ claimToDelete()?.claimNumber || 'pending assignment' }}. 
+      This action cannot be undone.
+    </p>
+    <div class="confirmation-actions">
+      <app-button variant="outline" (click)="showDeleteModal.set(false)">Cancel</app-button>
+      <app-button variant="danger" [loading]="isDeleting()" (click)="deleteClaim()">Delete Claim</app-button>
+    </div>
+  </div>
+</app-modal>
+
+<!-- View Claim Modal -->
+<app-modal 
+  [isOpen]="showViewModal()"
+  title="Claim Details"
+  size="xl"
+  (closed)="closeViewModal()">
+  
+  <div class="max-h-[90vh] overflow-y-auto w-[90%] mx-auto">
+    @if (isLoadingClaim()) {
+      <div class="flex flex-col items-center justify-center py-8">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
+        <p class="text-gray-600">Loading claim details...</p>
+      </div>
+    } @else if (selectedClaim()) {
+      <div class="space-y-4">
+        <!-- Header Section -->
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div class="space-y-1">
+              <label class="font-semibold text-gray-700 text-sm">Claim Number:</label>
+              <span class="text-gray-900 block">{{ selectedClaim().claimNumber }}</span>
+            </div>
+            <div class="space-y-1">
+              <label class="font-semibold text-gray-700 text-sm">Status:</label>
+              <span 
+                class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
+                [ngClass]="getStatusColor(selectedClaim().status)">
+                {{ selectedClaim().status | titlecase }}
+              </span>
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="space-y-1">
+              <label class="font-semibold text-gray-700 text-sm">Service Date:</label>
+              <span class="text-gray-900 block">{{ formatDate(selectedClaim().serviceDate) }}</span>
+            </div>
+            <div class="space-y-1">
+              <label class="font-semibold text-gray-700 text-sm">Submission Date:</label>
+              <span class="text-gray-900 block">{{ formatDate(selectedClaim().submissionDate) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Financial Section -->
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">Financial Information</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="space-y-1">
+              <label class="font-semibold text-gray-700 text-sm">Total Amount:</label>
+              <span class="text-gray-900 block">{{ formatCurrency(selectedClaim().totalAmount) }}</span>
+            </div>
+            <div class="space-y-1">
+              <label class="font-semibold text-gray-700 text-sm">Allowed Amount:</label>
+              <span class="text-gray-900 block">{{ formatCurrency(selectedClaim().allowedAmount) }}</span>
+            </div>
+            <div class="space-y-1">
+              <label class="font-semibold text-gray-700 text-sm">Paid Amount:</label>
+              <span class="text-gray-900 block">{{ formatCurrency(selectedClaim().paidAmount) }}</span>
+            </div>
+            <div class="space-y-1">
+              <label class="font-semibold text-gray-700 text-sm">Adjustment Amount:</label>
+              <span class="text-gray-900 block">{{ formatCurrency(selectedClaim().adjustmentAmount) }}</span>
+            </div>
+            <div class="space-y-1">
+              <label class="font-semibold text-gray-700 text-sm">Patient Responsibility:</label>
+              <span class="text-red-600 font-medium block">{{ formatCurrency(selectedClaim().patientResponsibility) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Services Section -->
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">
+            Services ({{ selectedClaim().services?.length || 0 }})
+          </h3>
+          @if (selectedClaim().services && selectedClaim().services.length > 0) {
+            <div class="border border-gray-200 rounded-lg overflow-hidden">
+              <div class="grid grid-cols-7 bg-gray-100 px-4 py-3 font-semibold text-gray-700 text-sm">
+                <div>CPT Code</div>
+                <div class="col-span-2">Description</div>
+                <div>Date</div>
+                <div>Units</div>
+                <div>Charged</div>
+                <div>Allowed</div>
+                <div>Paid</div>
+              </div>
+              
+              @for (service of selectedClaim().services; track service.id) {
+                <div class="grid grid-cols-7 px-4 py-3 border-b border-gray-200 text-sm last:border-b-0">
+                  <div class="font-medium text-gray-900">{{ service.cptCode }}</div>
+                  <div class="col-span-2 text-gray-900 whitespace-pre-line">{{ service.description }}</div>
+                  <div class="text-gray-600">{{ formatDate(service.serviceDate) }}</div>
+                  <div class="text-gray-900">{{ service.units }}</div>
+                  <div class="text-gray-900">{{ formatCurrency(service.chargedAmount) }}</div>
+                  <div class="text-gray-900">{{ formatCurrency(service.allowedAmount) }}</div>
+                  <div class="text-gray-900">{{ formatCurrency(service.paidAmount) }}</div>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="text-center py-8 text-gray-500 italic">
+              No services found for this claim.
+            </div>
+          }
+        </div>
+
+        <!-- Additional Information -->
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">Additional Information</h3>
+          <div class="space-y-3">
+            <div class="space-y-1">
+              <label class="font-semibold text-gray-700 text-sm">Notes:</label>
+              <span class="text-gray-900 block">{{ selectedClaim().notes || 'No notes available' }}</span>
+            </div>
+            
+            @if (selectedClaim().denialReason) {
+              <div class="space-y-1">
+                <label class="font-semibold text-gray-700 text-sm">Denial Reason:</label>
+                <span class="text-red-600 font-medium block">{{ selectedClaim().denialReason }}</span>
+              </div>
+            }
+            
+            @if (selectedClaim().denialCode) {
+              <div class="space-y-1">
+                <label class="font-semibold text-gray-700 text-sm">Denial Code:</label>
+                <span class="text-gray-900 block">{{ selectedClaim().denialCode }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    } @else {
+      <div class="text-center py-8 text-red-600">
+        <p>Failed to load claim details. Please try again.</p>
+      </div>
+    }
+  </div>
+
+  <div class="flex gap-3 justify-end pt-4 border-t border-gray-200 mt-4" modal-actions>
+    <app-button variant="outline" (click)="closeViewModal()">Close</app-button>
+    @if (selectedClaim() && canEdit(selectedClaim())) {
+      <app-button variant="primary" (click)="editClaim(selectedClaim().id)">Edit Claim</app-button>
+    }
+  </div>
+</app-modal>

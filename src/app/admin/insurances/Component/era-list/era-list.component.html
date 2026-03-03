@@ -1,0 +1,241 @@
+<div class="era-list-container">
+  <!-- Header -->
+  <div class="era-header">
+    <div class="header-content">
+      <h1 class="era-title">Electronic Remittance Advice (ERA)</h1>
+      <p class="era-subtitle">Process and manage electronic payment remittances from insurance payers</p>
+    </div>
+    <div class="header-actions">
+      <app-button variant="outline" (click)="clearFilters()">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+        </svg>
+        Clear Filters
+      </app-button>
+      <app-button variant="primary" (click)="uploadERA()">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+        </svg>
+        Upload ERA File
+      </app-button>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-state">
+      <div class="loading-spinner"></div>
+      <p>Loading ERAs...</p>
+    </div>
+  } @else {
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-blue">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ totalERAs() }}</div>
+          <div class="stat-label">Total ERAs</div>
+          <div class="stat-change positive">{{ formatCurrency(totalPayments()) }} received</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-yellow">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ receivedERAs() }}</div>
+          <div class="stat-label">Pending Processing</div>
+          <div class="stat-change neutral">Awaiting review</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-green">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ processedERAs() }}</div>
+          <div class="stat-label">Processed ERAs</div>
+          <div class="stat-change positive">Ready for posting</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-card">
+      <form [formGroup]="filterForm" class="filters-form">
+        <div class="filters-grid">
+          <div class="filter-group">
+            <label for="search" class="filter-label">Search</label>
+            <input 
+              type="text"
+              id="search"
+              formControlName="search"
+              class="filter-input"
+              placeholder="Check number, trace number...">
+          </div>
+
+          <div class="filter-group">
+            <label for="payerName" class="filter-label">Payer</label>
+            <input 
+              type="text"
+              id="payerName"
+              formControlName="payerName"
+              class="filter-input"
+              placeholder="Insurance payer name...">
+          </div>
+
+          <div class="filter-group">
+            <label for="status" class="filter-label">Status</label>
+            <select id="status" formControlName="status" class="filter-select">
+              <option value="">All Status</option>
+              <option value="received">Received</option>
+              <option value="processed">Processed</option>
+              <option value="posted">Posted</option>
+              <option value="reconciled">Reconciled</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label for="paymentMethod" class="filter-label">Payment Method</label>
+            <select id="paymentMethod" formControlName="paymentMethod" class="filter-select">
+              <option value="">All Methods</option>
+              <option value="ACH">ACH</option>
+              <option value="CHECK">Check</option>
+              <option value="WIRE">Wire Transfer</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label for="dateFrom" class="filter-label">From Date</label>
+            <input 
+              type="date"
+              id="dateFrom"
+              formControlName="dateFrom"
+              class="filter-input">
+          </div>
+
+          <div class="filter-group">
+            <label for="dateTo" class="filter-label">To Date</label>
+            <input 
+              type="date"
+              id="dateTo"
+              formControlName="dateTo"
+              class="filter-input">
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- ERA List -->
+    <div class="era-content">
+      <div class="era-grid">
+        @for (era of filteredERAs(); track era.id) {
+          <div class="era-card">
+            <div class="era-header">
+              <div class="era-info">
+                <h3 class="era-payer">{{ era.payerName }}</h3>
+                <p class="era-check">Check #{{ era.checkNumber }}</p>
+                <p class="era-date">{{ era.checkDate | date:'MMM d, y' }}</p>
+              </div>
+              <div class="era-status-section">
+                <div class="era-status" [ngClass]="getStatusColor(era.status)">
+                  {{ era.status | titlecase }}
+                </div>
+                <div class="payment-method" [ngClass]="getPaymentMethodColor(era.paymentMethod)">
+                  {{ era.paymentMethod }}
+                </div>
+              </div>
+            </div>
+
+            <div class="era-details" (click)="viewERA(era.id)">
+              <div class="detail-grid">
+                <div class="detail-item">
+                  <span class="detail-label">Payment Amount:</span>
+                  <span class="detail-value">{{ formatCurrency(era.totalPaymentAmount) }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Claims:</span>
+                  <span class="detail-value">{{ era.claims.length }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Trace Number:</span>
+                  <span class="detail-value">{{ era.traceNumber }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Received:</span>
+                  <span class="detail-value">{{ era.receivedAt | date:'MMM d, y' }}</span>
+                </div>
+              </div>
+
+              <div class="claims-summary">
+                <h4 class="claims-title">Claims Summary</h4>
+                <div class="claims-stats">
+                  <div class="claim-stat">
+                    <span class="stat-number">{{ getClaimsCountByStatus(era, 'paid') }}</span>
+                    <span class="stat-label">Paid</span>
+                  </div>
+                  <div class="claim-stat">
+                    <span class="stat-number">{{ getClaimsCountByStatus(era, 'denied') }}</span>
+                    <span class="stat-label">Denied</span>
+                  </div>
+                  <div class="claim-stat">
+                    <span class="stat-number">{{ getClaimsCountByStatus(era, 'adjusted') }}</span>
+                    <span class="stat-label">Adjusted</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="era-actions">
+              <button class="action-btn view-btn" (click)="viewERA(era.id)">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                </svg>
+                View Details
+              </button>
+              
+              @if (canProcess(era)) {
+                <button class="action-btn process-btn" (click)="processERA(era.id)">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  Process
+                </button>
+              }
+
+              @if (canReconcile(era)) {
+                <button class="action-btn reconcile-btn" (click)="reconcileERA(era.id)">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                  </svg>
+                  Reconcile
+                </button>
+              }
+            </div>
+          </div>
+        } @empty {
+          <div class="empty-state">
+            <div class="empty-icon">
+              <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+            </div>
+            <h3 class="empty-title">No ERAs found</h3>
+            <p class="empty-description">Upload your first ERA file to start processing electronic remittances.</p>
+            <app-button variant="primary" class="mt-4" (click)="uploadERA()">Upload First ERA</app-button>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

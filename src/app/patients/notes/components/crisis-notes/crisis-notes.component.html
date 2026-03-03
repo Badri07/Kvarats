@@ -1,0 +1,507 @@
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+  <div class="lg:col-span-1 bg-white rounded-lg shadow-sm p-3">
+    <div class="flex justify-between items-center mb-3">
+      <h3 class="text-lg font-semibold text-gray-900">Crisis Notes</h3>
+    </div>
+
+    <div *ngIf="error" class="mb-4 p-3 bg-red-50 text-red-700 rounded-md">
+      {{ error }}
+    </div>
+
+    <div *ngIf="loading" class="text-center text-gray-500 py-8">
+      Loading...
+    </div>
+
+    <div *ngIf="patientId && !loading" class="space-y-2">
+      <div
+        *ngFor="let note of notes"
+        (click)="selectNote(note)"
+        [class.bg-orange-400]="selectedNote?.id === note.id"
+        [class.bg-opacity-10]="selectedNote?.id === note.id"
+        [class.border-orange-400]="selectedNote?.id === note.id"
+        class="p-3 border rounded-md cursor-pointer hover:bg-gray-50 transition-colors">
+        <div class="flex justify-between items-start">
+          <div class="flex-1">
+            <div class="text-sm font-medium text-gray-900">
+              {{ note.crisisDate | date: 'MMM d, y' }}
+            </div>
+            <div class="text-xs text-gray-500">
+              {{ note.crisisDurationMinutes }} min
+              <span *ngIf="note.isDraft" class="ml-2 px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded">
+                Draft
+              </span>
+              <span *ngIf="!note.isDraft" class="ml-2 px-2 py-0.5 bg-green-100 text-green-800 rounded">
+                Published
+              </span>
+            </div>
+          </div>
+          <div class="text-xs text-gray-400">
+            v{{ note.version }}
+          </div>
+        </div>
+        <div class="mt-2 space-y-1">
+          <p class="text-xs text-gray-600">
+            <span class="font-medium">Type:</span> {{ note.crisisType || 'N/A' }}
+          </p>
+          <p class="text-xs text-gray-600">
+            <span class="font-medium">Severity:</span> {{ note.crisisSeverity || 'N/A' }}
+          </p>
+        </div>
+      </div>
+
+      <div *ngIf="notes.length === 0" class="text-center text-gray-500 py-4">
+        No crisis notes found
+      </div>
+
+   
+    </div>
+  </div>
+
+  <div class="lg:col-span-2 bg-white rounded-lg shadow-sm p-3">
+    <div *ngIf="!selectedNote && !isCreating" class="text-center text-gray-500 py-8">
+      Select a note to view details
+    </div>
+
+    <div *ngIf="selectedNote && !isEditing">
+      <div class="flex justify-between items-start mb-6">
+        <div>
+          <h3 class="text-xl font-semibold text-gray-900">
+            Crisis: {{ selectedNote.crisisDate | date: 'MMMM d, y' }}
+          </h3>
+          <p class="text-sm text-gray-500">
+            Therapist: {{ selectedNote.therapistName }} | Duration: {{ selectedNote.crisisDurationMinutes }} min
+          </p>
+        </div>
+      <div class="flex gap-2">
+<button
+  *ngIf="selectedNote.isDraft"
+  (click)="openPublishPopup(selectedNote.id)"
+  class="relative group p-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+  </svg>
+  <div class="tooltip">Publish</div>
+</button>
+
+  <!-- Download PDF Button -->
+  <button
+    (click)="downloadPDF()"
+    class="relative group p-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+    </svg>
+    <div class="tooltip">Download PDF</div>
+  </button>
+
+  <!-- Edit Button -->
+  <button
+    *ngIf="selectedNote.isDraft"
+    (click)="editNote(selectedNote)"
+    class="relative group p-2 bg-orange-400 text-white rounded-md hover:bg-orange-600 transition-colors">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+    </svg>
+    <div class="tooltip">Edit</div>
+  </button>
+
+  <!-- Delete Button -->
+  <button
+    (click)="confirmDelete(selectedNote)"
+    class="relative group p-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+    </svg>
+    <div class="tooltip">Delete</div>
+  </button>
+</div>
+      </div>
+
+      <div class="space-y-4">
+        <div class="grid grid-cols-2 gap-4 pb-4 border-b">
+          <div>
+            <p class="text-gray-500 text-xs">Crisis Type</p>
+            <p class="font-medium text-sm">{{ selectedNote.crisisType || 'N/A' }}</p>
+          </div>
+          <div>
+            <p class="text-gray-500 text-xs">Severity</p>
+            <p class="font-medium text-sm">{{ selectedNote.crisisSeverity || 'N/A' }}</p>
+          </div>
+        </div>
+
+        <div>
+          <h4 class="text-sm font-semibold text-gray-700 mb-2">Crisis Description</h4>
+          <p class="text-gray-900 whitespace-pre-wrap">{{ selectedNote.crisisDescription }}</p>
+        </div>
+
+        <div>
+          <h4 class="text-sm font-semibold text-gray-700 mb-2">Immediate Actions</h4>
+          <p class="text-gray-900 whitespace-pre-wrap">{{ selectedNote.immediateActions }}</p>
+        </div>
+
+        <div>
+          <h4 class="text-sm font-semibold text-gray-700 mb-2">Risk Assessment</h4>
+          <p class="text-gray-900 whitespace-pre-wrap">{{ selectedNote.riskAssessment }}</p>
+          <div class="grid grid-cols-3 gap-2 mt-3">
+            <div class="p-2 bg-red-50 rounded">
+              <p class="text-xs text-gray-600">Suicidal Risk</p>
+              <p class="font-medium text-sm">{{ selectedNote.suicidalRisk || 'N/A' }}</p>
+            </div>
+            <div class="p-2 bg-orange-50 rounded">
+              <p class="text-xs text-gray-600">Homicidal Risk</p>
+              <p class="font-medium text-sm">{{ selectedNote.homicidalRisk || 'N/A' }}</p>
+            </div>
+            <div class="p-2 bg-yellow-50 rounded">
+              <p class="text-xs text-gray-600">Self-Harm Risk</p>
+              <p class="font-medium text-sm">{{ selectedNote.selfHarmRisk || 'N/A' }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h4 class="text-sm font-semibold text-gray-700 mb-2">Safety Plan</h4>
+          <p class="text-gray-900 whitespace-pre-wrap">{{ selectedNote.safetyPlan }}</p>
+        </div>
+
+        <div *ngIf="selectedNote.triggersIdentified">
+          <h4 class="text-sm font-semibold text-gray-700 mb-2">Triggers Identified</h4>
+          <p class="text-gray-900 whitespace-pre-wrap">{{ selectedNote.triggersIdentified }}</p>
+        </div>
+
+        <div *ngIf="selectedNote.copingStrategies">
+          <h4 class="text-sm font-semibold text-gray-700 mb-2">Coping Strategies</h4>
+          <p class="text-gray-900 whitespace-pre-wrap">{{ selectedNote.copingStrategies }}</p>
+        </div>
+
+        <div *ngIf="selectedNote.supportSystemActivated">
+          <h4 class="text-sm font-semibold text-gray-700 mb-2">Support System Activated</h4>
+          <p class="text-gray-900 whitespace-pre-wrap">{{ selectedNote.supportSystemActivated }}</p>
+        </div>
+
+        <div *ngIf="selectedNote.followUpPlan">
+          <h4 class="text-sm font-semibold text-gray-700 mb-2">Follow-Up Plan</h4>
+          <p class="text-gray-900 whitespace-pre-wrap">{{ selectedNote.followUpPlan }}</p>
+        </div>
+
+        <div *ngIf="selectedNote.referralsProvided">
+          <h4 class="text-sm font-semibold text-gray-700 mb-2">Referrals Provided</h4>
+          <p class="text-gray-900 whitespace-pre-wrap">{{ selectedNote.referralsProvided }}</p>
+        </div>
+
+        <div>
+          <h4 class="text-sm font-semibold text-gray-700 mb-2">Emergency Contacts</h4>
+          <p class="text-sm mb-2">
+            <span class="font-medium">Notified:</span>
+            <span [class.text-green-600]="selectedNote.emergencyContactsNotified" [class.text-gray-600]="!selectedNote.emergencyContactsNotified">
+              {{ selectedNote.emergencyContactsNotified ? 'Yes' : 'No' }}
+            </span>
+          </p>
+          <p *ngIf="selectedNote.emergencyContactsDetails" class="text-gray-700 text-sm whitespace-pre-wrap">
+            {{ selectedNote.emergencyContactsDetails }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="isEditing || isCreating">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-semibold text-gray-900">
+          {{ isCreating ? 'New Crisis Note' : 'Edit Crisis Note' }}
+        </h3>
+        <div class="flex gap-2">
+          <button
+            (click)="cancelEdit()"
+            class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors">
+            Cancel
+          </button>
+          <button
+            (click)="saveNote()"
+            [disabled]="loading"
+            class="px-4 py-2 bg-orange-400 text-white rounded-md hover:bg-orange-600 disabled:bg-gray-300 transition-colors">
+            {{ loading ? 'Saving...' : 'Save' }}
+          </button>
+        </div>
+      </div>
+
+      <form class="space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Crisis Date<span class="text-danger">*</span></label>
+            <input
+              type="date"
+              [(ngModel)]="noteForm.crisisDate"
+              name="crisisDate"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Duration (minutes)<span class="text-danger">*</span></label>
+            <input
+              type="number"
+              [(ngModel)]="noteForm.crisisDurationMinutes"
+              name="crisisDurationMinutes"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Crisis Type</label>
+            <input
+              type="text"
+              [(ngModel)]="noteForm.crisisType"
+              name="crisisType"
+              placeholder="e.g., Anxiety, Suicidal Ideation"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Crisis Severity</label>
+            <select
+              [(ngModel)]="noteForm.crisisSeverity"
+              name="crisisSeverity"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400">
+              <option value="">Select Severity</option>
+              <option value="Low">Low</option>
+              <option value="Moderate">Moderate</option>
+              <option value="High">High</option>
+              <option value="Severe">Severe</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Crisis Description<span class="text-danger">*</span></label>
+          <textarea
+            [(ngModel)]="noteForm.crisisDescription"
+            name="crisisDescription"
+            required
+            rows="4"
+            placeholder="Describe the crisis situation..."
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Immediate Actions<span class="text-danger">*</span></label>
+          <textarea
+            [(ngModel)]="noteForm.immediateActions"
+            name="immediateActions"
+            required
+            rows="4"
+            placeholder="Actions taken immediately during the crisis..."
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Risk Assessment<span class="text-danger">*</span></label>
+          <textarea
+            [(ngModel)]="noteForm.riskAssessment"
+            name="riskAssessment"
+            required
+            rows="4"
+            placeholder="Assessment of current risks..."
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"></textarea>
+        </div>
+
+        <div class="grid grid-cols-3 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Suicidal Risk</label>
+            <select
+              [(ngModel)]="noteForm.suicidalRisk"
+              name="suicidalRisk"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400">
+              <option value="">Select Risk Level</option>
+              <option value="None">None</option>
+              <option value="Low">Low</option>
+              <option value="Moderate">Moderate</option>
+              <option value="High">High</option>
+              <option value="Imminent">Imminent</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Homicidal Risk</label>
+            <select
+              [(ngModel)]="noteForm.homicidalRisk"
+              name="homicidalRisk"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400">
+              <option value="">Select Risk Level</option>
+              <option value="None">None</option>
+              <option value="Low">Low</option>
+              <option value="Moderate">Moderate</option>
+              <option value="High">High</option>
+              <option value="Imminent">Imminent</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Self-Harm Risk</label>
+            <select
+              [(ngModel)]="noteForm.selfHarmRisk"
+              name="selfHarmRisk"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400">
+              <option value="">Select Risk Level</option>
+              <option value="None">None</option>
+              <option value="Low">Low</option>
+              <option value="Moderate">Moderate</option>
+              <option value="High">High</option>
+              <option value="Imminent">Imminent</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Safety Plan<span class="text-danger">*</span></label>
+          <textarea
+            [(ngModel)]="noteForm.safetyPlan"
+            name="safetyPlan"
+            required
+            rows="4"
+            placeholder="Safety plan established with the patient..."
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Triggers Identified</label>
+          <textarea
+            [(ngModel)]="noteForm.triggersIdentified"
+            name="triggersIdentified"
+            rows="3"
+            placeholder="Identified triggers for the crisis..."
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Coping Strategies</label>
+          <textarea
+            [(ngModel)]="noteForm.copingStrategies"
+            name="copingStrategies"
+            rows="3"
+            placeholder="Coping strategies discussed..."
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Support System Activated</label>
+          <textarea
+            [(ngModel)]="noteForm.supportSystemActivated"
+            name="supportSystemActivated"
+            rows="3"
+            placeholder="Support systems that were activated..."
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Follow-Up Plan</label>
+          <textarea
+            [(ngModel)]="noteForm.followUpPlan"
+            name="followUpPlan"
+            rows="3"
+            placeholder="Follow-up plan and next steps..."
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Referrals Provided</label>
+          <textarea
+            [(ngModel)]="noteForm.referralsProvided"
+            name="referralsProvided"
+            rows="3"
+            placeholder="Any referrals provided to the patient..."
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"></textarea>
+        </div>
+
+        <div class="border-t pt-4">
+          <h4 class="text-sm font-semibold text-gray-900 mb-3">Emergency Contacts</h4>
+          <div>
+            <label class="flex items-center mb-3">
+              <input
+                type="checkbox"
+                [(ngModel)]="noteForm.emergencyContactsNotified"
+                name="emergencyContactsNotified"
+                class="mr-2">
+              <span class="text-sm text-gray-700">Emergency contacts were notified</span>
+            </label>
+            <textarea
+              [(ngModel)]="noteForm.emergencyContactsDetails"
+              name="emergencyContactsDetails"
+              rows="2"
+              placeholder="Details about emergency contact notification..."
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"></textarea>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<app-modal 
+  [isOpen]="showDeleteModal" 
+  title="Delete Crisis Note" 
+  size="sm" 
+  (closed)="showDeleteModal = false">
+  <div class="delete-confirmation">
+    <div class="warning-icon">
+      <svg class="w-12 h-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+      </svg>
+    </div>
+    <h3 class="warning-title">Are you sure?</h3>
+    <p class="warning-message">
+      This will permanently delete the Crisis Note from {{ noteToDelete?.crisisDate | date:'MMM d, y' }}. 
+      This action cannot be undone.
+    </p>
+    <div class="confirmation-actions">
+      <app-button variant="outline" (click)="showDeleteModal = false">Cancel</app-button>
+      <app-button 
+        variant="danger" 
+        [loading]="isDeleting" 
+        (click)="deleteNote()">
+        Delete Note
+      </app-button>
+    </div>
+  </div>
+</app-modal>
+
+
+<!-- Publish Confirmation Popup -->
+<div *ngIf="showPublishPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  <div class="bg-white rounded-lg shadow-xl w-96 p-6">
+    <!-- Header -->
+    <div class="flex items-center mb-4">
+      <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
+        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-900">Publish Crisis Note</h3>
+    </div>
+
+    <!-- Content -->
+    <div class="mb-6">
+      <p class="text-gray-700 mb-4">Are you sure you want to publish this crisis note?</p>
+      
+      <!-- Important Note -->
+      <div class="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+        <div class="flex">
+          <svg class="w-5 h-5 text-yellow-600 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+          </svg>
+          <div>
+            <p class="text-sm text-yellow-800 font-medium">Important Note</p>
+            <p class="text-sm text-yellow-700 mt-1">Published crisis note version cannot be edited.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex justify-end space-x-3">
+      <button
+        (click)="showPublishPopup = false"
+        class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+        Cancel
+      </button>
+      <button
+        (click)="confirmPublish()"
+        class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors">
+        Publish Note
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,256 @@
+<div class="eob-list-container">
+  <!-- Header -->
+  <div class="eob-header">
+    <div class="header-content">
+      <h1 class="eob-title">Explanation of Benefits (EOB)</h1>
+      <p class="eob-subtitle">Review and manage explanation of benefits from insurance payers</p>
+    </div>
+    <div class="header-actions">
+      <app-button variant="outline" (click)="clearFilters()">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+        </svg>
+        Clear Filters
+      </app-button>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-state">
+      <div class="loading-spinner"></div>
+      <p>Loading EOBs...</p>
+    </div>
+  } @else {
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-blue">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ totalEOBs() }}</div>
+          <div class="stat-label">Total EOBs</div>
+          <div class="stat-change positive">{{ formatCurrency(totalPaid()) }} paid</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-green">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ electronicEOBs() }}</div>
+          <div class="stat-label">Electronic EOBs</div>
+          <div class="stat-change positive">Automated processing</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-yellow">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ paperEOBs() }}</div>
+          <div class="stat-label">Paper EOBs</div>
+          <div class="stat-change neutral">Manual entry required</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-card">
+      <form [formGroup]="filterForm" class="filters-form">
+        <div class="filters-grid">
+          <div class="filter-group">
+            <label for="search" class="filter-label">Search</label>
+            <input 
+              type="text"
+              id="search"
+              formControlName="search"
+              class="filter-input"
+              placeholder="Claim number, patient name...">
+          </div>
+
+          <div class="filter-group">
+            <label for="patientId" class="filter-label">Patient</label>
+            <select id="patientId" formControlName="patientId" class="filter-select">
+              <option value="">All Patients</option>
+              @for (patient of patients(); track patient.id) {
+                <option [value]="patient.id">
+                  {{ patient.firstName }} {{ patient.lastName }}
+                </option>
+              }
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label for="payerName" class="filter-label">Payer</label>
+            <input 
+              type="text"
+              id="payerName"
+              formControlName="payerName"
+              class="filter-input"
+              placeholder="Insurance payer...">
+          </div>
+
+          <div class="filter-group">
+            <label for="status" class="filter-label">Status</label>
+            <select id="status" formControlName="status" class="filter-select">
+              <option value="">All Status</option>
+              <option value="received">Received</option>
+              <option value="reviewed">Reviewed</option>
+              <option value="posted">Posted</option>
+              <option value="appealed">Appealed</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label for="isElectronic" class="filter-label">Type</label>
+            <select id="isElectronic" formControlName="isElectronic" class="filter-select">
+              <option value="">All Types</option>
+              <option value="true">Electronic</option>
+              <option value="false">Paper</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label for="dateFrom" class="filter-label">From Date</label>
+            <input 
+              type="date"
+              id="dateFrom"
+              formControlName="dateFrom"
+              class="filter-input">
+          </div>
+
+          <div class="filter-group">
+            <label for="dateTo" class="filter-label">To Date</label>
+            <input 
+              type="date"
+              id="dateTo"
+              formControlName="dateTo"
+              class="filter-input">
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- EOB List -->
+    <div class="eob-content">
+      <div class="eob-grid">
+        @for (eob of filteredEOBs(); track eob.id) {
+          <div class="eob-card">
+            <div class="eob-header">
+              <div class="eob-info">
+                <h3 class="eob-payer">{{ eob.payerName }}</h3>
+                <p class="eob-patient">{{ eob.patientName }}</p>
+                <p class="eob-claim">Claim #{{ eob.claimNumber }}</p>
+              </div>
+              <div class="eob-status-section">
+                <div class="eob-status" [ngClass]="getStatusColor(eob.status)">
+                  {{ eob.status | titlecase }}
+                </div>
+                <div class="eob-type" [class.electronic]="eob.isElectronic" [class.paper]="!eob.isElectronic">
+                  {{ eob.isElectronic ? 'Electronic' : 'Paper' }}
+                </div>
+              </div>
+            </div>
+
+            <div class="eob-details" (click)="viewEOB(eob.id)">
+              <div class="detail-grid">
+                <div class="detail-item">
+                  <span class="detail-label">Service Date:</span>
+                  <span class="detail-value">{{ eob.serviceDate | date:'MMM d, y' }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Total Charges:</span>
+                  <span class="detail-value">{{ formatCurrency(eob.totalCharges) }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Amount Paid:</span>
+                  <span class="detail-value paid">{{ formatCurrency(eob.totalPaid) }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Patient Responsibility:</span>
+                  <span class="detail-value responsibility">{{ formatCurrency(eob.totalPatientResponsibility) }}</span>
+                </div>
+              </div>
+
+              <div class="breakdown-section">
+                <h4 class="breakdown-title">Payment Breakdown</h4>
+                <div class="breakdown-grid">
+                  @if (eob.deductibleAmount > 0) {
+                    <div class="breakdown-item">
+                      <span class="breakdown-label">Deductible:</span>
+                      <span class="breakdown-value">{{ formatCurrency(eob.deductibleAmount) }}</span>
+                    </div>
+                  }
+                  @if (eob.coinsuranceAmount > 0) {
+                    <div class="breakdown-item">
+                      <span class="breakdown-label">Coinsurance:</span>
+                      <span class="breakdown-value">{{ formatCurrency(eob.coinsuranceAmount) }}</span>
+                    </div>
+                  }
+                  @if (eob.copayAmount > 0) {
+                    <div class="breakdown-item">
+                      <span class="breakdown-label">Copay:</span>
+                      <span class="breakdown-value">{{ formatCurrency(eob.copayAmount) }}</span>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <div class="services-summary">
+                <h4 class="services-title">Services ({{ eob.services.length }})</h4>
+                <div class="services-preview">
+                  @for (service of eob.services.slice(0, 2); track service.id) {
+                    <div class="service-preview">
+                      <span class="service-code">{{ service.procedureCode }}</span>
+                      <span class="service-desc">{{ service.description }}</span>
+                      <span class="service-amount">{{ formatCurrency(service.paidAmount) }}</span>
+                    </div>
+                  }
+                  @if (eob.services.length > 2) {
+                    <div class="service-more">+{{ eob.services.length - 2 }} more services</div>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <div class="eob-actions">
+              <button class="action-btn view-btn" (click)="viewEOB(eob.id)">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                </svg>
+                View Details
+              </button>
+              
+              <button class="action-btn download-btn" (click)="generateReport(eob.id)">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                Download
+              </button>
+            </div>
+          </div>
+        } @empty {
+          <div class="empty-state">
+            <div class="empty-icon">
+              <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+              </svg>
+            </div>
+            <h3 class="empty-title">No EOBs found</h3>
+            <p class="empty-description">EOBs are automatically generated when ERAs are processed or claims are adjudicated.</p>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,30 @@
+.status-paid {
+  background-color: #D1FAE5;
+  color: #065F46;
+}
+
+.status-partially-paid {
+  background-color: #DBEAFE;
+  color: #1E40AF;
+}
+
+.status-pending {
+  background-color: #FEF3C7;
+  color: #92400E;
+}
+
+.status-cancelled {
+  background-color: #FEE2E2;
+  color: #991B1B;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+

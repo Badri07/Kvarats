@@ -1,0 +1,307 @@
+.eob-detail-container {
+  @apply p-6 max-w-6xl mx-auto;
+}
+
+.loading-state, .error-state {
+  @apply flex flex-col items-center justify-center py-16 space-y-4;
+}
+
+.loading-spinner {
+  @apply w-8 h-8 border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin;
+}
+
+.back-button {
+  @apply flex items-center gap-2 text-gray-600 hover:text-gray-800 mb-6 transition-colors;
+}
+
+.detail-header {
+  @apply mb-8;
+}
+
+.header-content {
+  @apply flex items-start justify-between;
+}
+
+.eob-info {
+  @apply space-y-3;
+}
+
+.eob-title {
+  @apply text-3xl font-bold text-gray-900;
+}
+
+.eob-meta {
+  @apply flex items-center gap-4 flex-wrap;
+}
+
+.eob-claim {
+  @apply text-lg font-semibold text-gray-700;
+}
+
+.eob-payer {
+  @apply text-gray-600;
+}
+
+.eob-status {
+  @apply px-3 py-1 text-sm font-medium rounded-full;
+}
+
+.eob-type {
+  @apply px-2 py-1 text-xs font-medium rounded-full;
+  
+  &.electronic {
+    @apply bg-green-100 text-green-700;
+  }
+  
+  &.paper {
+    @apply bg-gray-100 text-gray-700;
+  }
+}
+
+.header-actions {
+  @apply flex items-center gap-3;
+}
+
+.eob-summary {
+  @apply bg-white rounded-2xl shadow-lg border border-primary-100 p-8 mb-8;
+  box-shadow: 0 8px 24px rgba(255, 161, 87, 0.08);
+}
+
+.summary-grid {
+  @apply grid grid-cols-1 lg:grid-cols-2 gap-8;
+}
+
+.summary-section {
+  @apply space-y-4;
+}
+
+.summary-title {
+  @apply text-lg font-semibold text-gray-900 pb-2 border-b border-gray-200;
+}
+
+.summary-details {
+  @apply space-y-3;
+}
+
+.detail-row {
+  @apply flex justify-between items-center;
+}
+
+.detail-label {
+  @apply text-sm font-medium text-gray-600;
+}
+
+.detail-value {
+  @apply text-sm font-semibold text-gray-900;
+}
+
+.financial-summary {
+  @apply bg-white rounded-2xl shadow-lg border border-primary-100 p-8 mb-8;
+  box-shadow: 0 8px 24px rgba(255, 161, 87, 0.08);
+}
+
+.section-title {
+  @apply text-2xl font-bold text-gray-900 mb-6;
+}
+
+.financial-grid {
+  @apply grid grid-cols-1 md:grid-cols-4 gap-6 mb-8;
+}
+
+.financial-item {
+  @apply text-center p-6 bg-gradient-to-br from-primary-50 to-cream-100 rounded-xl border border-primary-200;
+}
+
+.financial-label {
+  @apply text-sm font-medium text-gray-600 mb-2;
+}
+
+.financial-value {
+  @apply text-2xl font-bold text-gray-900;
+  
+  &.paid {
+    @apply text-green-600;
+  }
+  
+  &.responsibility {
+    @apply text-orange-400;
+  }
+}
+
+.breakdown-section {
+  @apply space-y-4;
+}
+
+.breakdown-title {
+  @apply text-lg font-semibold text-gray-900;
+}
+
+.breakdown-grid {
+  @apply grid grid-cols-1 md:grid-cols-3 gap-4;
+}
+
+.breakdown-item {
+  @apply flex justify-between items-center p-4 bg-gray-50 rounded-lg;
+}
+
+.breakdown-label {
+  @apply text-sm font-medium text-gray-600;
+}
+
+.breakdown-value {
+  @apply text-sm font-bold text-gray-900;
+}
+
+.services-section {
+  @apply bg-white rounded-2xl shadow-lg border border-primary-100 p-8 mb-8;
+  box-shadow: 0 8px 24px rgba(255, 161, 87, 0.08);
+}
+
+.services-list {
+  @apply space-y-6;
+}
+
+.service-card {
+  @apply border border-gray-200 rounded-xl overflow-hidden;
+}
+
+.service-header {
+  @apply flex items-start justify-between p-6 bg-gray-50 border-b border-gray-200;
+}
+
+.service-info {
+  @apply space-y-2;
+}
+
+.service-code {
+  @apply text-lg font-bold text-blue-600;
+}
+
+.service-modifiers {
+  @apply text-sm text-gray-600;
+}
+
+.service-description {
+  @apply text-gray-700;
+}
+
+.service-meta {
+  @apply flex items-center gap-4 text-sm text-gray-500;
+}
+
+.service-date, .service-units {
+  @apply font-medium;
+}
+
+.denial-info {
+  @apply text-right space-y-1;
+}
+
+.denial-code {
+  @apply px-2 py-1 bg-red-500 text-white text-xs font-mono rounded;
+}
+
+.denial-reason {
+  @apply text-sm text-red-600;
+}
+
+.service-amounts {
+  @apply p-6;
+}
+
+.amounts-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 gap-6;
+}
+
+.amount-column {
+  @apply space-y-3;
+}
+
+.amount-item {
+  @apply flex justify-between items-center p-3 bg-gray-50 rounded-lg;
+}
+
+.amount-label {
+  @apply text-sm font-medium text-gray-600;
+}
+
+.amount-value {
+  @apply text-sm font-bold text-gray-900;
+  
+  &.paid {
+    @apply text-green-600;
+  }
+  
+  &.responsibility {
+    @apply text-orange-400;
+  }
+}
+
+.service-remarks {
+  @apply p-4 bg-blue-50 border-t border-blue-200;
+}
+
+.remarks-title {
+  @apply text-sm font-semibold text-gray-900 mb-2;
+}
+
+.remarks-list {
+  @apply space-y-1;
+}
+
+.remark-item {
+  @apply text-sm text-gray-700;
+}
+
+.eob-remarks {
+  @apply bg-white rounded-2xl shadow-lg border border-primary-100 p-8 mb-8;
+  box-shadow: 0 8px 24px rgba(255, 161, 87, 0.08);
+}
+
+.remarks-content {
+  @apply space-y-3;
+}
+
+.appeal-section {
+  @apply bg-white rounded-2xl shadow-lg border border-primary-100 p-8;
+  box-shadow: 0 8px 24px rgba(255, 161, 87, 0.08);
+}
+
+.appeal-content {
+  @apply p-4 bg-yellow-50 rounded-xl border border-yellow-200;
+}
+
+.appeal-text {
+  @apply text-sm text-yellow-800 leading-relaxed;
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .header-content {
+    @apply flex-col gap-4;
+  }
+  
+  .eob-meta {
+    @apply flex-col items-start gap-2;
+  }
+  
+  .header-actions {
+    @apply w-full justify-end;
+  }
+  
+  .summary-grid {
+    @apply grid-cols-1;
+  }
+  
+  .financial-grid {
+    @apply grid-cols-1 md:grid-cols-2;
+  }
+  
+  .breakdown-grid {
+    @apply grid-cols-1;
+  }
+  
+  .amounts-grid {
+    @apply grid-cols-1;
+  }
+}

@@ -1,0 +1,298 @@
+<!-- Schedule Dashboard -->
+<div class="schedule-dashboard py-0 ps-0">
+  <div class="dashboard-header mb-3">
+    <div class="header-content">
+      <h1 class="dashboard-title">{{ isTherapist() ? 'My Schedule' : 'Schedule Management' }}</h1>
+      <p class="dashboard-subtitle">{{ isTherapist() ? 'Manage your availability and time off' : 'Manage Therapist schedules and availability' }}</p>
+    </div>
+    <div class="header-actions">
+      <app-button variant="outline" (click)="manageAvailability()">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        {{ isTherapist() ? 'My Availability' : 'Manage Availability' }}
+      </app-button>
+      <app-button variant="primary" (click)="createLeaveManage()">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+        </svg>
+        {{ isTherapist() ? 'Request Leave' : 'Manage Leaves' }}
+      </app-button>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-state">
+      <div class="loading-spinner"></div>
+      <p>Loading schedule data...</p>
+    </div>
+  } @else {
+    <!-- Stats Cards -->
+  <!-- Stats Cards with empty state handling -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon stat-icon-blue flex justify-center" style="width: 100%;">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+      </svg>
+    </div>
+    <div class="stat-content">
+      <div class="stat-value">{{ totalLeaves() }}</div>
+      <div class="stat-label">{{ isTherapist() ? 'My Total Leaves' : 'Total Leaves' }}</div>
+      @if (totalLeaves() === 0) {
+        <div class="stat-change neutral">No leaves yet</div>
+      } @else {
+        <div class="stat-change neutral">{{ thisWeekLeaves() }} this week</div>
+      }
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon stat-icon-green flex justify-center" style="width: 100%;">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+    </div>
+    <div class="stat-content">
+      <div class="stat-value">{{ workingDays() }}</div>
+      <div class="stat-label">{{ isTherapist() ? 'My Working Days' : 'Working Days Set' }}</div>
+      @if (workingDays() === 0) {
+        <div class="stat-change neutral">Set availability first</div>
+      } @else {
+        <div class="stat-change positive">Available for appointments</div>
+      }
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon stat-icon-purple flex justify-center" style="width: 100%;">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+      </svg>
+    </div>
+    <div class="stat-content">
+      <div class="stat-value">{{ upcomingLeaves().length }}</div>
+      <div class="stat-label">Upcoming Leaves</div>
+      @if (upcomingLeaves().length === 0) {
+        <div class="stat-change neutral">No upcoming leaves</div>
+      } @else {
+        <div class="stat-change neutral">Next 30 days</div>
+      }
+    </div>
+  </div>
+</div>
+
+    <!-- Main Content Grid -->
+    <div class="content-grid">
+      <!-- Quick Actions -->
+      <!-- <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Quick Actions</h3>
+        </div>
+        <div class="card-content">
+          <div class="quick-actions">
+            <button class="quick-action" (click)="createLeave()">
+              <div class="action-icon">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+              </div>
+              <div class="action-content">
+                <span class="action-title">{{ isTherapist() ? 'Request Leave' : 'Manage Leaves' }}</span>
+                <span class="action-description">{{ isTherapist() ? 'Submit time off request' : 'View and manage all leaves' }}</span>
+              </div>
+            </button>
+            
+            <button class="quick-action" (click)="manageAvailability()">
+              <div class="action-icon">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </div>
+              <div class="action-content">
+                <span class="action-title">{{ isTherapist() ? 'My Availability' : 'Manage Availability' }}</span>
+                <span class="action-description">{{ isTherapist() ? 'Set working hours' : 'Configure therapist schedules' }}</span>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div> -->
+
+      <!-- Upcoming Leaves -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">{{ isTherapist() ? 'My Upcoming Leaves' : 'Upcoming Leaves' }}</h3>
+          <button class="card-action" (click)="navigateToLeaves()">View All</button>
+        </div>
+        <div class="card-content">
+          <div class="leaves-list">
+            @for (leave of upcomingLeaves(); track leave.id) {
+              <div class="leave-item">
+                <div class="leave-date-info">
+                  <div class="leave-date">{{ leave.leaveDate | date:'MMM d' }}</div>
+                  <div class="leave-type" [class.full-day]="leave.isFullDay" [class.partial]="!leave.isFullDay">
+                    {{ leave.isFullDay ? 'Full Day' : 'Partial' }}
+                  </div>
+                </div>
+                <div class="leave-details">
+                  @if (!leave.isFullDay && leave.fromTime && leave.toTime) {
+                    <div class="leave-time">{{ leave.fromTime }} - {{ leave.toTime }}</div>
+                  }
+                  @if (leave.reason) {
+                    <div class="leave-reason">{{ leave.reason }}</div>
+                  }
+                </div>
+              </div>
+            } @empty {
+              <div class="empty-leaves">
+                <svg class="w-12 h-12 text-gray-300 flex justify-center" style="
+    width: 100%;
+" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                <h4 class="empty-title">No upcoming leaves</h4>
+                <p class="empty-description">{{ isTherapist() ? 'You have no scheduled time off.' : 'No upcoming leaves scheduled.' }}</p>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Weekly Availability Summary -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">{{ isTherapist() ? 'My Weekly Schedule' : 'Availability Overview' }}</h3>
+          <button class="card-action" (click)="navigateToAvailability()">Manage</button>
+        </div>
+        <div class="card-content">
+          @if (isTherapist()) {
+            <div class="availability-summary">
+              @for (dayData of daysOfWeek; track dayData.value) {
+                @let availability = getAvailabilityForDay(dayData.value, currentUser()?.id || '');
+                <div class="day-summary" [class.available]="availability?.isAvailable" [class.unavailable]="!availability?.isAvailable">
+                  <div class="day-name">{{ dayData.short }}</div>
+                  @if (availability && availability.isAvailable) {
+                    <div class="day-hours">{{ availability.startTime }}-{{ availability.endTime }}</div>
+                  } @else {
+                    <div class="day-hours unavailable">Off</div>
+                  }
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="admin-summary">
+              <p class="summary-text mb-3">Manage availability for all therapists in your organization.</p>
+              <app-button  size="sm" (click)="navigateToAvailability()">
+                Manage Availability
+              </app-button>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</div>
+
+
+<app-modal 
+  [isOpen]="showLeaveModal()"
+  [title]="editingLeave() ? 'Edit Leave' : (isTherapist() ? 'Request Leave' : 'Add Leave')"
+  size="md"
+  (closed)="closeLeaveModal()">
+  
+  <form [formGroup]="leaveForm" (ngSubmit)="saveLeave()" class="leave-form">
+    @if (isClientAdmin()) {
+      <div class="form-group">
+        <label for="therapistId" class="form-label">Therapist  <span class="text-danger">*</span></label>
+        <select id="therapistId" 
+        formControlName="therapistId" 
+        class="form-control"
+        (change)="onTherapistChange($event)">
+  <option value="">All Therapists</option>
+  <option *ngFor="let therapist of therapistList" [value]="therapist.userId">
+    {{ therapist.firstName }} {{ therapist.lastName }}
+  </option>
+</select>
+        @if (isFieldInvalid('therapistId')) {
+          <div class="form-error">{{ getFieldError('therapistId') }}</div>
+        }
+      </div>
+    }
+
+    <div class="form-group">
+      <label for="leaveDate" class="form-label">Leave Date *</label>
+      <input 
+        type="date"
+        id="leaveDate"
+        formControlName="leaveDate"
+        class="form-control"
+        [class.error]="isFieldInvalid('leaveDate')">
+      @if (isFieldInvalid('leaveDate')) {
+        <div class="form-error">{{ getFieldError('leaveDate') }}</div>
+      }
+    </div>
+
+    <div class="form-group">
+      <label class="checkbox-label">
+        <input 
+          type="checkbox" 
+          formControlName="isFullDay"
+          class="checkbox-input">
+        <span class="checkbox-custom"></span>
+        <span class="checkbox-text">Full Day Leave</span>
+      </label>
+    </div>
+
+    @if (!leaveForm.get('isFullDay')?.value) {
+      <div class="time-range-section">
+        <h4 class="time-section-title">Time Range</h4>
+        <div class="time-grid">
+          <div class="form-group">
+            <label for="fromTime" class="form-label">From Time</label>
+            <input 
+              type="time"
+              id="fromTime"
+              formControlName="fromTime"
+              class="form-input">
+          </div>
+
+          <div class="form-group">
+            <label for="toTime" class="form-label">To Time</label>
+            <input 
+              type="time"
+              id="toTime"
+              formControlName="toTime"
+              class="form-input">
+          </div>
+        </div>
+      </div>
+    }
+
+    <div class="form-group">
+      <label for="reason" class="form-label">Reason (Optional)</label>
+      <textarea 
+        id="reason"
+        formControlName="reason"
+        class="form-textarea"
+        rows="3"
+        placeholder="Enter reason for leave..."></textarea>
+    </div>
+
+    <div class="form-actions">
+      <app-button 
+      class="m-1"
+        type="button"
+        variant="outline" 
+        (click)="closeLeaveModal()">
+        Cancel
+      </app-button>
+      <app-button 
+        type="submit"
+        variant="primary"
+        [loading]="isSaving()"
+        [disabled]="leaveForm.invalid">
+        {{ editingLeave() ? 'Update Leave' : (isTherapist() ? 'Submit Request' : 'Add Leave') }}
+      </app-button>
+    </div>
+  </form>
+</app-modal>

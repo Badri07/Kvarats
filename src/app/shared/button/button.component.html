@@ -1,0 +1,24 @@
+<button 
+  [type]="type"
+  [disabled]="disabled || loading"
+  [class.w-full]="fullWidth"
+  class="custom-button rounded-lg"
+  [ngClass]="{
+    'btn-sm': size === 'sm',
+    'btn-md': size === 'md',
+    'btn-lg': size === 'lg',
+    'loading': loading,
+    'btn-outline': variant === 'outline',
+    'btn-info': variant === 'info',
+    'btn-warning': variant === 'warning',
+  }">
+  <div class="btn-content" [class.opacity-0]="loading">
+    <ng-content></ng-content>
+  </div>
+  
+  @if (loading) {
+    <div class="btn-spinner">
+      <div class="spinner"></div>
+    </div>
+  }
+</button>

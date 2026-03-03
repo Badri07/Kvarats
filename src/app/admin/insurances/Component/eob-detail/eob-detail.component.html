@@ -1,0 +1,231 @@
+<div class="eob-detail-container">
+  @if (isLoading()) {
+    <div class="loading-state">
+      <div class="loading-spinner"></div>
+      <p>Loading EOB details...</p>
+    </div>
+  } @else if (eob()) {
+    <!-- Header -->
+    <div class="detail-header">
+      <button type="button" class="back-button" (click)="goBack()">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+        Back to EOBs
+      </button>
+      
+      <div class="header-content">
+        <div class="eob-info">
+          <h1 class="eob-title">Explanation of Benefits</h1>
+          <div class="eob-meta">
+            <span class="eob-claim">Claim #{{ eob()!.claimNumber }}</span>
+            <span class="eob-payer">{{ eob()!.payerName }}</span>
+            <span class="eob-status" [ngClass]="getStatusColor()">
+              {{ eob()!.status | titlecase }}
+            </span>
+            <span class="eob-type" [class.electronic]="eob()!.isElectronic" [class.paper]="!eob()!.isElectronic">
+              {{ eob()!.isElectronic ? 'Electronic' : 'Paper' }}
+            </span>
+          </div>
+        </div>
+        
+        <div class="header-actions">
+          <app-button variant="outline" (click)="downloadReport()">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            Download PDF
+          </app-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- EOB Summary -->
+    <div class="eob-summary">
+      <div class="summary-grid">
+        <div class="summary-section">
+          <h3 class="summary-title">Patient Information</h3>
+          <div class="summary-details">
+            <div class="detail-row">
+              <span class="detail-label">Patient Name:</span>
+              <span class="detail-value">{{ eob()!.patientName }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Subscriber:</span>
+              <span class="detail-value">{{ eob()!.subscriberName }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Subscriber ID:</span>
+              <span class="detail-value">{{ eob()!.subscriberId }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Service Date:</span>
+              <span class="detail-value">{{ eob()!.serviceDate | date:'mediumDate' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="summary-section">
+          <h3 class="summary-title">Provider Information</h3>
+          <div class="summary-details">
+            <div class="detail-row">
+              <span class="detail-label">Provider:</span>
+              <span class="detail-value">{{ eob()!.providerName }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">NPI:</span>
+              <span class="detail-value">{{ eob()!.providerNPI }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Processed Date:</span>
+              <span class="detail-value">{{ eob()!.processedDate | date:'mediumDate' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Financial Summary -->
+    <div class="financial-summary">
+      <h2 class="section-title">Financial Summary</h2>
+      <div class="financial-grid">
+        <div class="financial-item">
+          <div class="financial-label">Total Charges</div>
+          <div class="financial-value">{{ formatCurrency(eob()!.totalCharges) }}</div>
+        </div>
+        <div class="financial-item">
+          <div class="financial-label">Allowed Amount</div>
+          <div class="financial-value">{{ formatCurrency(eob()!.totalAllowed) }}</div>
+        </div>
+        <div class="financial-item">
+          <div class="financial-label">Insurance Paid</div>
+          <div class="financial-value paid">{{ formatCurrency(eob()!.totalPaid) }}</div>
+        </div>
+        <div class="financial-item">
+          <div class="financial-label">Patient Responsibility</div>
+          <div class="financial-value responsibility">{{ formatCurrency(eob()!.totalPatientResponsibility) }}</div>
+        </div>
+      </div>
+
+      <!-- Breakdown -->
+      <div class="breakdown-section">
+        <h3 class="breakdown-title">Patient Responsibility Breakdown</h3>
+        <div class="breakdown-grid">
+          @if (eob()!.deductibleAmount > 0) {
+            <div class="breakdown-item">
+              <span class="breakdown-label">Deductible:</span>
+              <span class="breakdown-value">{{ formatCurrency(eob()!.deductibleAmount) }}</span>
+            </div>
+          }
+          @if (eob()!.coinsuranceAmount > 0) {
+            <div class="breakdown-item">
+              <span class="breakdown-label">Coinsurance:</span>
+              <span class="breakdown-value">{{ formatCurrency(eob()!.coinsuranceAmount) }}</span>
+            </div>
+          }
+          @if (eob()!.copayAmount > 0) {
+            <div class="breakdown-item">
+              <span class="breakdown-label">Copay:</span>
+              <span class="breakdown-value">{{ formatCurrency(eob()!.copayAmount) }}</span>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Services Detail -->
+    <div class="services-section">
+      <h2 class="section-title">Service Details</h2>
+      <div class="services-list">
+        @for (service of eob()!.services; track service.id) {
+          <div class="service-card">
+            <div class="service-header">
+              <div class="service-info">
+                <h4 class="service-code">{{ service.procedureCode }}</h4>
+                @if (service.modifiers && service.modifiers.length > 0) {
+                  <span class="service-modifiers">Modifiers: {{ service.modifiers.join(', ') }}</span>
+                }
+                <p class="service-description">{{ service.description }}</p>
+                <div class="service-meta">
+                  <span class="service-date">{{ service.serviceDate | date:'MMM d, y' }}</span>
+                  <span class="service-units">{{ service.units }} unit(s)</span>
+                </div>
+              </div>
+              
+              @if (service.denialCode) {
+                <div class="denial-info">
+                  <div class="denial-code">{{ service.denialCode }}</div>
+                  <div class="denial-reason">{{ service.denialReason }}</div>
+                </div>
+              }
+            </div>
+
+            <div class="service-amounts">
+              <div class="amounts-grid">
+                <div class="amount-column">
+                  <div class="amount-item">
+                    <span class="amount-label">Charged:</span>
+                    <span class="amount-value">{{ formatCurrency(service.chargedAmount) }}</span>
+                  </div>
+                  <div class="amount-item">
+                    <span class="amount-label">Allowed:</span>
+                    <span class="amount-value">{{ formatCurrency(service.allowedAmount) }}</span>
+                  </div>
+                </div>
+                <div class="amount-column">
+                  <div class="amount-item">
+                    <span class="amount-label">Paid:</span>
+                    <span class="amount-value paid">{{ formatCurrency(service.paidAmount) }}</span>
+                  </div>
+                  <div class="amount-item">
+                    <span class="amount-label">Patient Owes:</span>
+                    <span class="amount-value responsibility">
+                      {{ formatCurrency(service.deductibleAmount + service.coinsuranceAmount + service.copayAmount) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            @if (service.remarks.length > 0) {
+              <div class="service-remarks">
+                <h5 class="remarks-title">Remarks:</h5>
+                <div class="remarks-list">
+                  @for (remark of service.remarks; track remark) {
+                    <div class="remark-item">{{ remark }}</div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- EOB Remarks -->
+    @if (eob()!.remarks.length > 0) {
+      <div class="eob-remarks">
+        <h2 class="section-title">EOB Remarks</h2>
+        <div class="remarks-content">
+          @for (remark of eob()!.remarks; track remark) {
+            <div class="remark-item">{{ remark }}</div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Appeal Rights -->
+    <div class="appeal-section">
+      <h2 class="section-title">Appeal Rights</h2>
+      <div class="appeal-content">
+        <p class="appeal-text">{{ eob()!.appealRights }}</p>
+      </div>
+    </div>
+  } @else {
+    <div class="error-state">
+      <h2>EOB Not Found</h2>
+      <p>The requested EOB could not be found.</p>
+      <app-button variant="primary" (click)="goBack()">Back to EOBs</app-button>
+    </div>
+  }
+</div>

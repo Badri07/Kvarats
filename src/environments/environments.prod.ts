@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-   api: 'https://api-careslot.estdev.cloud/api',
+   api: 'https://careslot-api.eststage.cloud/api',
 };

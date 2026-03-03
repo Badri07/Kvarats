@@ -1,78 +1,323 @@
-<div class="min-h-screen bg-gradient-to-br from-[#F9F4F1] to-white">
-
+<div class="min-h-screen bg-gradient-to-br from-[#F9F4F1] to-white relative overflow-hidden">
+  <!-- Animated Background Elements -->
+  <div class="absolute top-10 left-5 w-20 h-20 bg-[#FFA157]/10 rounded-full animate-float"></div>
+  <div class="absolute top-20 right-10 w-24 h-24 bg-[#FFA157]/10 rounded-full animate-float-delayed"></div>
+  <div class="absolute bottom-40 left-10 w-16 h-16 bg-[#FFA157]/10 rounded-full animate-float-slow"></div>
+  <div class="absolute bottom-20 right-5 w-28 h-28 bg-[#FFA157]/10 rounded-full animate-float-delayed-slow"></div>
+  
   <!-- Navigation -->
-  <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md shadow-sm" data-aos="fade-down">
+  <nav class="sticky top-0 z-50 bg-white/90 backdrop-blur-md shadow-sm" data-aos="fade-down">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex justify-between items-center py-6">
-        <h1 class="text-2xl font-bold text-[#FFA157]" data-aos="fade-right" data-aos-delay="100"><img [src]="logo" alt="CareSlot Logo" class="w-40"></h1>
+      <div class="flex justify-between items-center py-4">
+        <h1 class="text-2xl font-bold text-[#FFA157] animate-pulse" data-aos="fade-right" data-aos-delay="100">
+          <img [src]="logo" alt="CureSlot Logo" class="w-40">
+        </h1>
         <div class="flex items-center space-x-4" data-aos="fade-left" data-aos-delay="200">
-          <!-- <button class="bg-white border-2 border-[#FFA157] text-[#FFA157] px-5 py-2 rounded-full font-semibold hover:shadow-lg hover:-translate-y-1 transition" (click)="navigateToLogin()">Sign In</button> -->
-          <button class="bg-[#FFA157] text-white px-5 py-2 rounded-full font-semibold hover:shadow-lg hover:-translate-y-1 transition" (click)="navigateToLogin()">Get Started</button>
+          <!-- <button class="custom-button rounded-full hover-lift" (click)="navigateToLogin()">Get Started</button> -->
         </div>
       </div>
     </div>
   </nav>
+
   <!-- Hero Section -->
-  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center mt-5" data-aos="zoom-in-up">
-    <h1 class="text-5xl md:text-6xl font-bold text-gray-900 mb-8 leading-tight" data-aos="fade-up" data-aos-delay="100">
-      Streamline Your <span class="text-[#FFA157]">Healthcare</span> Appointments
-    </h1>
-    <p class="text-xl text-gray-600 mb-12 max-w-3xl mx-auto" data-aos="fade-up" data-aos-delay="200">
-      CareSlot makes it easy for patients to book appointments and for healthcare providers 
-      to manage schedules efficiently. Experience seamless healthcare scheduling today.
-    </p>
-    <div class="flex flex-col sm:flex-row gap-4 justify-center" data-aos="fade-up" data-aos-delay="300">
-      <button class="bg-[#FFA157] text-white text-lg px-8 py-3 rounded-full font-semibold hover:shadow-lg hover:-translate-y-1 transition"  [routerLink]="['/patient/login']">Book Appointment</button>
-      <button class="bg-white border-2 border-[#FFA157] text-[#FFA157] text-lg px-8 py-3 rounded-full font-semibold hover:bg-[#FFA157] "  [routerLink]="['/login']">Provider Portal</button>
+  <section class="hero-bg">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 flex flex-col md:flex-row items-center">
+      <div class="md:w-1/2 text-center md:text-left mb-10 md:mb-0" data-aos="fade-right">
+        <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+          Streamline Your <span class="text-[#FFA157] animate-bounce">Healthcare</span> Appointments
+        </h1>
+        <p class="text-lg text-gray-600 mb-8 max-w-2xl">
+          CureSlot makes it easy for patients to book appointments and for healthcare providers 
+          to manage schedules efficiently. Experience seamless healthcare scheduling today.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4">
+          <!-- <button class="bg-[#FFA157] border-2 text-white text-lg px-8 py-3 rounded-full font-semibold hover:bg-[#FFA157] transition transform hover:-translate-y-1" [routerLink]="['/patient/registration']">Patient Portal</button> -->
+          <button class="bg-white border-2 border-[#FFA157] text-[#FFA157] text-lg px-8 py-3 rounded-full font-semibold hover:bg-[#FFA157] transition transform hover:-translate-y-1" [routerLink]="['/login']">Provider Portal</button>
+        </div>
+        <div class="mt-8 flex items-center justify-center md:justify-start space-x-6 text-gray-500">
+          <div class="flex items-center">
+            <i class="fas fa-check-circle text-[#FFA157] mr-2"></i>
+            <span>No credit card required</span>
+          </div>
+          <div class="flex items-center">
+            <i class="fas fa-check-circle text-[#FFA157] mr-2"></i>
+            <span>Free 30-day trial</span>
+          </div>
+        </div>
+      </div>
+      <div class="md:w-1/2" data-aos="fade-left" data-aos-delay="200">
+        <div class="relative">
+          <div class="bg-white rounded-2xl p-6 shadow-xl transform perspective-1000 rotate-y-10 animate-gentle-rotate">
+            <div class="flex justify-between items-center mb-6">
+              <div>
+                <h3 class="font-semibold text-gray-800">Schedule Appointment</h3>
+                <p class="text-sm text-gray-500">Select date and time</p>
+              </div>
+              <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                <i class="fas fa-calendar-alt text-blue-500"></i>
+              </div>
+            </div>
+            <div class="grid grid-cols-7 gap-2 mb-4">
+              <div class="text-center text-gray-400 text-sm">S</div>
+              <div class="text-center text-gray-400 text-sm">M</div>
+              <div class="text-center text-gray-400 text-sm">T</div>
+              <div class="text-center text-gray-400 text-sm">W</div>
+              <div class="text-center text-gray-400 text-sm">T</div>
+              <div class="text-center text-gray-400 text-sm">F</div>
+              <div class="text-center text-gray-400 text-sm">S</div>
+              <div class="text-center text-gray-400 py-1">25</div>
+              <div class="text-center text-gray-400 py-1">26</div>
+              <div class="text-center text-gray-400 py-1">27</div>
+              <div class="text-center text-gray-400 py-1">28</div>
+              <div class="text-center text-gray-400 py-1">29</div>
+              <div class="text-center text-gray-400 py-1">30</div>
+              <div class="text-center py-1">1</div>
+              <div class="text-center py-1">2</div>
+              <div class="text-center py-1">3</div>
+              <div class="text-center py-1">4</div>
+              <div class="text-center py-1">5</div>
+              <div class="text-center py-1">6</div>
+              <div class="text-center py-1">7</div>
+              <div class="text-center py-1">8</div>
+              <div class="text-center py-1">9</div>
+              <div class="text-center py-1">10</div>
+              <div class="text-center py-1 bg-[#FFA157] text-white rounded-full animate-pulse">11</div>
+              <div class="text-center py-1">12</div>
+              <div class="text-center py-1">13</div>
+              <div class="text-center py-1">14</div>
+              <div class="text-center py-1">15</div>
+            </div>
+            <div class="grid grid-cols-4 gap-2">
+              <button class="py-2 text-xs bg-gray-100 rounded text-gray-600">9:00 AM</button>
+              <button class="py-2 text-xs bg-gray-100 rounded text-gray-600">10:00 AM</button>
+              <button class="py-2 text-xs bg-[#FFA157] text-white rounded animate-pulse">11:00 AM</button>
+              <button class="py-2 text-xs bg-gray-100 rounded text-gray-600">12:00 PM</button>
+            </div>
+            <button class="w-full mt-6 bg-[#FFA157] text-white py-3 rounded-lg font-semibold animate-pulse-slow">Confirm Appointment</button>
+          </div>
+          <div class="absolute -z-10 top-4 left-4 right-4 bottom-4 bg-[#FFA157]/10 rounded-2xl blur-md"></div>
+        </div>
+      </div>
     </div>
   </section>
 
   <!-- Features Section -->
-  <section class="bg-white py-10">
+  <section id="features" class="py-16 bg-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center mb-16" data-aos="fade-up">
-        <h2 class="text-3xl font-bold text-gray-900 mb-4">Why Choose CareSlot?</h2>
-        <p class="text-lg text-gray-600">Designed with both patients and providers in mind</p>
+        <h2 class="text-3xl font-bold text-gray-900 mb-4">Why Choose CureSlot?</h2>
+        <p class="text-lg text-gray-600 max-w-2xl mx-auto">Designed with both patients and healthcare providers in mind for the best experience</p>
       </div>
-
-      <div class="grid md:grid-cols-3 gap-8">
-        <div class="text-center p-6 bg-[#F9F4F1] rounded-xl shadow-md hover:shadow-lg transition" data-aos="flip-left" data-aos-delay="100">
-          <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow">
-            <svg class="w-8 h-8 text-[#FFA157] animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-            </svg>
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="feature-card text-center p-8 bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-500 hover:-translate-y-2" data-aos="flip-left" data-aos-delay="100">
+          <div class="w-20 h-20 bg-[#FFEFE7] rounded-2xl flex items-center justify-center mx-auto mb-6 icon-hover">
+            <i class="fas fa-calendar-check text-3xl text-[#FFA157]"></i>
           </div>
-          <h3 class="text-xl font-semibold text-gray-900 mb-2">Easy Scheduling</h3>
-          <p class="text-gray-600">Book appointments instantly with real-time availability</p>
+          <h3 class="text-xl font-semibold text-gray-900 mb-4">Easy Scheduling</h3>
+          <p class="text-gray-600">Book appointments instantly with real-time availability and automated reminders.</p>
         </div>
-
-        <div class="text-center p-6 bg-[#F9F4F1] rounded-xl shadow-md hover:shadow-lg transition" data-aos="flip-left" data-aos-delay="200">
-          <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow">
-            <svg class="w-8 h-8 text-[#FFA157] animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-            </svg>
+        <div class="feature-card text-center p-8 bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-500 hover:-translate-y-2" data-aos="flip-left" data-aos-delay="200">
+          <div class="w-20 h-20 bg-[#E6F7FF] rounded-2xl flex items-center justify-center mx-auto mb-6 icon-hover">
+            <i class="fas fa-shield-alt text-3xl text-[#1890FF]"></i>
           </div>
-          <h3 class="text-xl font-semibold text-gray-900 mb-2">Secure & Private</h3>
-          <p class="text-gray-600">HIPAA-compliant platform ensuring your data stays safe</p>
+          <h3 class="text-xl font-semibold text-gray-900 mb-4">Secure & Private</h3>
+          <p class="text-gray-600">HIPAA-compliant platform ensuring your medical data stays safe and confidential.</p>
         </div>
-
-        <div class="text-center p-6 bg-[#F9F4F1] rounded-xl shadow-md hover:shadow-lg transition" data-aos="flip-left" data-aos-delay="300">
-          <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow">
-            <svg class="w-8 h-8 text-[#FFA157] animate-spin-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-            </svg>
+        <div class="feature-card text-center p-8 bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-500 hover:-translate-y-2" data-aos="flip-left" data-aos-delay="300">
+          <div class="w-20 h-20 bg-[#F6FEDB] rounded-2xl flex items-center justify-center mx-auto mb-6 icon-hover">
+            <i class="fas fa-bolt text-3xl text-[#52C41A]"></i>
           </div>
-          <h3 class="text-xl font-semibold text-gray-900 mb-2">Lightning Fast</h3>
-          <p class="text-gray-600">Modern interface built for speed and efficiency</p>
+          <h3 class="text-xl font-semibold text-gray-900 mb-4">Lightning Fast</h3>
+          <p class="text-gray-600">Modern interface built for speed and efficiency, saving time for both patients and providers.</p>
+        </div>
+        <div class="feature-card text-center p-8 bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-500 hover:-translate-y-2" data-aos="flip-left" data-aos-delay="400">
+          <div class="w-20 h-20 bg-[#F4F3FF] rounded-2xl flex items-center justify-center mx-auto mb-6 icon-hover">
+            <i class="fas fa-comment-medical text-3xl text-[#722ED1]"></i>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-4">Automated Reminders</h3>
+          <p class="text-gray-600">Reduce no-shows with automated SMS and email reminders for upcoming appointments.</p>
+        </div>
+        <div class="feature-card text-center p-8 bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-500 hover:-translate-y-2" data-aos="flip-left" data-aos-delay="500">
+          <div class="w-20 h-20 bg-[#FFF7E6] rounded-2xl flex items-center justify-center mx-auto mb-6 icon-hover">
+            <i class="fas fa-chart-line text-3xl text-[#FA8C16]"></i>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-4">Analytics Dashboard</h3>
+          <p class="text-gray-600">Gain insights into your practice with detailed analytics and reporting tools.</p>
+        </div>
+        <div class="feature-card text-center p-8 bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-500 hover:-translate-y-2" data-aos="flip-left" data-aos-delay="600">
+          <div class="w-20 h-20 bg-[#FFE9E9] rounded-2xl flex items-center justify-center mx-auto mb-6 icon-hover">
+            <i class="fas fa-mobile-alt text-3xl text-[#FF4D4F]"></i>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-4">Mobile Friendly</h3>
+          <p class="text-gray-600">Access your schedule and book appointments from any device, anywhere.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <footer class="bg-gray-900 text-white py-12" data-aos="fade-up">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-      <h3 class="text-2xl font-bold text-[#FFA157] mb-4">CareSlot</h3>
-      <p class="text-gray-400">&copy; 2025 CareSlot. All rights reserved.</p>
+  <!-- How It Works Section -->
+  <section id="how-it-works" class="py-16 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16" data-aos="fade-up">
+        <h2 class="text-3xl font-bold text-gray-900 mb-4">How CureSlot Works</h2>
+        <p class="text-lg text-gray-600">Simple steps to streamline your healthcare appointments</p>
+      </div>
+      <div class="grid md:grid-cols-3 gap-8">
+        <div class="text-center" data-aos="fade-up" data-aos-delay="100">
+          <div class="relative mb-6">
+            <div class="w-24 h-24 bg-white rounded-full shadow-md flex items-center justify-center mx-auto step-icon">
+              <i class="fas fa-search text-3xl text-[#FFA157]"></i>
+            </div>
+            <div class="absolute top-0 right-1/4 w-8 h-8 bg-[#FFA157] rounded-full flex items-center justify-center text-white font-bold step-number">1</div>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-4">Find a Provider</h3>
+          <p class="text-gray-600">Search for healthcare providers by specialty, location, or availability.</p>
+        </div>
+        <div class="text-center" data-aos="fade-up" data-aos-delay="200">
+          <div class="relative mb-6">
+            <div class="w-24 h-24 bg-white rounded-full shadow-md flex items-center justify-center mx-auto step-icon">
+              <i class="fas fa-calendar-day text-3xl text-[#FFA157]"></i>
+            </div>
+            <div class="absolute top-0 right-1/4 w-8 h-8 bg-[#FFA157] rounded-full flex items-center justify-center text-white font-bold step-number">2</div>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-4">Book Appointment</h3>
+          <p class="text-gray-600">Select your preferred date and time from real-time availability.</p>
+        </div>
+        <div class="text-center" data-aos="fade-up" data-aos-delay="300">
+          <div class="relative mb-6">
+            <div class="w-24 h-24 bg-white rounded-full shadow-md flex items-center justify-center mx-auto step-icon">
+              <i class="fas fa-check-circle text-3xl text-[#FFA157]"></i>
+            </div>
+            <div class="absolute top-0 right-1/4 w-8 h-8 bg-[#FFA157] rounded-full flex items-center justify-center text-white font-bold step-number">3</div>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-4">Confirm & Visit</h3>
+          <p class="text-gray-600">Receive confirmation and reminders, then visit your healthcare provider.</p>
+        </div>
+      </div>
     </div>
-  </footer>
-</div>
+  </section>
+
+  <!-- Testimonials Section -->
+  <section id="testimonials" class="py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16" data-aos="fade-up">
+        <h2 class="text-3xl font-bold text-gray-900 mb-4">What Our Users Say</h2>
+        <p class="text-lg text-gray-600">Hear from patients and providers who use CureSlot</p>
+      </div>
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="testimonial-card p-6 bg-white rounded-2xl shadow-md hover:scale-105 transition-transform duration-300" data-aos="zoom-in" data-aos-delay="100">
+          <div class="flex items-center mb-4">
+            <div class="w-12 h-12 bg-gray-200 rounded-full"></div>
+            <div class="ml-4">
+              <h4 class="font-semibold">Sarah Johnson</h4>
+              <p class="text-sm text-gray-500">Patient</p>
+            </div>
+          </div>
+          <p class="text-gray-600">"Booking appointments has never been easier. I can see available slots in real-time and get reminders before my visits."</p>
+          <div class="mt-4 flex text-[#FFA157]">
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+          </div>
+        </div>
+        <div class="testimonial-card p-6 bg-white rounded-2xl shadow-md hover:scale-105 transition-transform duration-300" data-aos="zoom-in" data-aos-delay="200">
+          <div class="flex items-center mb-4">
+            <div class="w-12 h-12 bg-gray-200 rounded-full"></div>
+            <div class="ml-4">
+              <h4 class="font-semibold">Dr. Michael Chen</h4>
+              <p class="text-sm text-gray-500">Healthcare Provider</p>
+            </div>
+          </div>
+          <p class="text-gray-600">"CureSlot has reduced no-shows by 70% in my practice. The automated reminders and easy rescheduling are game-changers."</p>
+          <div class="mt-4 flex text-[#FFA157]">
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+          </div>
+        </div>
+        <div class="testimonial-card p-6 bg-white rounded-2xl shadow-md hover:scale-105 transition-transform duration-300" data-aos="zoom-in" data-aos-delay="300">
+          <div class="flex items-center mb-4">
+            <div class="w-12 h-12 bg-gray-200 rounded-full"></div>
+            <div class="ml-4">
+              <h4 class="font-semibold">Lisa Rodriguez</h4>
+              <p class="text-sm text-gray-500">Clinic Manager</p>
+            </div>
+          </div>
+          <p class="text-gray-600">"The administrative time we've saved with CureSlot is incredible. Our staff can focus on patient care instead of scheduling."</p>
+          <div class="mt-4 flex text-[#FFA157]">
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star-half-alt"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <!-- <section class="cta-section py-16 text-white bg-[#FFA157] relative overflow-hidden">
+    <div class="absolute inset-0 bg-[#FFA157] opacity-90"></div>
+    <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%201000%201000%22%20opacity%3D%220.1%22%3E%3Cpath%20fill%3D%22white%22%20d%3D%22M500%2C100%20C723%2C100%20900%2C277%20900%2C500%20C900%2C723%20723%2C900%20500%2C900%20C277%2C900%20100%2C723%20100%2C500%20C100%2C277%20277%2C100%20500%2C100%20Z%22/%3E%3C/svg%3E')] bg-center bg-cover"></div>
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+      <h2 class="text-3xl font-bold mb-6" data-aos="fade-up">Ready to Simplify Your Healthcare Scheduling?</h2>
+      <p class="text-xl mb-8 opacity-90" data-aos="fade-up" data-aos-delay="100">Join thousands of patients and providers who trust CureSlot with their appointment management.</p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center" data-aos="fade-up" data-aos-delay="200">
+        <button class="bg-white text-[#FFA157] text-lg px-8 py-3 rounded-full font-semibold hover:shadow-lg transition transform hover:-translate-y-1" (click)="navigateToLogin()">Sign Up Free</button>
+        <button class="bg-transparent border-2 border-white text-white text-lg px-8 py-3 rounded-full font-semibold hover:bg-white hover:text-[#FFA157] transition transform hover:-translate-y-1">Request Demo</button>
+      </div>
+    </div>
+  </section> -->
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-white py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid md:grid-cols-4 gap-8">
+        <div>
+          <h3 class="text-2xl font-bold text-[#FFA157] mb-4"><img [src]="logo" alt="CureSlot Logo" class="w-40"></h3>
+          <p class="text-gray-400 mb-4">Simplifying healthcare appointment scheduling for everyone.</p>
+          <div class="flex space-x-4">
+            <a href="#" class="text-gray-400 hover:text-[#FFA157] transition-colors duration-300"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" class="text-gray-400 hover:text-[#FFA157] transition-colors duration-300"><i class="fab fa-twitter"></i></a>
+            <a href="#" class="text-gray-400 hover:text-[#FFA157] transition-colors duration-300"><i class="fab fa-linkedin-in"></i></a>
+            <a href="#" class="text-gray-400 hover:text-[#FFA157] transition-colors duration-300"><i class="fab fa-instagram"></i></a>
+          </div>
+        </div>
+        <div>
+          <h4 class="text-lg font-semibold mb-4">For Patients</h4>
+          <ul class="space-y-2">
+            <li><a href="#" class="text-gray-400 hover:text-[#FFA157] transition-colors duration-300">Find a Therapist</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-[#FFA157] transition-colors duration-300">Book Appointment</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-[#FFA157] transition-colors duration-300">Patient Portal</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-[#FFA157] transition-colors duration-300">FAQ</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-lg font-semibold mb-4">For Providers</h4>
+          <ul class="space-y-2">
+            <li><a href="#" class="text-gray-400 hover:text-[#FFA157] transition-colors duration-300">Provider Login</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-[#FFA157] transition-colors duration-300">Features</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-[#FFA157] transition-colors duration-300">Pricing</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-[#FFA157] transition-colors duration-300">Support</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-lg font-semibold mb-4">Contact Us</h4>
+          <ul class="space-y-2">
+            <li class="flex items-center text-gray-400"><i class="fas fa-map-marker-alt mr-3 text-[#FFA157]"></i> 123 Healthcare Ave, Medical City</li>
+            <li class="flex items-center text-gray-400"><i class="fas fa-phone-alt mr-3 text-[#FFA157]"></i> (555) 123-4567</li>
+            <li class="flex items-center text-gray-400"><i class="fas fa-envelope mr-3 text-[#FFA157]"></i> infoCureSlot.com</li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+        <p>&copy; 2025 CureSlot. All rights reserved.</p>
+      </div>
+  </div>
+</footer>
+

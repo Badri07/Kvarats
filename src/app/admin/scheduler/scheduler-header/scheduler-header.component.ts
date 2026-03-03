@@ -1,47 +1,33 @@
-import {
-  Component,
-  Input,
-  Output,
-  EventEmitter,
-  OnInit,
-  OnChanges,
-  SimpleChanges,
-  inject,
-} from '@angular/core';
-import {
-  FormBuilder,
-  FormGroup,
-  Validators,
-  FormArray,
-  NgForm,
-} from '@angular/forms';
-import {
-  SchedulerClickEvent,
-  AppointmentTypeOption,
-  PatientOption,
-  MeetingTypeOption,
-  User,
-} from '../../../models/scheduler';
+import {Component,Input,Output,EventEmitter,OnInit,OnChanges,SimpleChanges,inject,signal,computed} from '@angular/core';
+import {FormBuilder,FormGroup,Validators,FormArray} from '@angular/forms';
+import {SchedulerClickEvent,AppointmentTypeOption,PatientOption,MeetingTypeOption, User} from '../../../models/scheduler';
 import { SchedulerService } from '../../../service/scheduler/scheduler.service';
 import { DatePipe } from '@angular/common';
-import moment from 'moment';
 import { AdminService } from '../../../service/admin/admin.service';
 import { TosterService } from '../../../service/toaster/tostr.service';
 import { Router } from '@angular/router';
-
+import { Subscription } from 'rxjs';
+import { AuthService } from '../../../service/auth/auth.service';
+import { UserRole } from '../../../models/availability-user.model.interface';
+import { DropdownService } from '../../../service/therapist/dropdown.service';
+import { AppointmentEditEvent } from '../../../models/scheduler.interface';
+import { AppointmentService } from '../../Billing/services/patient.service';
 
 @Component({
   selector: 'app-scheduler-header',
   templateUrl: './scheduler-header.component.html',
   styleUrls: ['./scheduler-header.component.scss'],
   standalone: false,
-   providers: [DatePipe]
+  providers: [DatePipe]
 })
-export class SchedulerHeaderComponent {
- @Input() show: boolean = false;
-  @Input() schedulerEvent: SchedulerClickEvent | null = null;
+export class SchedulerHeaderComponent implements OnInit {
+  @Input() show: boolean = false;
+  @Input() schedulerEvent: SchedulerClickEvent | AppointmentEditEvent | null = null;
   @Output() close = new EventEmitter<void>();
   @Output() submit = new EventEmitter<any>();
+
+  selectedTherapist = signal<any | null>(null);
+  currentDate = signal(new Date());
 
   appointmentForm!: FormGroup;
   selectedTab: string = 'schedule';
@@ -56,29 +42,10 @@ export class SchedulerHeaderComponent {
   ];
 
   therapistList: User[] = [];
-  availableStartTimes: string[] = [];
   availableEndTimes: string[] = [];
   appointmentTypeOptions: AppointmentTypeOption[] = [];
   meetingTypeOptions: MeetingTypeOption[] = [];
   PatientsListOptions: PatientOption[] = [];
-
-  // appointmentTypeOptions: AppointmentTypeOption[] = [
-  //   { id: '1', value: 'Initial Consultation' },
-  //   { id: '2', value: 'Follow-up' },
-  //   { id: '3', value: 'Emergency' },
-  // ];
-
-  // PatientsListOptions: PatientOption[] = [
-  //   { id: '1', firstName: 'John', lastName: 'Doe' },
-  //   { id: '2', firstName: 'Jane', lastName: 'Smith' },
-  //   { id: '3', firstName: 'Bob', lastName: 'Wilson' },
-  // ];
-
-  // meetingTypeOptions: MeetingTypeOption[] = [
-  //   { id: '1', value: 'In-Person' },
-  //   { id: '2', value: 'Video Call' },
-  //   { id: '3', value: 'Phone Call' },
-  // ];
 
   // Transaction tab properties
   totalAmount: number = 0;
@@ -90,66 +57,54 @@ export class SchedulerHeaderComponent {
   patientPaysAmount: number = 0;
   transactionNotes: string = '';
 
-   insuranceList: any[] = [];
-   selectedInsurance: any = null;
+  insuranceList: any[] = [];
+  selectedInsurance: any = null;
+    
+  slidingScalesList: any = [];
+  selectedPatient: any;
 
-   slidingScalesList:any=[];
-   selectedPatient:any
+  // Calendar popup edit
+  isEditMode = false;
+  editingAppointmentId: string | null = null;
+  
   public _service = inject(AdminService);
+  public _authservice = inject(AuthService);
   public toastr = inject(TosterService);
+  
   constructor(
     private formBuilder: FormBuilder,
     private schedulerService: SchedulerService,
     private datePipe: DatePipe,
-    private router: Router
+    private router: Router,
+    private adminservice: AdminService,
   ) {}
 
+  private sub!: Subscription;
+  modalData: any;
+  currentUser: any = this._authservice.getUserRole();
+  isClientAdmin = computed(() => this.currentUser === UserRole.CLIENT_ADMIN);
+  
   ngOnInit() {
-    debugger
+    this.getServiceDropdown();
+    this.loadDropdowns();
+    this.fetchDropdownOptions('Appointment Type');
 
-
-
-  this.schedulerService.therapistList$.subscribe((list) => {
-    this.therapistList = list;
-    console.log("therapistList therapistList therapistList ",this.therapistList);
-    
-  });
-
-  this.schedulerService.availabilityStatus$.subscribe((response) => {
-  if (response) {
-    console.log("response",response);
-    
-    const matchedTherapist = this.therapistList.find(
-      (therapist) => therapist.name === response.userName
-    );
-
-    this.appointmentForm.patchValue({
-      therapistInput: matchedTherapist?.id ?? '',
-      date: response.date,
-      startTime: response.startTime,
-      endTime: response.endTime
+    this.schedulerService.getTherapistList().subscribe((list) => {
+      this.therapistList = list;
     });
 
-    console.log("this.appointmentForm.value",this.appointmentForm.value);
-    
-
-    if (matchedTherapist) {
-      // Optional: trigger time slot generation
-      this.generateTimeSlotsForSelectedTherapist();
-    }
-  }
-});
-
-this._service.getSlidingScales().subscribe(data => this.slidingScalesList = data);
-
-       this.appointmentForm = this.formBuilder.group({
-      therapistInput: [null, Validators.required],
-      appointmentTypeInput: ['', Validators.required],
+    // Initialize form
+    this.appointmentForm = this.formBuilder.group({
+      therapistInput: ['', Validators.required],
+      chiefComplaintId: ['', Validators.required],
       patientId: ['', Validators.required],
+      title: [''],
       date: ['', Validators.required],
       startTime: ['', Validators.required],
       endTime: ['', Validators.required],
       meetingTypeInput: ['', Validators.required],
+      ServiceInput: ['', Validators.required],
+      diagnosisInput: [''],
       repeatEvery: [1],
       repeatPeriod: ['Day'],
       endDate: [''],
@@ -157,145 +112,234 @@ this._service.getSlidingScales().subscribe(data => this.slidingScalesList = data
       repeatDays: this.formBuilder.array([]),
       notes: [''],
     });
-    this.fetchDropdownOptions('AppointmentType');
-    this.fetchDropdownOptions('MeetingType');
-    this.fetchAllPatients();
 
+    // Availability subscription for slot clicks
+    this.schedulerService.availabilityStatus$.subscribe(resp => {
+      if (!resp || this.isEditMode) return;
+
+      const data = resp.data ?? resp;
+
+      // Find therapist by name
+      const fullName = data.userName?.trim().toLowerCase();
+      const matchedTherapist = this.therapistList.find(t => {
+        const therapistFullName = `${t.firstName || ''} ${t.lastName || ''}`.trim().toLowerCase();
+        return therapistFullName === fullName;
+      });
+
+      // Format time for form
+      const formatTimeForForm = (timeStr: string): string => {
+        if (!timeStr) return '';
+        
+        if (timeStr.includes('AM') || timeStr.includes('PM')) {
+          const [timePart, period] = timeStr.split(' ');
+          let [hours, minutes] = timePart.split(':').map(Number);
+          const displayHours = hours % 12 || 12;
+          return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+        }
+        
+        const timeParts = timeStr.split(':');
+        if (timeParts.length !== 2) return '';
+        
+        let hours = parseInt(timeParts[0], 10);
+        const minutes = parseInt(timeParts[1], 10);
+        
+        if (isNaN(hours) || isNaN(minutes)) return '';
+        
+        const period = hours >= 12 ? 'PM' : 'AM';
+        const displayHours = hours % 12 || 12;
+        
+        return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+      };
+
+      const formattedStartTime = formatTimeForForm(data.startTime);
+      const formattedEndTime = formatTimeForForm(data.endTime);
+
+      // Patch the form with the times from slot click
+      this.appointmentForm.patchValue({
+        therapistInput: matchedTherapist?.id ?? null,
+        date: data.date,
+        startTime: formattedStartTime,
+        endTime: formattedEndTime
+      }, { emitEvent: false });
+
+      // If therapist is selected, generate available time slots
+      if (matchedTherapist?.id) {
+        this.generateTimeSlotsForTherapistId(matchedTherapist.id);
+      }
+
+      // Add clicked time to available times
+      setTimeout(() => {
+        const currentStartTime = this.appointmentForm.get('startTime')?.value;
+        if (currentStartTime && !this.availableStartTimes.includes(currentStartTime)) {
+          this.availableStartTimes = [currentStartTime, ...this.availableStartTimes];
+        }
+      }, 100);
+    });
+
+    this.fetchDropdownOptions('Meeting Type');
+    this.getItems();
 
     this.appointmentForm.get('patientId')?.valueChanges.subscribe((patientId: string) => {
-  this.selectedPatient = this.PatientsListOptions.find(p => p.id === patientId);
-  this.insuranceList = this.selectedPatient?.insurances || [];
-  this.selectedInsurance = null;
-  if (this.selectedPatient?.slidingScaleId) {
-    this.appointmentForm.patchValue({ slidingScaleId: this.selectedPatient.slidingScaleId });
-    this.selectedSlidingScaleId = this.selectedPatient.slidingScaleId;
-    this.recalculateInsuranceClaim();
+      this.selectedPatient = this.PatientsListOptions.find(p => p.id === patientId);
+      this.insuranceList = this.selectedPatient?.insurances || [];
+      this.selectedInsurance = null;
+      if (this.selectedPatient?.slidingScaleId) {
+        this.appointmentForm.patchValue({ slidingScaleId: this.selectedPatient.slidingScaleId });
+        this.selectedSlidingScaleId = this.selectedPatient.slidingScaleId;
+        this.recalculateInsuranceClaim();
+      }
+    });
   }
-});
 
+  // Generate time slots by therapist ID
+  generateTimeSlotsForTherapistId(therapistId: string, done?: () => void) {
+    this.adminservice.getAvailabilityByUser(therapistId).subscribe(res => {
+      this.selectedTherapistAvailability = res;
+      this.onDateChange();
+    });
 
- if (this.appointmentForm?.get('patientId')) {
-    console.log("this.appointmentForm.get('patientId')", this.appointmentForm.get('patientId')?.value);
-  } else {
-    console.warn('appointmentForm or patientId is not available yet');
-  }
+    this.fetchAllPatients(therapistId, done);
   }
 
   setTab(tab: string) {
     this.selectedTab = tab;
+  }  
+
+  ensureTimeSlotsAvailable() {
+    if (this.availableStartTimes.length === 0) {
+      this.generateTimeSlots('09:00', '17:00');
+    }
   }
 
-  onNext(){
-    debugger
-    this.selectedTab = 'transactions'
+  onNext() {
+    this.selectedTab = 'transactions';
   }
-
-  // ngOnChanges(changes: SimpleChanges) {
-  //   if (changes['schedulerEvent'] && this.schedulerEvent?.date) {
-  //     this.fetchTherapistsByDate(new Date(this.schedulerEvent.date)).then(() =>
-  //       // this.populateFormFromSchedulerEvent()
-  //     );
-  //   }
-  // }
-
- 
-
-
-
- 
-
-
-
 
   fetchDropdownOptions(category: string): void {
     this.schedulerService
       .getDropdownsByCategory(category)
       .subscribe((options: any[]) => {
-        const mappedOptions = options.map((item) => ({
+        const mappedOptions = options.map((item: any) => ({
           id: item.id,
-          value: item.name || item.value || item.text || item.label,
+          value: item.description || item.value || item.text || item.label,
         }));
 
-        if (category === 'AppointmentType') {
+        if (category === 'Appointment Type') {
           this.appointmentTypeOptions = mappedOptions;
-        } else if (category === 'MeetingType') {
+        } else if (category === 'Meeting Type') {
           this.meetingTypeOptions = mappedOptions;
         }
       });
   }
 
-  fetchAllPatients(): void {
-    this.schedulerService.getAllPatientsList().subscribe((patients:any) => {
-      this.PatientsListOptions = patients.data;
-      console.log("PatientsListOptionsPatientsListOptionsPatientsListOptions",this.PatientsListOptions);      
-      this.appointmentForm.get('patientId');
+  currentPage = 1;
+  paginationPageSize = 25;
+
+  fetchAllPatients(therapistId: string, done?: () => void): void {
+    this.adminservice.getPatientsByTherapist(therapistId).subscribe({
+      next: (patients: any[]) => {
+        this.PatientsListOptions = patients || [];
+        if (done) done();
+      },
+      error: () => {
+        this.PatientsListOptions = [];
+      }
     });
   }
 
-  // getTherapistList(){
-  //   this.
-  // }
   generateTimeSlots(start: string, end: string) {
-    const result: string[] = [];
-    const [startHour, startMin] = start.split(':').map(Number);
-    const [endHour, endMin] = end.split(':').map(Number);
+    const normalizeTime = (timeStr: string): string => {
+      if (!timeStr) return '';
 
-    let current = new Date(2000, 0, 1, startHour, startMin);
-    const endDate = new Date(2000, 0, 1, endHour, endMin);
+      if (/^\d{1,2}:\d{2}$/.test(timeStr)) {
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+      }
 
-    while (current <= endDate) {
-      const formatted = moment(current).format('hh:mm A');
-      result.push(formatted);
-      current.setMinutes(current.getMinutes() + 30);
+      const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+      if (match) {
+        let hours = parseInt(match[1]);
+        const minutes = match[2];
+        const period = match[3].toUpperCase();
+
+        if (period === 'PM' && hours !== 12) hours += 12;
+        if (period === 'AM' && hours === 12) hours = 0;
+
+        return `${hours.toString().padStart(2, '0')}:${minutes}`;
+      }
+
+      return timeStr;
+    };
+
+    const normalizedStart = normalizeTime(start);
+    const normalizedEnd = normalizeTime(end);
+
+    if (!normalizedStart || !normalizedEnd) {
+      this.availableStartTimes = [];
+      this.availableEndTimes = [];
+      return;
     }
 
-    this.availableStartTimes = result.slice(0, -1);
-    this.availableEndTimes = result.slice(1);
+    const convertTo12Hour = (time24: string): string => {
+      const [hours, minutes] = time24.split(':').map(Number);
+      const period = hours >= 12 ? 'PM' : 'AM';
+      const displayHours = hours % 12 || 12;
+      return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+    };
+
+    const result: string[] = [];
+
+    try {
+      const [startHour, startMin] = normalizedStart.split(':').map(Number);
+      const [endHour, endMin] = normalizedEnd.split(':').map(Number);
+
+      let currentHour = startHour;
+      let currentMin = startMin;
+
+      while (currentHour < endHour || (currentHour === endHour && currentMin < endMin)) {
+        const time24 = `${currentHour.toString().padStart(2, '0')}:${currentMin
+          .toString()
+          .padStart(2, '0')}`;
+        const time12 = convertTo12Hour(time24);
+        result.push(time12);
+
+        currentMin += 30;
+        if (currentMin >= 60) {
+          currentMin = 0;
+          currentHour++;
+        }
+      }
+
+      this.availableStartTimes = result;
+
+      const patchedStart = this.appointmentForm.get('startTime')?.value;
+      if (patchedStart && !this.availableStartTimes.includes(patchedStart)) {
+        this.availableStartTimes.unshift(patchedStart);
+      }
+
+      this.availableEndTimes = result.map(startTime => {
+        const [time, period] = startTime.split(' ');
+        let [hours, minutes] = time.split(':').map(Number);
+
+        if (period === 'PM' && hours !== 12) hours += 12;
+        if (period === 'AM' && hours === 12) hours = 0;
+
+        minutes += 30;
+        if (minutes >= 60) {
+          minutes = 0;
+          hours += 1;
+        }
+
+        const endPeriod = hours >= 12 ? 'PM' : 'AM';
+        const displayHours = hours % 12 || 12;
+        return `${displayHours}:${minutes.toString().padStart(2, '0')} ${endPeriod}`;
+      });
+
+    } catch (error) {
+      this.availableStartTimes = [];
+      this.availableEndTimes = [];
+    }
   }
-
-  // populateFormFromSchedulerEvent() {
-  //   debugger
-  //   if (!this.schedulerEvent) return;
-
-  //   const { userId, userName, timeSlot, date, isAddEvent } =
-  //     this.schedulerEvent;
-
-  //   // Only populate therapist and time if it's not from Add Event button
-  //   if (!isAddEvent) {
-  //     const therapist = this.therapistList.find((t) => t.id === userId);
-  //     if (therapist?.availableFrom && therapist.availableTo) {
-  //       this.generateTimeSlots(therapist.availableFrom, therapist.availableTo);
-  //     }
-
-  //     // Convert times to same format used in dropdowns (e.g., "hh:mm A")
-  //     const startTime = moment(timeSlot.time, 'HH:mm').format('hh:mm A');
-  //     const endTime = moment(
-  //       this.calculateEndTime(timeSlot.time, 30),
-  //       'HH:mm'
-  //     ).format('hh:mm A');
-
-  //    this.appointmentForm.patchValue({
-  //       therapistInput: userId,
-  //       date,
-  //       startTime,
-  //       endTime,
-  //     });
-
-     
-      
-  //   } else {
-  //     // For Add Event, only populate the date
-  //     // Clear time slots when it's an Add Event
-  //     this.availableStartTimes = [];
-  //     this.availableEndTimes = [];
-
-  //     // this.appointmentForm.patchValue({
-  //     //   date,
-  //     // });
-  //   }
-
-  //    console.log("this.appointmentForm.value",this.appointmentForm.value);
-  // }
 
   calculateEndTime(startTime: string, durationMinutes: number): string {
     const [hours, minutes] = startTime.split(':').map(Number);
@@ -314,32 +358,49 @@ this._service.getSlidingScales().subscribe(data => this.slidingScalesList = data
   }
 
   closeModal() {
-     this.appointmentForm.patchValue({
-      therapistInput:  '',
-      date: '',
-      startTime: '',
-      endTime: ''
+  this.appointmentForm.reset();
+  this.isEditMode = false;
+  this.editingAppointmentId = null;
+  this.show = false;
+  this.close.emit();
+}
+
+  ngOnDestroy() {
+    if (this.sub) this.sub.unsubscribe();
+  }
+
+  getTodayDate(): string {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  chiefComplaints: any[] = [];
+  loadDropdowns(): void {
+    this.adminservice.getChiefComplaintdata().subscribe({
+      next: (data: any) => this.chiefComplaints = data,
+      error: (err: any) => console.error('Failed to load chief complaints', err)
     });
-        this.close.emit();
-
   }
 
-  onStartTimeChange(): void {
-    const startTime = this.appointmentForm.get('startTime')?.value;
-    if (!startTime) return;
-
-    const startMoment = moment(startTime, 'hh:mm A');
-    const endMoment = startMoment.clone().add(30, 'minutes');
-    const formattedEnd = endMoment.format('hh:mm A');
-
-    this.availableEndTimes = [formattedEnd];
-    this.appointmentForm.get('endTime')?.setValue(formattedEnd);
+  onSubmit(): void {
+  if (this.appointmentForm.invalid) {
+    this.markFormGroupTouched(this.appointmentForm);
+    return;
   }
 
-onSubmit(): void {
   const formVal = this.appointmentForm.value;
-
   const selectedDate = new Date(formVal.date);
+
+  // Convert form service value (item.id) to ClientServiceId for API
+  let clientServiceIdForApi = '';
+  if (formVal.ServiceInput) {
+    const selectedService = this.serviceDropdown.find(s => s.id === formVal.ServiceInput);
+    // Use id (ClientServiceId) not serviceId
+    clientServiceIdForApi = selectedService?.id || '';
+  }
 
   const toISOStringWithTime = (date: Date, timeStr: string): string => {
     const [time, modifier] = timeStr.split(' ');
@@ -354,23 +415,17 @@ onSubmit(): void {
     return dateTime.toISOString();
   };
 
-  const payload = {
+  const payload: any = {
     patientId: formVal.patientId,
     userId: formVal.therapistInput,
     date: selectedDate,
     startTime: toISOStringWithTime(selectedDate, formVal.startTime),
     endTime: toISOStringWithTime(selectedDate, formVal.endTime),
-    appointmentTypeId: Number(formVal.appointmentTypeInput) || 0,
     meetingTypeId: Number(formVal.meetingTypeInput) || 0,
+    chiefComplaintIds: formVal.chiefComplaintId ? [formVal.chiefComplaintId] : [],
     appointmentStatusId: Number(formVal.appointmentStatusInput) || 0,
-    totalAmount: this.totalAmount || 0,
-    patientPaysAmount: this.patientPaysAmount || 0,
-    copayAmount: this.copayAmount || 0,
-    insuranceClaimAmount: this.insuranceClaimAmount || 0,
-    slidingScaleDiscountPercentage: (this.getSlidingScaleDiscount().toFixed(2)),
-    insuranceId: this.selectedInsuranceId ?? null,
     notes: formVal.notes,
-    transactionNotes: this.transactionNotes,
+    serviceIds: clientServiceIdForApi ? [clientServiceIdForApi] : [], // Send id, not serviceId
     repeat: formVal.repeat || false,
     repeatEvery: formVal.repeatEvery || 0,
     repeatPeriod: formVal.repeatPeriod,
@@ -378,21 +433,38 @@ onSubmit(): void {
     repeatDays: formVal.repeatDays || []
   };
 
-  this._service.saveAppointmentWithTransaction(payload).subscribe(
-    res => {
-      this.toastr.success('Appointment saved successfully!');
-      const currentUrl = this.router.url;
-      this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
-      this.router.navigate([currentUrl]);
-  });
-    },
-    err => {
-      console.error(err);
-      this.toastr.error('Failed to save appointment');
-    }
-  );
-}
+  console.log('Submitting payload:', payload);
+  console.log('Selected service:', this.serviceDropdown.find(s => s.id === formVal.ServiceInput));
 
+  // Handle create vs update
+  if (this.isEditMode && this.editingAppointmentId) {
+    // UPDATE existing appointment
+    this._service.updateAppointmentWithTransaction(this.editingAppointmentId, payload).subscribe(
+      res => {
+        this.toastr.success('Appointment updated successfully!');
+        this.closeModal();
+        this.submit.emit({ type: 'update', data: res });
+      },
+      err => {
+        console.error('Update error:', err);
+        this.toastr.error('Failed to update appointment');
+      }
+    );
+  } else {
+    // CREATE new appointment
+    this._service.saveAppointmentWithTransaction(payload).subscribe(
+      res => {
+        this.toastr.success('Appointment created successfully!');
+        this.closeModal();
+        this.submit.emit({ type: 'create', data: res });
+      },
+      err => {
+        console.error('Create error:', err);
+        this.toastr.error('Failed to create appointment');
+      }
+    );
+  }
+}
 
   markFormGroupTouched(formGroup: FormGroup) {
     Object.keys(formGroup.controls).forEach((key) => {
@@ -401,6 +473,15 @@ onSubmit(): void {
       if (control instanceof FormGroup) {
         this.markFormGroupTouched(control);
       }
+    });
+  }
+
+  appointmentTypeList: any[] = [];
+  public dropdownService = inject(DropdownService);
+  
+  getItems() {
+    this.dropdownService.getItems().subscribe((res) => {
+      this.appointmentTypeList = res;
     });
   }
 
@@ -422,58 +503,43 @@ onSubmit(): void {
   }
 
   getSelectedRepeatDays(): string[] {
-    
     return this.repeatDaysArray.value;
   }
 
-onInsuranceToggle(event: any) {
-  debugger
-  this.useInsurance = event.target.checked;
-  if (this.useInsurance) {
-    const patientId = this.appointmentForm.get('patientId')?.value;
-    if (patientId) {
-      this.selectedPatient = this.PatientsListOptions.find(p => p.id === patientId);
-      this.insuranceList = this.selectedPatient?.insurances || [];
-      if (this.insuranceList.length > 0) {
-        this.selectedInsuranceId = this.insuranceList[0].id;
-        this.selectedInsurance = this.insuranceList[0];
-        this.copayAmount = this.selectedInsurance.coPay || 0;
+  onInsuranceToggle(event: any) {
+    this.useInsurance = event.target.checked;
+    if (this.useInsurance) {
+      const patientId = this.appointmentForm.get('patientId')?.value;
+      if (patientId) {
+        this.selectedPatient = this.PatientsListOptions.find(p => p.id === patientId);
+        this.insuranceList = this.selectedPatient?.insurances || [];
+        if (this.insuranceList.length > 0) {
+          this.selectedInsuranceId = this.insuranceList[0].id;
+          this.selectedInsurance = this.insuranceList[0];
+          this.copayAmount = this.selectedInsurance.coPay || 0;
+        }
       }
+    } else {
+      this.selectedInsuranceId = null;
+      this.selectedInsurance = null;
+      this.insuranceClaimAmount = 0;
+      this.copayAmount = 0;
     }
-  } else {
-    this.selectedInsuranceId = null;
-    this.selectedInsurance = null;
-    this.insuranceClaimAmount = 0;
-    this.copayAmount = 0;
-  }
-  this.recalculateInsuranceClaim();
-}
- 
-onInsuranceChange(event: Event): void {
-
-  const target = event.target as HTMLSelectElement;
-
-  const selectedInsuranceId = target.value;
-
-  this.selectedInsurance = this.insuranceList.find(ins => ins.id === selectedInsuranceId);
-
-  if (this.selectedInsurance) {
-
-    this.copayAmount = this.selectedInsurance.coPay || 0;
-
     this.recalculateInsuranceClaim();
-
-    this.updateTransactionNotes();
-
   }
 
-}
- 
+  onInsuranceChange(event: Event): void {
+    const target = event.target as HTMLSelectElement;
+    const selectedInsuranceId = target.value;
+    this.selectedInsurance = this.insuranceList.find(ins => ins.id === selectedInsuranceId);
 
- 
+    if (this.selectedInsurance) {
+      this.copayAmount = this.selectedInsurance.coPay || 0;
+      this.recalculateInsuranceClaim();
+      this.updateTransactionNotes();
+    }
+  }
 
- 
- 
   updateTransactionNotes(): void {
     if (this.selectedInsurance) {
       this.transactionNotes = (this.insuranceClaimAmount > 0 || this.copayAmount > 0)
@@ -485,121 +551,432 @@ onInsuranceChange(event: Event): void {
         : '';
     }
   }
- 
+
   recalculateInsuranceClaim(): void {
-  let slidingDiscount = 0;
-  const selectedScale = this.slidingScalesList.find((scale:any) => scale.id === this.selectedSlidingScaleId);
- 
-  if (selectedScale) {
-    slidingDiscount = (this.totalAmount * selectedScale.discountPercentage) / 100;
-  }
- 
-  if (this.selectedInsurance) {
-    const calculatedInsuranceClaim = this.totalAmount - (this.copayAmount || 0) - slidingDiscount;
-    this.insuranceClaimAmount = Math.max(0, parseFloat(calculatedInsuranceClaim.toFixed(2)));
-    this.patientPaysAmount = 0;
-  } else {
-    const patientTotal = this.totalAmount - slidingDiscount;
-    this.patientPaysAmount = Math.max(0, parseFloat(patientTotal.toFixed(2)));
-    this.insuranceClaimAmount = 0;
-    this.copayAmount = 0;
-    this.selectedInsurance = null;
-  }
- 
-  // Don't recalculate or override totalAmount!
-  this.updateTransactionNotes();
-}
- 
+    let slidingDiscount = 0;
+    const selectedScale = this.slidingScalesList.find((scale: any) => scale.id === this.selectedSlidingScaleId);
 
-  // recalculateInsuranceClaim() {
-  //   if (this.useInsurance && this.totalAmount > 0) {
-  //     let discountAmount = 0;
-
-  //     // Apply sliding scale discount if selected
-  //     if (this.selectedSlidingScaleId) {
-  //       const selectedScale = this.slidingScalesList.find(
-  //         (s:any) => s.id === this.selectedSlidingScaleId
-  //       );
-  //       if (selectedScale) {
-  //         discountAmount =
-  //           (this.totalAmount * selectedScale.discountPercentage) / 100;
-  //       }
-  //     }
-
-  //     const adjustedAmount = this.totalAmount - discountAmount;
-  //     this.insuranceClaimAmount = Math.max(
-  //       0,
-  //       adjustedAmount - this.copayAmount
-  //     );
-  //   } else {
-  //     this.insuranceClaimAmount = 0;
-  //     this.patientPaysAmount = this.totalAmount;
-  //   }
-  // }
-therapist:any
-generateTimeSlotsForSelectedTherapist() {
-  const selectedId = this.appointmentForm.get('therapistInput')?.value;
-  this.therapist = this.therapistList.find((t) => t.id === selectedId);
-
-  if (this.therapist) {
-    const today = new Date();
-    this.therapist.date = today.toISOString();
-
-    // Format as 'YYYY-MM-DD' for form input
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const dd = String(today.getDate()).padStart(2, '0');
-    const formattedForInput = `${yyyy}-${mm}-${dd}`;
-
-    // Patch form
-    this.appointmentForm.patchValue({ date: formattedForInput });
-
-    console.log("Patched Therapist Date:", formattedForInput);
-
-    if (this.therapist.availableFrom && this.therapist.availableTo) {
-      this.generateTimeSlots(this.therapist.availableFrom, this.therapist.availableTo);
-    } else {
-      this.availableStartTimes = [];
-      this.availableEndTimes = [];
+    if (selectedScale) {
+      slidingDiscount = (this.totalAmount * selectedScale.discountPercentage) / 100;
     }
-  } else {
-    this.availableStartTimes = [];
-    this.availableEndTimes = [];
+
+    if (this.selectedInsurance) {
+      const calculatedInsuranceClaim = this.totalAmount - (this.copayAmount || 0) - slidingDiscount;
+      this.insuranceClaimAmount = Math.max(0, parseFloat(calculatedInsuranceClaim.toFixed(2)));
+      this.patientPaysAmount = 0;
+    } else {
+      const patientTotal = this.totalAmount - slidingDiscount;
+      this.patientPaysAmount = Math.max(0, parseFloat(patientTotal.toFixed(2)));
+      this.insuranceClaimAmount = 0;
+      this.copayAmount = 0;
+      this.selectedInsurance = null;
+    }
+
+    this.updateTransactionNotes();
   }
-}
 
+  therapist: any;
+  selectedTherapistAvailability: any[] = [];
+  availableStartTimes: string[] = [];
 
-parseTime(date: string, time: string): Date {
+  generateTimeSlotsForSelectedTherapist(event: any) {
+    const selectedTherapistId = event.target.value;
+
+    if (!selectedTherapistId) {
+      this.PatientsListOptions = [];
+      return;
+    }
+
+    this.generateTimeSlotsForTherapistId(selectedTherapistId);
+  }
+
+  onDateChange() {
+    const selectedDate = this.appointmentForm.value.date;
+    if (!selectedDate || this.selectedTherapistAvailability.length === 0) return;
+
+    const selectedDateObj = new Date(selectedDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const day = selectedDateObj.getDay();
+
+    const dayAvailability = this.selectedTherapistAvailability.find(d => d.dayOfWeek === day);
+
+    if (!dayAvailability || dayAvailability.isAvailable === false) {
+      this.availableStartTimes = [];
+      return;
+    }
+
+    // Generate all available slots
+    let allSlots = this.generateSlots12Hour(
+      dayAvailability.startTime,
+      dayAvailability.endTime
+    );
+
+    // Filter out past times if selected date is today
+    if (selectedDateObj.toDateString() === today.toDateString()) {
+      const now = new Date();
+      const currentHour = now.getHours();
+      const currentMinute = now.getMinutes();
+      
+      this.availableStartTimes = allSlots.filter(slot => {
+        const [timePart, period] = slot.split(' ');
+        let [hours, minutes] = timePart.split(':').map(Number);
+        
+        // Convert to 24-hour for comparison
+        if (period === 'PM' && hours !== 12) hours += 12;
+        if (period === 'AM' && hours === 12) hours = 0;
+        
+        // Check if slot is in the future
+        if (hours > currentHour) return true;
+        if (hours === currentHour && minutes > currentMinute) return true;
+        return false;
+      });
+    } else {
+      this.availableStartTimes = allSlots;
+    }
+  }
+
+  generateSlots12Hour(start: string, end: string): string[] {
+    let slots: string[] = [];
+    let [startH, startM] = start.split(':').map(Number);
+    let [endH, endM] = end.split(':').map(Number);
+
+    let time = startH * 60 + startM;
+    const endTime = endH * 60 + endM;
+
+    while (time < endTime) {
+      const hours = Math.floor(time / 60);
+      const minutes = time % 60;
+      
+      const period = hours >= 12 ? 'PM' : 'AM';
+      const displayHours = hours % 12 || 12;
+      const displayMinutes = minutes.toString().padStart(2, '0');
+      
+      const formattedTime = `${displayHours}:${displayMinutes} ${period}`;
+      slots.push(formattedTime);
+      time += 30;
+    }
+    
+    return slots;
+  }
+
+  onStartTimeChange() {
+    const startTime = this.appointmentForm.value.startTime;
+    if (!startTime) return;
+
+    const [timePart, period] = startTime.split(' ');
+    let [hours, minutes] = timePart.split(':').map(Number);
+
+    if (period === 'PM' && hours !== 12) hours += 12;
+    if (period === 'AM' && hours === 12) hours = 0;
+
+    const totalMinutes = hours * 60 + minutes + 30;
+    const endHours = Math.floor(totalMinutes / 60);
+    const endMinutes = totalMinutes % 60;
+
+    const endPeriod = endHours >= 12 ? 'PM' : 'AM';
+    const displayHours = endHours % 12 || 12;
+    const endTime = `${displayHours}:${endMinutes.toString().padStart(2, '0')} ${endPeriod}`;
+    
+    this.appointmentForm.patchValue({ endTime });
+  }
+
+  parseTime(date: string, time: string): Date {
     const [hour, minute] = time.split(':').map(Number);
     const dt = new Date(date);
     dt.setHours(hour, minute, 0, 0);
     return dt;
   }
- 
+
   getSlidingScaleDiscount(): number {
     if (!this.selectedSlidingScaleId) {
-        console.warn('No sliding scale selected');
-        return 0;
+      return 0;
     }
-   
-    const selectedScale = this.slidingScalesList.find((scale:any) => scale.id === this.selectedSlidingScaleId);
-   
-    if (!selectedScale) {
-        console.warn('Selected scale not found in list', {
-            selectedId: this.selectedSlidingScaleId,
-            availableIds: this.slidingScalesList.map((s:any) => s.id)
-        });
-        return 0;
-    }
-   
-    const discount = selectedScale.discountPercentage || 0;
-    console.log('Raw discount value:', discount);
-   
-    return parseFloat(discount.toFixed(1));
-}
- 
 
- onchangePatient(){
+    const selectedScale = this.slidingScalesList.find((scale: any) => scale.id === this.selectedSlidingScaleId);
+
+    if (!selectedScale) {
+      return 0;
+    }
+
+    const discount = selectedScale.discountPercentage || 0;
+    return parseFloat(discount.toFixed(1));
+  }
+
+  onchangePatient() {
+    // Implementation if needed
+  }
+
+  serviceDropdown: any[] = [];
+  diagnosisDropdown: any[] = [];
   
- }
+  getServiceDropdown() {
+    const clientId = this._authservice.getClientId();
+    
+    if (!clientId) {
+      this.serviceDropdown = [];
+      return;
+    }
+    
+    this.dropdownService.GetServiceItemS(clientId).subscribe({
+      next: (res) => {
+        if (res.success && res.data) {
+          this.serviceDropdown = res.data;
+        } else {
+          this.serviceDropdown = [];
+        }
+      },
+      error: (error) => {
+        console.error("Error loading services:", error);
+        this.serviceDropdown = [];
+      }
+    });
+  }
+
+  getdiagnosisDropdown() {
+    if (!this.selectedPatientId) {
+      this.diagnosisDropdown = [];
+      return;
+    }
+
+    this.dropdownService.getDiagnosis(this.selectedPatientId).subscribe({
+      next: (res) => {
+        if (res.success && res.data) {
+          this.diagnosisDropdown = res.data;
+        } else {
+          this.diagnosisDropdown = [];
+        }
+      },
+      error: (error) => {
+        console.error("Error loading diagnoses:", error);
+        this.diagnosisDropdown = [];
+      }
+    });
+  }
+
+  selectedPatientId: any;
+  
+  onSelectPatients(): void {
+    this.selectedPatientId = this.appointmentForm.get('patientId')?.value;
+    if (this.selectedPatientId) {
+      this.getdiagnosisDropdown();
+    }
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['schedulerEvent'] && this.schedulerEvent) {
+      this.isEditMode = false;
+      this.editingAppointmentId = null;
+
+      if ('appointmentId' in this.schedulerEvent) {
+        this.isEditMode = true;
+        this.editingAppointmentId = this.schedulerEvent.appointmentId;
+        this.loadAppointmentForEdit(this.editingAppointmentId);
+        return;
+      }
+
+      this.patchFormForCreate(this.schedulerEvent as SchedulerClickEvent);
+    }
+  }
+
+  private loadAppointmentForEdit(appointmentId: string): void {
+    // Clear arrays
+    this.PatientsListOptions = [];
+    this.serviceDropdown = [];
+
+    this._service.GetAppointmentsById(appointmentId).subscribe({
+      next: async (apt) => {
+        this.isEditMode = true;
+        this.editingAppointmentId = appointmentId;
+
+        const start12 = this.to12Hour(apt.startTime);
+        const end12 = this.to12Hour(apt.endTime);
+        const dateStr = apt.date.split('T')[0];
+        const serviceId = apt.services?.[0]?.serviceId ?? null;
+        const patientId = apt.patientId?.toString();
+        const therapistId = apt.userId;
+
+        // RESET FORM
+        this.appointmentForm.reset();
+
+        // Load services FIRST
+        await this.loadServicesPromise();
+        
+        // Load patients for therapist
+        await this.loadPatientsPromise(therapistId);
+
+        // Find the correct value to patch for service
+        let serviceValueToPatch = '';
+        if (serviceId) {
+          const matchingService = this.serviceDropdown.find(s => s.serviceId === serviceId);
+          if (matchingService) {
+            serviceValueToPatch = matchingService.id;
+          }
+        }
+
+        // Patch form with values
+        const formValues: any = {
+          therapistInput: therapistId,
+          patientId: patientId || '',
+          date: dateStr,
+          startTime: start12,
+          endTime: end12,
+          meetingTypeInput: apt.meetingTypeId,
+          chiefComplaintId: apt.chiefComplaints?.[0]?.id ?? null,
+          notes: apt.notes ?? '',
+          ServiceInput: serviceValueToPatch,
+          title: apt.title || '',
+          diagnosisInput: apt.diagnosisInput || '',
+          repeatEvery: apt.repeatEvery || 1,
+          repeatPeriod: apt.repeatPeriod || 'Day',
+          endDate: apt.endDate || '',
+          repeat: apt.repeat || false,
+          repeatDays: apt.repeatDays || []
+        };
+
+        this.appointmentForm.patchValue(formValues, { emitEvent: false });
+
+        // Generate time slots
+        this.selectedTherapistAvailability = await this.loadTherapistAvailability(therapistId);
+        this.onDateChange();
+
+        // Ensure appointment time is in available slots
+        if (start12 && !this.availableStartTimes.includes(start12)) {
+          this.availableStartTimes = [start12, ...this.availableStartTimes];
+        }
+
+        // Force UI update
+        setTimeout(() => {
+          this.forceDropdownUpdate();
+        }, 300);
+      },
+      error: (err) => {
+        console.error('Failed to load appointment:', err);
+      }
+    });
+  }
+
+  // Helper methods using Promises
+  private loadServicesPromise(): Promise<void> {
+    return new Promise((resolve) => {
+      const clientId = this._authservice.getClientId();
+      
+      if (!clientId) {
+        this.serviceDropdown = [];
+        resolve();
+        return;
+      }
+
+      this.dropdownService.GetServiceItemS(clientId).subscribe({
+        next: (res) => {
+          if (res.success && res.data) {
+            this.serviceDropdown = res.data;
+          } else {
+            this.serviceDropdown = [];
+          }
+          resolve();
+        },
+        error: (error) => {
+          console.error("Error loading services:", error);
+          this.serviceDropdown = [];
+          resolve();
+        }
+      });
+    });
+  }
+
+  private loadPatientsPromise(therapistId: string): Promise<void> {
+    return new Promise((resolve) => {
+      this.adminservice.getPatientsByTherapist(therapistId).subscribe({
+        next: (patients: any[]) => {
+          this.PatientsListOptions = patients || [];
+          resolve();
+        },
+        error: (err) => {
+          console.error('Failed to load patients:', err);
+          this.PatientsListOptions = [];
+          resolve();
+        }
+      });
+    });
+  }
+
+  private loadTherapistAvailability(therapistId: string): Promise<any[]> {
+    return new Promise((resolve) => {
+      this.adminservice.getAvailabilityByUser(therapistId).subscribe({
+        next: (res) => {
+          resolve(res);
+        },
+        error: (err) => {
+          console.error('Failed to load availability:', err);
+          resolve([]);
+        }
+      });
+    });
+  }
+
+  // Force dropdown UI to update
+  private forceDropdownUpdate(): void {
+    // Clone arrays to trigger change detection
+    this.PatientsListOptions = [...this.PatientsListOptions];
+    this.serviceDropdown = [...this.serviceDropdown];
+    
+    // Check if service value exists in dropdown
+    const serviceControl = this.appointmentForm.get('ServiceInput');
+    if (serviceControl?.value) {
+      const serviceExists = this.serviceDropdown.some(s => s.id === serviceControl.value);
+      if (!serviceExists) {
+        const serviceByServiceId = this.serviceDropdown.find(s => s.serviceId === serviceControl.value);
+        if (serviceByServiceId) {
+          serviceControl.setValue(serviceByServiceId.id, { emitEvent: false });
+        }
+      }
+    }
+    
+    // Force Angular change detection by resetting and re-setting
+    const patientControl = this.appointmentForm.get('patientId');
+    if (serviceControl?.value) {
+      const currentValue = serviceControl.value;
+      serviceControl.setValue(null, { emitEvent: false });
+      setTimeout(() => {
+        serviceControl.setValue(currentValue, { emitEvent: false });
+      }, 50);
+    }
+    
+    if (patientControl?.value) {
+      const currentValue = patientControl.value;
+      patientControl.setValue(null, { emitEvent: false });
+      setTimeout(() => {
+        patientControl.setValue(currentValue, { emitEvent: false });
+      }, 100);
+    }
+    
+    // Update form validity
+    this.appointmentForm.updateValueAndValidity();
+  }
+
+  private patchFormForCreate(event: SchedulerClickEvent): void {
+    // Implementation for create mode
+  }
+
+  private to12Hour(time: string): string {
+    const [h, m] = time.split(':').map(Number);
+    const period = h >= 12 ? 'PM' : 'AM';
+    const hour = h % 12 || 12;
+    return `${hour}:${m.toString().padStart(2, '0')} ${period}`;
+  }
+
+  trackByPatientId(index: number, patient: any): string {
+    return patient?.id || index;
+  }
+
+  trackByServiceId(index: number, service: any): string {
+    return service?.id || index;
+  }
+
+  compareById(a: any, b: any): boolean {
+    if (a == null || b == null) return false;
+    return String(a) === String(b);
+  }
 }

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { DropdownDataService } from '../../../service/dropdown/dropdown-data-service';
 import { CountriesData } from '../../../models/dropdown-data-model';
@@ -8,6 +8,8 @@ import { Column, GridApi, GridReadyEvent, PaginationChangedEvent } from 'ag-grid
 import * as XLSX from 'xlsx';
 import * as FileSaver from 'file-saver';
 import { ToastrService } from 'ngx-toastr';
+import { SuperAdminService } from '../../../service/admin/superAdmin.service';
+import { PopupService } from '../../../service/popup/popup-service';
 
 @Component({
   selector: 'app-countries-data',
@@ -25,7 +27,8 @@ export class CountriesDataComponent implements OnInit {
   deleteId: number | null = null;
 
 
-  public _toastr = inject(ToastrService)
+  public _toastr = inject(ToastrService);
+  public _loader = inject(PopupService);
 
   constructor(
     private fb: FormBuilder,
@@ -37,8 +40,10 @@ export class CountriesDataComponent implements OnInit {
       stateName: ['', [Validators.required, Validators.maxLength(255)]],
       stateCode: ['', [Validators.required, Validators.maxLength(10)]],
       cityName: ['', [Validators.required, Validators.maxLength(255)]],
-      zipCode: ['', [Validators.required, Validators.maxLength(20)]],
-      active: [true]
+      zipCode: ['', [
+      Validators.required,
+      Validators.pattern(/^[0-9]+$/)
+    ]],
     });
   }
 
@@ -46,6 +51,7 @@ export class CountriesDataComponent implements OnInit {
   // Ag-grid
     gridApi!: GridApi;
     // gridColumnApi!: Column; paginationPageSize = 10;
+    
 
 searchValue: string = '';
 gridColumnApi!: Column;
@@ -98,37 +104,51 @@ onPaginationChanged(params: PaginationChangedEvent) {
 //     this.loadCountries();
 //   });
 // }
-goToPreviousPage() {
-  if (this.currentPage > 1) {
-    this.currentPage--;
-    this.loadCountries();
-  }
-}
-
-goToNextPage() {
+goToNextPage(): void {
   if (this.currentPage < this.totalPages) {
     this.currentPage++;
     this.loadCountries();
   }
 }
 
-
-
-loadCountries(): void {
-  this.dropdownService.getCountries(this.currentPage, this.paginationPageSize).subscribe((countries: any) => {
-    this.rowData = countries.data || [];
-    this.totalCount = countries.totalCount || 0;
-
-    this.totalPages = Math.max(1, Math.ceil(this.totalCount / this.paginationPageSize));
-    this.pageStart = this.totalCount > 0 ? (this.currentPage * this.paginationPageSize) + 1 : 0;
-    this.pageEnd = this.totalCount > 0 ? Math.min((this.currentPage + 1) * this.paginationPageSize, this.totalCount) : 0;
-
-    console.log(`Showing ${this.pageStart} to ${this.pageEnd} of ${this.totalCount}`);
-    console.log(`Page ${this.currentPage + 1} of ${this.totalPages}`);
-  });
+goToPreviousPage(): void {
+  if (this.currentPage > 1) {
+    this.currentPage--;
+    this.loadCountries();
+  }
 }
 
 
+
+public cdr = inject (ChangeDetectorRef)
+loadCountries(): void {
+  this._loader.show();
+  this.dropdownService.getCountries(this.currentPage, this.paginationPageSize, this.searchTerm)
+    .subscribe({
+      next: (countries: any) => {
+        this.rowData = countries.data.data || [];
+        this.totalCount = countries.data.totalRecords || 0;
+        this.totalPages = countries.data.totalPages || 1;
+        this.pageStart = this.totalCount > 0 ? ((this.currentPage - 1) * this.paginationPageSize) + 1 : 0;
+        this.pageEnd = this.totalCount > 0 ? Math.min(this.currentPage * this.paginationPageSize, this.totalCount) : 0;
+        this.cdr.detectChanges();
+        setTimeout(() => {
+          this._loader.hide();
+        }, 100);
+      },
+      error: (err) => {
+        console.error(err);
+        this._loader.hide();
+      }
+    });
+}
+
+
+searchTerm: string = '';
+onSearch(): void {
+  this.currentPage = 1;
+  this.loadCountries();
+}
 
   showAddForm(): void {
     this.showForm = true;
@@ -147,45 +167,116 @@ loadCountries(): void {
     this.isshowTable = false;
   }
 
-  onSubmit(): void {
-    debugger
-    if (this.countryForm.valid) {
-      const formData = this.countryForm.value;
-       const payload = {
-        id: this.editingId,
-        ...formData
-      };
-      if (this.isEditing && this.editingId) {
-        this.dropdownService.updateCountry(payload).subscribe(() => {
-          this._toastr.success("Updated successfully");
-          this.loadCountries();
-          this.cancelForm();
-        });
-      } else {
-        this.dropdownService.createCountry(formData).subscribe(() => {
-         this._toastr.success("Added successfully");
-          this.loadCountries();
-          this.cancelForm();
-        });
-      }
+onSubmit(): void {
+  this._loader.show();
+
+  console.log("zipCodezipCodezipCode",this.countryForm.get('zipCode')?.value);
+  
+  if (this.countryForm.valid) {
+    const formData = this.countryForm.value;
+    const payload: CountriesData = {
+      id: this.editingId ?? undefined,
+      country: String(formData.country),
+      mobilePrefixCode: String(formData.mobilePrefixCode),
+      stateName: String(formData.stateName),
+      stateCode: String(formData.stateCode),
+      cityName: String(formData.cityName),
+      zipCode: String(formData.zipCode),
+    };
+
+    if (this.isEditing && this.editingId) {
+      this.dropdownService.updateCountry(payload, this.editingId).subscribe({
+        next: (res: any) => {
+          this._loader.hide();
+          if (res) {
+            this._toastr.success(res.message || 'Updated successfully');
+            this.loadCountries();
+            this.cancelForm();
+          } else {
+            this._toastr.error(res.message || 'Failed to update country.');
+          }
+        },
+        error: (err) => {
+          console.error('Update error:', err);
+          this._loader.hide();
+          this._toastr.error(err?.error?.message || 'Failed to update country. Please try again.');
+        }
+      });
+    } else {
+      this.dropdownService.createCountry(payload).subscribe({
+        next: (res: any) => {
+          this._loader.hide();
+          if (res) {
+            this._toastr.success(res.message || 'Added successfully');
+            this.loadCountries();
+            this.cancelForm();
+          } else {
+            this._toastr.error(res.message || 'Failed to add country.');
+          }
+        },
+        error: (err) => {
+          console.error('Create error:', err);
+          this._loader.hide();
+          this._toastr.error(err?.error?.message || 'Failed to add country. Please try again.');
+        }
+      });
     }
+  } else {
+    this._loader.hide();
   }
+}
+
+allowNumbersOnly(event: KeyboardEvent): boolean {
+  const charCode = event.which ? event.which : event.keyCode;
+
+  if (
+    charCode === 8 ||  
+    charCode === 9 || 
+    charCode === 37 || 
+    charCode === 39 ||  
+    charCode === 46    
+  ) {
+    return true;
+  }
+
+  if (charCode < 48 || charCode > 57) {
+    event.preventDefault();
+    return false;
+  }
+
+  return true;
+}
 
   confirmDelete(id: number): void {
     this.deleteId = id;
     this.showDeleteConfirm = true;
   }
 
-  deleteCountry(): void {
-    if (this.deleteId) {
-      this.dropdownService.deleteCountry(this.deleteId).subscribe(() => {
-        this._toastr.success("deleted successfully");
-        this.loadCountries();
+deleteCountry(): void {
+  if (this.deleteId) {
+    this._loader.show();
+    this.dropdownService.deleteCountry(this.deleteId).subscribe({
+      next: (response: any) => {
+        if (response.success) {
+          this._toastr.success("Deleted successfully");
+          this.loadCountries();
+          this.showDeleteConfirm = false;
+          this.deleteId = null;
+        } else {
+          this._toastr.error(response.message || "Unable to delete country");
+          this.showDeleteConfirm = false;
+        }
+        this._loader.hide();
+      },
+      error: (err: any) => {
+        this._toastr.error(err?.error?.message || "Something went wrong");
         this.showDeleteConfirm = false;
-        this.deleteId = null;
-      });
-    }
+        this._loader.hide();
+      }
+    });
   }
+}
+
 
   cancelForm(): void {
     this.showForm = false;
@@ -346,4 +437,162 @@ onCellClicked(event: any): void {
 
 
     
+
+    showUploadPopup = false;
+  isDragOver = false;
+  selectedFile: File | null = null;
+
+  showFileUploadPopup(): void {
+    this.showUploadPopup = true;
+  }
+
+  closeFileUploadPopup(): void {
+    this.showUploadPopup = false;
+    this.selectedFile = null;
+    this.isDragOver = false;
+  }
+
+  onFileSelected(event: any): void {
+    const file = event.target.files[0];
+    this.validateAndSetFile(file);
+  }
+
+  onFileDrop(event: DragEvent): void {
+    event.preventDefault();
+    this.isDragOver = false;
+    
+    const files = event.dataTransfer?.files;
+    if (files && files.length > 0) {
+      this.validateAndSetFile(files[0]);
+    }
+  }
+
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+    this.isDragOver = true;
+  }
+
+  onDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    this.isDragOver = false;
+  }
+
+  validateAndSetFile(file: File): void {
+    // Validate file type
+    const allowedTypes = [
+      'text/csv',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    ];
+    
+    if (!allowedTypes.includes(file.type) && !file.name.toLowerCase().endsWith('.csv')) {
+      alert('Please select a valid CSV file.');
+      return;
+    }
+
+    // Validate file size (5MB max)
+    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+    if (file.size > maxSize) {
+      alert('File size must be less than 5MB.');
+      return;
+    }
+
+    this.selectedFile = file;
+  }
+
+  removeFile(): void {
+    this.selectedFile = null;
+  }
+
+
+
+  public _superadminService = inject(SuperAdminService);
+    isUploading = false;
+
+
+uploadFile(): void {
+  this._loader.show();
+    if (!this.selectedFile) {
+      this._toastr.warning('Please select a file to upload');
+      this._loader.hide();
+      return;
+    }
+    this.isUploading = true; 
+    // console.log('Uploading file:', this.selectedFile);
+    this.uploadToBackend(this.selectedFile);
+  }
+
+  private uploadToBackend(file: File): void {
+    this._loader.show();
+    this._superadminService.UploadFile(file).subscribe({
+      next: (res) => {
+        this.isUploading = false;
+        this._loader.hide();
+        this._toastr.success('File uploaded successfully!');
+        this.closeFileUploadPopup();        
+        this.loadCountries();
+        // console.log('Upload successful:', res);
+      },
+      error: (error) => {
+        this._loader.hide();
+        this.isUploading = false;
+        console.error('Upload failed:', error);
+        if (error.status === 400) {
+          this._toastr.error('Invalid file format or data structure');
+        } else if (error.status === 413) {
+          this._toastr.error('File size too large');
+        } else if (error.status === 500) {
+          this._toastr.error('Server error occurred during upload');
+        } else {
+          this._toastr.error('Failed to upload file. Please try again.');
+        }
+      },
+      complete: () => {
+        this._loader.hide();
+        this.isUploading = false;
+      }
+    });
+  }
+
+
+  private sampleFile: string = 'https://careslot-dev.s3.amazonaws.com/CountryData/Sample-County-Data.csv?AWSAccessKeyId=AKIAXJSU3GUHIVYCBLG7&Expires=2079705578&Signature=lP4qjZYWQ%2FXmrVkuxtYftOWdBzw%3D';
+  isDownloading: boolean = false;
+
+downloadSampleFile(): void {
+  if (this.isDownloading) return;
+  
+  this.isDownloading = true;
+   this._loader.show();
+
+  const link = document.createElement('a');
+  link.href = this.sampleFile;
+  link.download = 'Sample-County-Data.csv';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  
+  setTimeout(() => {
+    this._loader.hide();
+    this.isDownloading = false;
+    this._toastr.success('Sample file downloaded successfully!');
+  }, 1000);
+}
+
+
+clearSearch() {
+  this.searchTerm = '';
+  this.onSearch();
+}
+
+formatFileSize(bytes: number): string {
+  if (bytes === 0) return '0 Bytes';
+  
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  if (i <= 1) {
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(0)) + ' ' + sizes[i];
+  }
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
 }

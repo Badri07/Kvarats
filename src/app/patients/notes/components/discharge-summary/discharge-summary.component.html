@@ -1,0 +1,451 @@
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+  <div class="lg:col-span-1 bg-white rounded-lg shadow-sm p-3">
+    <div class="flex justify-between items-center mb-3">
+      <h3 class="text-lg font-semibold text-gray-900">Discharge Summaries</h3>
+    </div>
+
+    <div *ngIf="error" class="mb-4 p-3 bg-red-50 text-red-700 rounded-md">
+      {{ error }}
+    </div>
+
+    <div *ngIf="loading" class="text-center text-gray-500 py-8">
+      Loading...
+    </div>
+
+    <div *ngIf="patientId && !loading" class="space-y-2">
+      <div
+        *ngFor="let summary of summaries"
+        (click)="selectSummary(summary)"
+        [class.bg-orange-400]="selectedSummary?.id === summary.id"
+        [class.bg-opacity-10]="selectedSummary?.id === summary.id"
+        [class.border-orange-400]="selectedSummary?.id === summary.id"
+        class="p-3 border rounded-md cursor-pointer hover:bg-gray-50 transition-colors">
+        <div class="flex justify-between items-start">
+          <div class="flex-1">
+            <div class="text-sm font-medium text-gray-900">
+              {{ summary.dischargeDate | date: 'MMM d, y' }}
+            </div>
+            <div class="text-xs text-gray-500">
+              {{ summary.totalSessions }} sessions
+              <span *ngIf="summary.isDraft" class="ml-2 px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded">
+                Draft
+              </span>
+              <span *ngIf="!summary.isDraft" class="ml-2 px-2 py-0.5 bg-green-100 text-green-800 rounded">
+                Published
+              </span>
+            </div>
+          </div>
+          <div class="text-xs text-gray-400">
+            v{{ summary.version }}
+          </div>
+        </div>
+        <div class="mt-2 space-y-1">
+          <p *ngIf="summary.dischargeStatus" class="text-xs text-gray-600">
+            <span class="font-medium">Status:</span> {{ summary.dischargeStatus }}
+          </p>
+          <p *ngIf="summary.primaryDiagnosis" class="text-xs text-gray-600 line-clamp-1">
+            <span class="font-medium">Diagnosis:</span> {{ summary.primaryDiagnosis }}
+          </p>
+        </div>
+      </div>
+
+      <div *ngIf="summaries.length === 0" class="text-center text-gray-500 py-4">
+        No discharge summaries found
+      </div>
+
+     
+    </div>
+  </div>
+
+  <div class="lg:col-span-2 bg-white rounded-lg shadow-sm p-3">
+    <div *ngIf="!selectedSummary && !isCreating" class="text-center text-gray-500 py-8">
+      Select a summary to view details
+    </div>
+
+    <div *ngIf="selectedSummary && !isEditing">
+      <div class="flex justify-between items-start mb-6">
+        <div>
+          <h3 class="text-xl font-semibold text-gray-900">
+            Discharge: {{ selectedSummary.dischargeDate | date: 'MMMM d, y' }}
+          </h3>
+          <p class="text-sm text-gray-500">
+            Therapist: {{ selectedSummary.therapistName }} | Sessions: {{ selectedSummary.totalSessions }}
+          </p>
+        </div>
+  <div class="flex gap-2">
+    <!-- Publish Button -->
+ <button
+    *ngIf="selectedSummary.isDraft"
+    (click)="openPublishPopup(selectedSummary.id)"
+    class="relative group p-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+    </svg>
+    <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
+      Publish
+    </div>
+  </button>
+
+    <!-- Download PDF Button -->
+    <button
+      class="relative group p-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors"
+      (click)="downloadPDF()">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+      </svg>
+      <div class="tooltip">Download PDF</div>
+    </button>
+
+    <!-- Edit Button -->
+    <button
+      *ngIf="selectedSummary.isDraft"
+      class="relative group p-2 bg-orange-400 text-white rounded-md hover:bg-orange-600 transition-colors"
+      (click)="editSummary(selectedSummary)">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+      </svg>
+      <div class="tooltip">Edit</div>
+    </button>
+
+    <!-- Delete Button -->
+    <button
+      class="relative group p-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+      (click)="confirmDelete(selectedSummary)">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+      </svg>
+      <div class="tooltip">Delete</div>
+    </button>
+  </div>
+      </div>
+
+      <div class="space-y-4">
+        <div class="grid grid-cols-2 gap-4 pb-4 border-b">
+          <div>
+            <p class="text-gray-500 text-xs">Treatment Start</p>
+            <p class="font-medium text-sm">{{ selectedSummary.treatmentStartDate | date: 'MMM d, y' }}</p>
+          </div>
+          <div>
+            <p class="text-gray-500 text-xs">Treatment End</p>
+            <p class="font-medium text-sm">{{ selectedSummary.treatmentEndDate | date: 'MMM d, y' }}</p>
+          </div>
+          <div *ngIf="selectedSummary.dischargeStatus">
+            <p class="text-gray-500 text-xs">Discharge Status</p>
+            <p class="font-medium text-sm">{{ selectedSummary.dischargeStatus }}</p>
+          </div>
+        </div>
+
+        <div *ngIf="selectedSummary.primaryDiagnosis || selectedSummary.secondaryDiagnosis">
+          <h4 class="text-sm font-semibold text-gray-700 mb-2">Diagnosis</h4>
+          <p *ngIf="selectedSummary.primaryDiagnosis" class="text-gray-900 mb-1">
+            <span class="font-medium">Primary:</span> {{ selectedSummary.primaryDiagnosis }}
+          </p>
+          <p *ngIf="selectedSummary.secondaryDiagnosis" class="text-gray-900">
+            <span class="font-medium">Secondary:</span> {{ selectedSummary.secondaryDiagnosis }}
+          </p>
+        </div>
+
+        <div>
+          <h4 class="text-sm font-semibold text-gray-700 mb-2">Reason for Treatment</h4>
+          <p class="text-gray-900 whitespace-pre-wrap">{{ selectedSummary.reasonForTreatment }}</p>
+        </div>
+
+        <div>
+          <h4 class="text-sm font-semibold text-gray-700 mb-2">Treatment Provided</h4>
+          <p class="text-gray-900 whitespace-pre-wrap">{{ selectedSummary.treatmentProvided }}</p>
+        </div>
+
+        <div>
+          <h4 class="text-sm font-semibold text-gray-700 mb-2">Outcome Achieved</h4>
+          <p class="text-gray-900 whitespace-pre-wrap">{{ selectedSummary.outcomeAchieved }}</p>
+        </div>
+
+        <div>
+          <h4 class="text-sm font-semibold text-gray-700 mb-2">Reason for Discharge</h4>
+          <p class="text-gray-900 whitespace-pre-wrap">{{ selectedSummary.reasonForDischarge }}</p>
+        </div>
+
+        <div *ngIf="selectedSummary.prognosis">
+          <h4 class="text-sm font-semibold text-gray-700 mb-2">Prognosis</h4>
+          <p class="text-gray-900 whitespace-pre-wrap">{{ selectedSummary.prognosis }}</p>
+        </div>
+
+        <div *ngIf="selectedSummary.recommendations">
+          <h4 class="text-sm font-semibold text-gray-700 mb-2">Recommendations</h4>
+          <p class="text-gray-900 whitespace-pre-wrap">{{ selectedSummary.recommendations }}</p>
+        </div>
+
+        <div *ngIf="selectedSummary.followUpInstructions">
+          <h4 class="text-sm font-semibold text-gray-700 mb-2">Follow-Up Instructions</h4>
+          <p class="text-gray-900 whitespace-pre-wrap">{{ selectedSummary.followUpInstructions }}</p>
+        </div>
+
+        <div *ngIf="selectedSummary.referralsProvided">
+          <h4 class="text-sm font-semibold text-gray-700 mb-2">Referrals Provided</h4>
+          <p class="text-gray-900 whitespace-pre-wrap">{{ selectedSummary.referralsProvided }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="isEditing || isCreating">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-semibold text-gray-900">
+          {{ isCreating ? 'New Discharge Summary' : 'Edit Discharge Summary' }}
+        </h3>
+        <div class="flex gap-2">
+          <button
+            (click)="cancelEdit()"
+            class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors">
+            Cancel
+          </button>
+          <button
+            (click)="saveSummary()"
+            [disabled]="loading"
+            class="px-4 py-2 bg-orange-400 text-white rounded-md hover:bg-orange-600 disabled:bg-gray-300 transition-colors">
+            {{ loading ? 'Saving...' : 'Save' }}
+          </button>
+        </div>
+      </div>
+
+      <form class="space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Treatment Start Date<span class="text-danger">*</span></label>
+            <input
+              type="date"
+              [(ngModel)]="summaryForm.treatmentStartDate"
+              name="treatmentStartDate"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Treatment End Date<span class="text-danger">*</span></label>
+            <input
+              type="date"
+              [(ngModel)]="summaryForm.treatmentEndDate"
+              name="treatmentEndDate"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Discharge Date<span class="text-danger">*</span></label>
+            <input
+              type="date"
+              [(ngModel)]="summaryForm.dischargeDate"
+              name="dischargeDate"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Total Sessions<span class="text-danger">*</span></label>
+            <input
+              type="number"
+              [(ngModel)]="summaryForm.totalSessions"
+              name="totalSessions"
+              required
+              min="0"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Discharge Status</label>
+            <select
+              [(ngModel)]="summaryForm.dischargeStatus"
+              name="dischargeStatus"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400">
+              <option value="">Select Status</option>
+              <option value="Completed Successfully">Completed Successfully</option>
+              <option value="Goals Achieved">Goals Achieved</option>
+              <option value="Mutual Agreement">Mutual Agreement</option>
+              <option value="Patient Request">Patient Request</option>
+              <option value="Referred Out">Referred Out</option>
+              <option value="Non-Compliance">Non-Compliance</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Primary Diagnosis</label>
+            <input
+              type="text"
+              [(ngModel)]="summaryForm.primaryDiagnosis"
+              name="primaryDiagnosis"
+              placeholder="e.g., Major Depressive Disorder"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Secondary Diagnosis</label>
+            <input
+              type="text"
+              [(ngModel)]="summaryForm.secondaryDiagnosis"
+              name="secondaryDiagnosis"
+              placeholder="e.g., Generalized Anxiety Disorder"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Reason for Treatment<span class="text-danger">*</span></label>
+          <textarea
+            [(ngModel)]="summaryForm.reasonForTreatment"
+            name="reasonForTreatment"
+            required
+            rows="3"
+            placeholder="Primary reasons patient sought treatment..."
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Treatment Provided<span class="text-danger">*</span></label>
+          <textarea
+            [(ngModel)]="summaryForm.treatmentProvided"
+            name="treatmentProvided"
+            required
+            rows="4"
+            placeholder="Overview of therapeutic interventions and services provided..."
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Outcome Achieved<span class="text-danger">*</span></label>
+          <textarea
+            [(ngModel)]="summaryForm.outcomeAchieved"
+            name="outcomeAchieved"
+            required
+            rows="3"
+            placeholder="Results and outcomes achieved during treatment..."
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Reason for Discharge<span class="text-danger">*</span></label>
+          <textarea
+            [(ngModel)]="summaryForm.reasonForDischarge"
+            name="reasonForDischarge"
+            required
+            rows="3"
+            placeholder="Reason for ending treatment at this time..."
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Prognosis</label>
+          <textarea
+            [(ngModel)]="summaryForm.prognosis"
+            name="prognosis"
+            rows="3"
+            placeholder="Clinical prognosis and expected trajectory..."
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Recommendations</label>
+          <textarea
+            [(ngModel)]="summaryForm.recommendations"
+            name="recommendations"
+            rows="3"
+            placeholder="Recommendations for continued care or self-management..."
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Follow-Up Instructions</label>
+          <textarea
+            [(ngModel)]="summaryForm.followUpInstructions"
+            name="followUpInstructions"
+            rows="3"
+            placeholder="Instructions for follow-up care or monitoring..."
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Referrals Provided</label>
+          <textarea
+            [(ngModel)]="summaryForm.referralsProvided"
+            name="referralsProvided"
+            rows="2"
+            placeholder="Any referrals to other providers or services..."
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"></textarea>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<app-modal 
+  [isOpen]="showDeleteModal" 
+  title="Delete Discharge Summary" 
+  size="sm" 
+  (closed)="showDeleteModal = false">
+  <div class="delete-confirmation">
+    <div class="warning-icon">
+      <svg class="w-12 h-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+      </svg>
+    </div>
+    <h3 class="warning-title">Are you sure?</h3>
+    <p class="warning-message">
+      This will permanently delete the Discharge Summary from {{ summaryToDelete?.dischargeDate | date:'MMM d, y' }}. 
+      This action cannot be undone.
+    </p>
+    <div class="confirmation-actions">
+      <app-button variant="outline" (click)="showDeleteModal = false">Cancel</app-button>
+      <app-button 
+        variant="danger" 
+        [loading]="isDeleting" 
+        (click)="deleteSummary()">
+        Delete Summary
+      </app-button>
+    </div>
+  </div>
+</app-modal>
+
+
+<!-- Publish Confirmation Popup -->
+<div *ngIf="showPublishPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  <div class="bg-white rounded-lg shadow-xl w-96 p-6">
+    <!-- Header -->
+    <div class="flex items-center mb-4">
+      <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
+        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-900">Publish Discharge Summary</h3>
+    </div>
+
+    <!-- Content -->
+    <div class="mb-6">
+      <p class="text-gray-700 mb-4">Are you sure you want to publish this discharge summary?</p>
+      
+      <!-- Important Note -->
+      <div class="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+        <div class="flex">
+          <svg class="w-5 h-5 text-yellow-600 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+          </svg>
+          <div>
+            <p class="text-sm text-yellow-800 font-medium">Important Note</p>
+            <p class="text-sm text-yellow-700 mt-1">Published discharge summary version cannot be edited.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex justify-end space-x-3">
+      <button
+        (click)="showPublishPopup = false"
+        class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+        Cancel
+      </button>
+      <button
+        (click)="confirmPublish()"
+        class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors">
+        Publish Summary
+      </button>
+    </div>
+  </div>
+</div>

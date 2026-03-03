@@ -1,18 +1,17 @@
-<!-- Modal Backdrop -->
 <div
   *ngIf="show"
-  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-1000 p-2 sm:p-4"
   (click)="onBackdropClick($event)"
 >
   <!-- Modal Content -->
   <div
-    class="bg-white shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border"
-    style="border: 2px solid #FFA157; border-radius: 0 1rem 1rem 0;"
+    class="mt-5 bg-white shadow-xl w-full sm:w-11/12 md:w-4/5 lg:w-2/3 xl:w-2/4 max-h-[90vh] overflow-y-auto border"
+    style="border: 2px solid #FFA157; border-radius: 0.5rem;"
     (click)="$event.stopPropagation()"
   >
     <!-- Modal Header -->
-    <div class="flex justify-between items-center p-6 border-b">
-      <h2 class="text-xl font-semibold text-gray-900">Create Appointment</h2>
+    <div class="flex justify-between items-center p-4 sm:p-6 border-b">
+      <h2 class="text-lg sm:text-xl font-semibold text-gray-900">Schedule Appointment</h2>
       <button
         (click)="closeModal()"
         class="text-gray-400 hover:text-gray-600 text-2xl font-bold"
@@ -22,447 +21,316 @@
     </div>
 
     <!-- Modal Body -->
-    <div class="p-6">
-      <!-- Animated Tabs -->
-    <div class="animated-tabs w-full relative">
-  <!-- Slider -->
-  <div
-    class="slider absolute bottom-0 h-1 bg-[#FFA157] transition-all duration-300"
-    [style.width]="'50%'"
-    [style.left]="selectedTab === 'schedule' ? '0%' : '50%'"
-  ></div>
-
-  <!-- Tabs -->
-  <div class="flex w-full border-b border-gray-300">
-    <div
-      class="w-1/2 text-center py-3 font-medium cursor-pointer transition-all duration-300 backdrop-blur-md"
-      [ngClass]="{
-        'text-primary-table bg-[#FFA157]/10': selectedTab === 'schedule',
-        'text-gray-600': selectedTab !== 'schedule'
-      }"
-      (click)="setTab('schedule')"
-    >
-      <span>Schedule</span>
-    </div>
-    <div
-      class="w-1/2 text-center py-3 font-medium cursor-pointer transition-all duration-300 backdrop-blur-md"
-      [ngClass]="{
-        'text-primary-table bg-[#FFA157]/10': selectedTab === 'transactions',
-        'text-gray-600': selectedTab !== 'transactions'
-      }"
-      (click)="setTab('transactions')"
-    >
-      <span>Transactions</span>
-    </div>
-  </div>
-</div>
-
-      <!-- Schedule Tab Content -->
-      <div *ngIf="selectedTab === 'schedule'">
-        <form [formGroup]="appointmentForm">
-          <div class="row mt-4">
-            <!-- Therapist -->
-            <div class="col-md-4 col-sm-6">
-              <label class="fw-medium">Therapist *</label>
-              <select
-                class="form-select mt-1"
-                formControlName="therapistInput"
-                (change)="generateTimeSlotsForSelectedTherapist()"
-              >
-<option selected  value="">Select therapist</option>                <option
-                  *ngFor="let therapist of therapistList"
-                  [value]="therapist.id"
-                >
-                  {{ therapist.name }}
-                </option>
-              </select>
-              <div
-                *ngIf="
-                  appointmentForm.get('therapistInput')?.invalid &&
-                  appointmentForm.get('therapistInput')?.touched
-                "
-                class="text-red-500 text-sm mt-1"
-              >
-                Therapist is required
-              </div>
-            </div>
-
-            <!-- Appointment Type -->
-            <div class="col-md-4 col-sm-6">
-              <label class="fw-medium">Appointment Type *</label>
-              <select
-                class="form-select mt-1"
-                formControlName="appointmentTypeInput"
-              >
-                <option value=""  selected>Select</option>
-                <option
-                  *ngFor="let item of appointmentTypeOptions"
-                  [value]="item.id"
-                >
-                  {{ item.value }}
-                </option>
-              </select>
-              <div
-                *ngIf="
-                  appointmentForm.get('appointmentTypeInput')?.invalid &&
-                  appointmentForm.get('appointmentTypeInput')?.touched
-                "
-                class="text-red-500 text-sm mt-1"
-              >
-                Appointment type is required
-              </div>
-            </div>
-
-            <!-- Patient -->
-         <div class="col-md-4 col-sm-6">
-      <label class="fw-medium">Patients *</label>
-      <select class="form-select" formControlName="patientId">
-        <option value=""  selected>Select</option>
- <option *ngFor="let item of PatientsListOptions" [value]="item.id">
-    {{ item.firstName}} {{item.lastName}}
-  </option>      </select>
-    </div>
+    <div class="p-4 sm:p-6">
+      <!-- Patient Summary -->
+      <div class="flex items-start mb-4 sm:mb-6">
+        <div class="appointment-summary flex items-start">
+          <div class="summary-icon mr-3">
+            <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
           </div>
-
-          <div class="row mt-3">
-            <!-- Date -->
-            <div class="col-md-4 col-sm-6">
-              <label class="fw-medium">Date *</label>
-              <input
-                type="date"
-                class="form-control mt-1"
-                formControlName="date"
-              />
-              <div
-                *ngIf="
-                  appointmentForm.get('date')?.invalid &&
-                  appointmentForm.get('date')?.touched
-                "
-                class="text-red-500 text-sm mt-1"
-              >
-                Date is required
-              </div>
-            </div>
-
-
-
-            <!-- Time Dropdowns -->
-            <div class="col-md-4 col-sm-6">
-              <label class="fw-medium">Time *</label>
-              <div class="d-flex gap-2 mt-1">
-               <select class="form-select" formControlName="startTime" (change)="onStartTimeChange()">
-  <option value="" >start time</option>
-  <option *ngFor="let time of availableStartTimes" [value]="time">{{ time }}</option>
-</select>
-
-                <span class="align-self-center">-</span>
-        <input required class="form-control" type="text" [attr.list]="'endTimesList'" formControlName="endTime" readonly (mousedown)="$event.preventDefault()" />
-
-<datalist id="endTimesList">
-  <option *ngFor="let time of availableEndTimes" [value]="time"></option>
-</datalist>
-
-
-              </div>
-              <div
-                *ngIf="
-                  (appointmentForm.get('startTime')?.invalid &&
-                    appointmentForm.get('startTime')?.touched) ||
-                  (appointmentForm.get('endTime')?.invalid &&
-                    appointmentForm.get('endTime')?.touched)
-                "
-                class="text-red-500 text-sm mt-1"
-              >
-                Time is required
-              </div>
-            </div>
-
-            <!-- Meeting Type -->
-            <div class="col-md-4 col-sm-6">
-              <label class="fw-medium">Meeting Type *</label>
-              <select
-                class="form-select mt-1"
-                formControlName="meetingTypeInput"
-              >
-                <option value=""  selected>Select</option>
-                <option
-                  *ngFor="let item of meetingTypeOptions"
-                  [value]="item.id"
-                >
-                  {{ item.value }}
-                </option>
-              </select>
-              <div
-                *ngIf="
-                  appointmentForm.get('meetingTypeInput')?.invalid &&
-                  appointmentForm.get('meetingTypeInput')?.touched
-                "
-                class="text-red-500 text-sm mt-1"
-              >
-                Meeting type is required
-              </div>
-            </div>
+          <div class="summary-details">
+            <h4 class="summary-patient text-sm sm:text-base"></h4>
+            <p class="summary-date text-xs sm:text-sm">{{ currentDate() | date:'mediumDate' }}</p>
+            <p class="summary-time text-xs sm:text-sm">(Next available slot)</p>
+            <span class="summary-duration text-xs sm:text-sm">30 minutes</span>
           </div>
- <div class="row mt-2">
-  <div class="col-12">
-    <div class="mt-3 flex items-center">
-      <label class="relative inline-flex items-center cursor-pointer">
-        <input 
-          type="checkbox" 
-          formControlName="repeat"
-          class="sr-only peer" 
-        />
-        <div 
-          class="w-11 h-6 bg-gray-200 rounded-full 
-                 peer peer-checked:bg-orange-500 
-                 peer-focus:ring-2 peer-focus:ring-orange-400 
-                 after:content-[''] after:absolute after:top-[2px] after:left-[2px] 
-                 after:bg-white after:border-gray-300 after:border 
-                 after:rounded-full after:h-5 after:w-5 after:transition-all 
-                 peer-checked:after:translate-x-full">
         </div>
-      </label>
-      <span class="ml-3 text-gray-700 font-medium">Repeat</span>
-    </div>
-  </div>
-</div>
-          <!-- Repeat Options -->
-          <div class="mt-4 p-3 border rounded bg-light" *ngIf="appointmentForm.get('repeat')?.value">
-            <div class="row g-3 mt-2">
-              <div class="col-md-4">
-                <label class="mb-2">Repeat Every</label>
-                <input
-                  type="number"
-                  class="form-control"
-                  formControlName="repeatEvery"
-                  min="1"
-                />
-              </div>
-              <div class="col-md-4">
-                <label class="mb-2">Repeat Period</label>
-                <select class="form-select ms-2" formControlName="repeatPeriod">
-                  <option value="Day">Day</option>
-                  <option value="Week">Week</option>
-                  <option value="Month">Month</option>
-                </select>
-              </div>
-
-              <div class="col-md-4">
-                <label class="mb-2">End date</label>
-                <input
-                  type="date"
-                  class="form-control"
-                  formControlName="endDate"
-                />
-              </div>
-            </div>
-
-            <div class="row mt-3">
-              <label class="mb-2">Repeat Day</label>
-              <div class="col-4 flex flex-wrap gap-2 items-center">
-                <button
-                  *ngFor="let day of weekDays"
-                  type="button"
-                  class="px-3 py-1 rounded-common-border-radius text-sm font-medium"
-                  [ngClass]="{
-                    'bg-[#FFA157] text-white': isDaySelected(day),
-                    'border border-primary-border-color text-[#FFA157] bg-white':
-                      !isDaySelected(day)
-                  }"
-                  (click)="toggleRepeatDay(day)"
-                >
-                  {{ day.charAt(0) }}
-                </button>
-              </div>
-            </div>
-
-           
-
-
-            
-          </div>
-
-          <!-- Notes -->
-          <div class="mt-3">
-            <label class="fw-medium">Appointment Notes</label>
-            <textarea
-              class="form-control mt-1"
-              rows="3"
-              formControlName="notes"
-            ></textarea>
-          </div>
-        </form>
       </div>
 
-      <!-- Transactions Tab Content -->
-      <div *ngIf="selectedTab === 'transactions'">
-        
-        <div class="row mt-4">
-          <div class="col-6">
-          <div class="mb-3">
-          <label class="fw-medium">Total Amount</label>
+      <form [formGroup]="appointmentForm">
+        <!-- Title -->
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Title (Optional)</label>
           <input
-            type="number"
-            class="form-control"
-            [(ngModel)]="totalAmount"
-            name="totalAmount"
-            placeholder="Enter total amount"
-            (ngModelChange)="recalculateInsuranceClaim()"
+            type="text"
+            class="w-full form-control"
+            formControlName="title"
+            placeholder="Add a custom title for this appointment"
           />
         </div>
-          </div>
 
-           <div class="col-6">
- <div *ngIf="slidingScalesList.length > 0" class="mb-3">
-          <label class="fw-medium">Apply Sliding Scale</label>
-          <select
-            class="form-select"
-            [(ngModel)]="selectedSlidingScaleId"
-            name="slidingScale"
-            (ngModelChange)="recalculateInsuranceClaim()"
-          >
-            <option value="" >Select Sliding Scale</option>
-            <option *ngFor="let scale of slidingScalesList" [value]="scale.id">
-              {{ scale.discountPercentage }}% Discount (Income:
-              {{ scale.minIncome }} - {{ scale.maxIncome }})
+        <!-- Therapist -->
+        @if(isClientAdmin()){  
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Therapist<span class="text-danger">*</span></label>
+            <select
+              class="w-full form-select"
+              formControlName="therapistInput"
+              (change)="generateTimeSlotsForSelectedTherapist($event)"
+            >
+              <option value="" selected>Select Therapist</option>
+              <option
+                *ngFor="let therapist of therapistList"
+                [value]="therapist.id"
+              >
+                {{ therapist.userName }}
+              </option>
+            </select>
+            <div
+              *ngIf="
+                appointmentForm.get('therapistInput')?.invalid &&
+                appointmentForm.get('therapistInput')?.touched
+              "
+              class="text-red-500 text-sm mt-1"
+            >
+              Therapist is required
+            </div>
+          </div>
+        }
+      
+        <!-- Patients -->
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Patients <span class="text-danger">*</span></label>
+          <select class="w-full form-select" formControlName="patientId" (change)="onSelectPatients()">
+            <option value="" selected>Select Patients</option>
+            <option *ngFor="let item of PatientsListOptions" [value]="item.id">
+              {{ item.firstName}} {{item.lastName}}
             </option>
           </select>
         </div>
-      </div>
 
-        
-        </div>
-        
-     <div class="row">   
-        <div class="form-check form-switch mb-3">
-          <input
-            class="form-check-input"
-            type="checkbox"
-            id="useInsurance"
-            [(ngModel)]="useInsurance"
-            (change)="onInsuranceToggle($event)"
-          />
-          <label class="form-check-label fw-medium" for="useInsurance"
-            >Use Insurance</label
+        <!-- Chief Complaint -->
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Chief Complaint <span class="text-danger">*</span></label>
+          <select
+            class="w-full form-select"
+            formControlName="chiefComplaintId"
           >
-        </div>
-     </div>
- 
-     <div class="row">
-       <div class="col-6">
-          <div *ngIf="useInsurance && insuranceList.length > 0" class="mb-3">
-          <label class="fw-medium">Insurance Provider</label>
-          <select 
-              class="form-select"
-              [(ngModel)]="selectedInsuranceId" 
-              name="selectedInsurance"
-              (change)="onInsuranceChange($event)">
-          <option value="" >Select Insurance</option>
-          <option *ngFor="let insurance of insuranceList" [value]="insurance.id">
-
-                {{ insurance.insuranceCarrierName }}
-          </option>
+            <option [ngValue]="null">Select Chief Complaint</option>
+            <option *ngFor="let complaint of chiefComplaints" [ngValue]="complaint.id">
+              {{ complaint.name }}
+            </option>
           </select>
+          <div
+            *ngIf="
+              appointmentForm.get('chiefComplaintId')?.invalid &&
+              appointmentForm.get('chiefComplaintId')?.touched
+            "
+            class="text-red-500 text-sm mt-1"
+          >
+            Chief Complaint is required
           </div>
+        </div>
+
+        <!-- Date and Time -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+          <!-- Date -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Date <span class="text-danger">*</span></label>
+            <input
+              type="date"
+              class="w-full form-control"
+              formControlName="date"
+              (change)="onDateChange()"
+            />
+            <div
+              *ngIf="
+                appointmentForm.get('date')?.invalid &&
+                appointmentForm.get('date')?.touched
+              "
+              class="text-red-500 text-sm mt-1"
+            >
+              Date is required
+            </div>
+          </div>
+          <!-- Time -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Time <span class="text-danger">*</span></label>
+            <div class="flex flex-col sm:flex-row gap-2">
+              <select 
+                class="w-full form-select" 
+                formControlName="startTime" 
+                (change)="onStartTimeChange()"
+              >
+                <option value="">start time</option>
+                <option *ngFor="let time of availableStartTimes" [value]="time">
+                  {{ time }}
+                </option>
+              </select>
+
+              <span class="hidden sm:inline self-center">-</span>
+              
+              <input 
+  required
+  class="w-full form-select bg-gray-50"
+  type="text"
+  formControlName="endTime"
+  readonly
+  (mousedown)="$event.preventDefault()"
+/>
+
+            </div>
+            <div *ngIf="availableStartTimes.length === 0" class="text-amber-600 text-sm mt-1">
+              No time slots available for selected day.
+            </div>
+            
+            <div
+              *ngIf="
+                (appointmentForm.get('startTime')?.invalid &&
+                  appointmentForm.get('startTime')?.touched) ||
+                (appointmentForm.get('endTime')?.invalid &&
+                  appointmentForm.get('endTime')?.touched)
+              "
+              class="text-red-500 text-sm mt-1"
+            >
+              Time is required
+            </div>
+          </div>
+        </div>
+
+        <!-- Meeting Type -->
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Meeting Type<span class="text-danger">*</span></label>
+          <select
+            class="w-full form-select"
+            formControlName="meetingTypeInput"
+          >
+            <option value="">Select Meeting Type</option>
+            <option
+              *ngFor="let item of meetingTypeOptions"
+              [value]="item.id"
+            >
+              {{ item.value }}
+            </option>
+          </select>
+          <div
+            *ngIf="
+              appointmentForm.get('meetingTypeInput')?.invalid &&
+              appointmentForm.get('meetingTypeInput')?.touched
+            "
+            class="text-red-500 text-sm mt-1"
+          >
+            Meeting type is required
+          </div>
+        </div>
+
+        <!-- Service Type -->
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Service Type<span class="text-danger">*</span></label>
+          <select
+            class="w-full form-select"
+            formControlName="ServiceInput"
+          >
+            <option value="">Select Service Type</option>
+            <option
+              *ngFor="let item of serviceDropdown"
+              [value]="item.id"
+            >
+              {{ item.description }}
+            </option>
+          </select>
+          <div
+            *ngIf="
+              appointmentForm.get('ServiceInput')?.invalid &&
+              appointmentForm.get('ServiceInput')?.touched
+            "
+            class="text-red-500 text-sm mt-1"
+          >
+            Service type is required
+          </div>
+        </div>
+
+        <!-- Repeat Option -->
+        <div class="mb-4">
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input 
+              type="checkbox" 
+              formControlName="repeat"
+              class="sr-only peer" 
+            />
+            <div 
+              class="w-11 h-6 bg-gray-200 rounded-full 
+                     peer peer-checked:bg-[#FFA157] 
+                     after:content-[''] after:absolute after:top-[2px] after:left-[2px] 
+                     after:bg-white after:border-gray-300 after:border 
+                     after:rounded-full after:h-5 after:w-5 after:transition-all 
+                     peer-checked:after:translate-x-full">
+            </div>
+            <span class="ml-3 text-gray-700 font-medium">Repeat</span>
+          </label>
+        </div>
+
+        <!-- Repeat Options (Conditional) -->
+        <div class="p-3 sm:p-4 border rounded-md bg-gray-50 mb-4" *ngIf="appointmentForm.get('repeat')?.value">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Repeat Every</label>
+              <input
+                type="number"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md"
+                formControlName="repeatEvery"
+                min="1"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Repeat Period</label>
+              <select class="w-full px-3 py-2 border border-gray-300 rounded-md" formControlName="repeatPeriod">
+                <option value="Day">Day</option>
+                <option value="Week">Week</option>
+                <option value="Month">Month</option>
+              </select>
+            </div>
           </div>
 
-      <div class="col-6">
- <div *ngIf="useInsurance" class="mb-3">
-          <label class="fw-medium">Copay</label>
-          <input
-            type="number"
-            class="form-control"
-            [(ngModel)]="copayAmount"
-            name="copayAmount"
-            placeholder="Enter copay amount"
-            (ngModelChange)="recalculateInsuranceClaim()"
-          />
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+            <input
+              type="date"
+              class="w-full form-control"
+              formControlName="endDate"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Repeat Day</label>
+            <div class="flex flex-wrap gap-2">
+              <button
+                *ngFor="let day of weekDays"
+                type="button"
+                class="w-8 h-8 rounded-full text-sm font-medium transition-colors"
+                [ngClass]="{
+                  'bg-[#FFA157] text-white': isDaySelected(day),
+                  'border border-gray-300 text-gray-700': !isDaySelected(day)
+                }"
+                (click)="toggleRepeatDay(day)"
+              >
+                {{ day.charAt(0) }}
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
-     </div>
-       
-
-     <div class="row">
-      <div class="col-6">
-  <div *ngIf="!useInsurance" class="mb-3">
-          <label class="fw-medium">Patient Pays</label>
-          <input
-            type="number"
-            class="form-control"
-            [(ngModel)]="patientPaysAmount"
-            name="patientPaysAmount"
-            placeholder="Enter amount patient pays"
-          />
-        </div>
-      </div>
-    
-      
-     </div>
-
-     <div class="row">
-        <div class="col-6">
-         <div *ngIf="useInsurance" class="mb-3">
-          <label class="fw-medium">Insurance Claim (auto-calculated)</label>
-          <input
-            type="number"
-            class="form-control"
-            [value]="insuranceClaimAmount"
-            readonly
-          />
-        </div>
-      </div>
-     </div>
-        <!-- Copay -->
-       
-
-        <!-- Auto-calculated Insurance Claim -->
-       
-
-        <!-- Patient Pays -->
-      
 
         <!-- Notes -->
-        <div class="mb-3">
-          <label class="fw-medium">Notes</label>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Notes (Optional)</label>
           <textarea
-            class="form-control"
-            [(ngModel)]="transactionNotes"
-            name="transactionNotes"
-            rows="2"
-            placeholder="Optional notes..."
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#FFA157]"
+            rows="3"
+            formControlName="notes"
+            placeholder="Add any notes for this appointment..."
           ></textarea>
         </div>
-      </div>
+      </form>
     </div>
 
     <!-- Modal Footer -->
-    <div class="flex justify-end space-x-3 p-6 border-t bg-gray-50">
-      <button type="button" class="customBtn" (click)="closeModal()">
+    <div class="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:space-x-3 p-4 sm:p-6 border-t bg-gray-50">
+      <button 
+        type="button" 
+        class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 font-medium hover:bg-gray-50 mt-2 sm:mt-0"
+        (click)="closeModal()"
+      >
         Cancel
       </button>
-
-      <!-- Show Next on Schedule -->
       <button
-  *ngIf="selectedTab === 'schedule'"
-  type="button"
-  (click)="setTab('transactions')"
-  class="customBtn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
-  [disabled]="appointmentForm.invalid"
->
-  Next
-</button>
-
-
-      <!-- Show Create Appointment on Transactions -->
-      <button
-        *ngIf="selectedTab === 'transactions'"
         type="button"
         (click)="onSubmit()"
-        class="px-4 py-2 text-white rounded-md font-medium"
-        style="background-color: #FFA157;"
+        class="px-4 py-2 bg-[#FFA157] text-white rounded-md font-medium hover:bg-opacity-90"
         [disabled]="appointmentForm.invalid"
       >
-        Create Appointment
+        {{ isEditMode ? 'Update Appointment' : 'Schedule Appointment' }}
       </button>
     </div>
   </div>

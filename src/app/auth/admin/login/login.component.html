@@ -1,106 +1,213 @@
 <div class="min-h-screen flex items-center justify-center p-4">
-  <div class="flex flex-col md:flex-row bg-white shadow-md rounded-md overflow-hidden w-full max-w-5xl">
-    
-    <div class="w-full md:w-1/2 bg-orange-400 flex items-center justify-center p-6 sm:p-8">
-      <div class="relative w-full max-w-xs overflow-hidden rounded-lg">
-        <div
-          #sliderRef
-          class="slider flex transition-transform duration-1000 ease-in-out"
-          [style.transform]="'translateX(-' + currentIndex * 100 + '%)'"
-          [style.transition]="isTransitionEnabled ? 'transform 1s ease-in-out' : 'none'"
-        >
-          <img
-            *ngFor="let img of imageList"
-            [src]="img"
-            alt="Doctor"
-            class="w-full h-auto object-contain flex-shrink-0"
-          />
-          <img
-            [src]="imageList[0]"
-            alt="Clone"
-            class="w-full h-auto object-contain flex-shrink-0"
-          />
+  <div class="flex flex-col md:flex-row bg-white shadow-xl rounded-xl overflow-hidden w-full max-w-6xl">
+
+    <!-- LEFT IMAGE / SLIDER -->
+    <div class="w-full md:w-2/5 bg-gradient-to-br from-orange-300 to-orange-400 flex items-center justify-center p-6 md:p-8">
+      <div class="w-full max-w-xs text-center">
+
+        <div class="relative w-full overflow-hidden rounded-xl bg-opacity-20 p-3 shadow-lg">
+          <div
+            class="slider flex transition-transform duration-1000 ease-in-out"
+            [style.transform]="'translateX(-' + currentIndex * 100 + '%)'">
+            <img
+              *ngFor="let img of imageList"
+              [src]="img"
+              class="w-56 h-56 object-contain flex-shrink-0 mx-auto rounded-lg"
+            />
+          </div>
         </div>
+
+        <div class="mt-6 text-white">
+          <h3 class="text-xl font-bold">Welcome Back!</h3>
+          <p class="mt-2 text-sm opacity-90">
+            Sign in to continue your journey with us
+          </p>
+        </div>
+
+        <div class="flex justify-center mt-4 space-x-2">
+          <div *ngFor="let img of imageList; let i = index"
+               class="w-2 h-2 rounded-full bg-white"
+               [class.opacity-100]="currentIndex === i"
+               [class.opacity-40]="currentIndex !== i">
+          </div>
+        </div>
+
       </div>
     </div>
 
-    <div class="w-full md:w-1/2 p-6 sm:p-8">
-      <h2 class="text-1xl sm:text-2xl font-semibold text-text-orange mb-6 mt-4 sm:mt-5 text-center">
-        Sign in to your account
-      </h2>
+    <!-- RIGHT LOGIN FORM -->
+    <div class="w-full md:w-3/5 p-6 sm:p-8 md:p-10 flex flex-col justify-center">
 
-      <form class="space-y-5" [formGroup]="loginForm" (ngSubmit)="onloginSubmit()" class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-            <input type="email" placeholder="Enter your email" formControlName="usernameOrEmail"
-                   class="form-control"
-              
-              [ngClass]="{
-              'border-red-500': loginSubmitted && loginUser['usernameOrEmail'].invalid,
-              'border-green-500': loginSubmitted && loginUser['usernameOrEmail'].valid
-            }"
-                   >
-
-           <div *ngIf="loginSubmitted && loginUser['usernameOrEmail'].errors" class="text-sm text-red-500 mt-1">
-  <div *ngIf="loginUser['usernameOrEmail'].errors['required']">Email is required</div>
-  <div *ngIf="loginUser['usernameOrEmail'].errors['invalidComEmail']">Enter valid email</div>
-</div>
-
-          </div>
-
-         <div>
-  <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-  <div class="relative">
-    <input
-      [type]="showPassword ? 'text' : 'password'"
-      placeholder="Enter your password"
-      formControlName="password"
-      class="form-control"
-      (input)="onPasswordInput()"
-      [ngClass]="{
-        'border-red-500': loginSubmitted && loginUser['password'].invalid,
-        'border-green-500': loginSubmitted && loginUser['password'].valid
-      }"
-    />
-    <div *ngIf="PasswordValue?.length > 0"
-      class="absolute inset-y-0 right-3 flex items-center text-gray-400 cursor-pointer"
-      (click)="togglePasswordVisibility()"
-    >
-      <i [class]="showPassword ? 'fas fa-eye' : 'fas fa-eye-slash'"></i>
-    </div>
-
-    <div *ngIf="loginSubmitted && loginUser['password']['errors']" class="text-sm text-red-500 mt-1">
-      <div *ngIf="loginUser['password']['errors']['required']">Password is required</div>
-    </div>
-  </div>
-</div>
-
-
-          <div class="flex items-center justify-between text-sm">
-            <label class="flex items-center space-x-2">
-              <input type="checkbox" class="rounded border-gray-300">
-              <span class="text-gray-600">Remember me</span>
-            </label>
-            <a  [routerLink]="['/forgot-password']" class="text-orange-500 hover:text-primary-orange cursor-pointer">Forgot password?</a>
-          </div>
-
-          <button type="submit"
-                  class="w-full bg-orange-400 text-white py-2 rounded-md font-semibold hover:bg-orange-500 transition">
-            Sign In<i class="fas fa-arrow-right ml-3"></i>
-          </button>
-
-          <p class="text-center text-sm text-gray-600 cursor-pointer"  [routerLink]="['/register']">
-            Don’t have an account?
-            <a class="text-orange-500 hover:text-primary-orange">Sign up</a>
-          </p>
-        </form>
-
-        <p class="text-xs text-center text-gray-400 mt-6 ">
-          By signing in, you agree to our
-          <a  class="text-orange-500 hover:text-primary-orange cursor-pointer">Terms of Service</a>
-          and
-          <a  class="text-orange-500 hover:text-primary-orange cursor-pointer">Privacy Policy</a>.
+      <div class="text-center mb-6">
+        <h2 class="text-3xl font-bold text-gray-800 mb-2">
+          Sign in to your Account
+        </h2>
+        <p class="text-gray-600 text-sm">
+          Access your personalized dashboard
         </p>
+      </div>
+
+      <form class="space-y-5"
+            [formGroup]="loginForm"
+            (ngSubmit)="onloginSubmit()">
+
+        <!-- EMAIL -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Email Address <span class="text-red-500">*</span>
+          </label>
+
+          <input
+            type="email"
+            formControlName="usernameOrEmail"
+            placeholder="Enter your email"
+            class="form-control w-full"
+            [ngClass]="{
+              'is-invalid': loginSubmitted && loginForm.get('usernameOrEmail')?.invalid
+            }"
+          />
+
+          <div *ngIf="loginSubmitted && loginForm.get('usernameOrEmail')?.errors"
+               class="text-red-500 text-xs mt-1">
+            <div *ngIf="loginForm.get('usernameOrEmail')?.errors?.['required']">
+              Email is required
+            </div>
+            <div *ngIf="loginForm.get('usernameOrEmail')?.errors?.['email'] ||
+                         loginForm.get('usernameOrEmail')?.errors?.['emailWithCom']">
+              Enter a valid email address
+            </div>
+          </div>
+        </div>
+
+        <!-- PASSWORD -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Password <span class="text-red-500">*</span>
+          </label>
+
+          <div class="position-relative w-full">
+            <input
+              [type]="showPassword ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="Enter your password"
+              class="form-control w-full pe-5"
+              [ngClass]="{
+                'is-invalid': loginSubmitted && loginForm.get('password')?.invalid
+              }"
+            />
+
+            <!-- Eye Icon -->
+            <span
+              class="password-toggle"
+              (click)="togglePassword()"
+            >
+              <!-- Eye Open -->
+              <svg *ngIf="!showPassword" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0"/>
+                <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+              </svg>
+
+              <!-- Eye Closed -->
+              <svg *ngIf="showPassword" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M17.94 17.94A10.07 10.07 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.956 9.956 0 012.542-4.28"/>
+                <path d="M1 1l22 22"/>
+              </svg>
+            </span>
+          </div>
+
+          <div *ngIf="loginSubmitted && loginForm.get('password')?.errors"
+               class="text-red-500 text-xs mt-1">
+            Password is required
+          </div>
+        </div>
+
+        <!-- FORGOT PASSWORD -->
+        <div class="flex justify-end text-sm">
+          <a [routerLink]="['/forgot-password']"
+             class="text-orange-300 hover:text-orange-400 font-medium">
+            Forgot password?
+          </a>
+        </div>
+
+        <!-- LOGIN BUTTON -->
+        <button
+          type="submit"
+          class="w-full custom-button hover:bg-orange-400 transition">
+          Sign In
+        </button>
+
+        <p class="text-center text-sm text-gray-600">
+          Don't have an account?
+          <a [routerLink]="['/register']"
+             class="text-orange-300 hover:text-orange-400 font-medium ml-1">
+            Sign up
+          </a>
+        </p>
+
+      </form>
     </div>
   </div>
 </div>
+
+<!-- ================= EMAIL OTP MODAL ================= -->
+
+<div
+  class="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50"
+  *ngIf="step === 'emailOtp'">
+
+  <div class="bg-white p-6 rounded-xl w-full max-w-sm shadow-2xl mx-4 relative">
+
+    <!-- CLOSE BUTTON -->
+    <button
+  type="button"
+  class="absolute top-3 right-3 text-red-600 hover:text-red-800 font-bold text-xl leading-none transition"
+  aria-label="Close"
+  (click)="closeOtpModal()">
+  ✕
+</button>
+
+
+    <h2 class="text-2xl font-bold text-gray-800 mb-2 text-center">
+      Email Verification
+    </h2>
+
+    <p class="text-sm text-gray-600 text-center mb-6">
+      An OTP has been sent to your registered email address
+    </p>
+
+    <!-- OTP INPUTS -->
+    <div class="flex justify-center space-x-3 mb-6">
+      <ng-container *ngFor="let d of [0,1,2,3,4,5]; let i = index">
+        <input
+          type="text"
+          maxlength="1"
+          class="w-12 h-12 text-center text-lg border rounded-lg form-control"
+          inputmode="numeric"
+          (input)="handle2FAInput($event, i)"
+          (keydown)="onOtpKeyDown($event, i)"
+        />
+      </ng-container>
+    </div>
+
+    <!-- VERIFY BUTTON -->
+    <button
+      type="button"
+      class="w-full custom-button"
+      [disabled]="otpCode.length !== 6"
+      (click)="verifyOtp()">
+      Verify & Login
+    </button>
+
+    <!-- RESEND OTP -->
+    <div class="mt-4 text-center">
+      <button
+        type="button"
+        class="text-sm text-orange-300 hover:text-orange-400"
+        (click)="resendOtp()">
+        Resend OTP
+      </button>
+    </div>
+
+  </div>
+</div>
+

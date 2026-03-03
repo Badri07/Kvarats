@@ -1,0 +1,159 @@
+<div class="payment-detail bg-white shadow rounded-lg p-6">
+  <!-- Header -->
+  <div class="detail-header flex flex-col md:flex-row md:items-center md:justify-between border-b border-gray-200 pb-4">
+    <div class="header-content flex items-center space-x-4">
+      <button 
+        (click)="onBack()" 
+        class="back-button flex items-center text-orange-400 hover:text-orange-500 font-medium"
+      >
+        <svg class="back-icon w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+        <span>Back to Payments</span>
+      </button>
+      <div class="invoice-header">
+        <h1 class="invoice-title text-xl font-semibold text-gray-800">
+          Invoice #{{paymentRequest.id.substring(0, 8)}}
+        </h1>
+        <p class="invoice-date text-sm text-gray-500">
+          Invoice Date: {{paymentRequest.invoiceDate | date:'fullDate'}}
+        </p>
+      </div>
+    </div>
+    <div class="header-actions flex items-center space-x-4 mt-4 md:mt-0">
+      <span [class]="getStatusClass()" 
+            class="px-3 py-1 text-xs font-medium rounded-full">
+        {{paymentRequest.status}}
+      </span>
+      <button 
+        *ngIf="canMakePayment()" 
+        class="btn-make-payment bg-orange-400 text-white text-sm px-4 py-2 rounded-md shadow hover:bg-orange-500 focus:outline-none focus:ring focus:ring-blue-200"
+        (click)="onMakePayment()"
+      >
+        Make Payment
+      </button>
+    </div>
+  </div>
+
+  <!-- Amount Summary -->
+  <div class="amount-summary grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mt-6">
+    <div class="summary-item bg-gray-50 p-4 rounded-lg">
+      <p class="summary-label text-sm text-gray-500">Total Amount</p>
+      <p class="summary-value total text-lg font-bold text-gray-800">
+        {{paymentRequest.totalAmount | currency}}
+      </p>
+    </div>
+    <div class="summary-item bg-gray-50 p-4 rounded-lg">
+      <p class="summary-label text-sm text-gray-500">Discount</p>
+      <p class="summary-value discount text-lg font-bold text-red-500">
+        -{{paymentRequest.discountAmount | currency}}
+      </p>
+    </div>
+    <div class="summary-item bg-gray-50 p-4 rounded-lg">
+      <p class="summary-label text-sm text-gray-500">Final Amount</p>
+      <p class="summary-value final text-lg font-bold text-gray-800">
+        {{paymentRequest.finalAmount | currency}}
+      </p>
+    </div>
+    <div class="summary-item bg-gray-50 p-4 rounded-lg">
+      <p class="summary-label text-sm text-gray-500">Amount Paid</p>
+      <p class="summary-value paid text-lg font-bold text-green-600">
+        {{getPaidAmount() | currency}}
+      </p>
+    </div>
+    <div class="summary-item bg-gray-50 p-4 rounded-lg">
+      <p class="summary-label text-sm text-gray-500">Balance Due</p>
+      <p class="summary-value balance text-lg font-bold"
+         [ngClass]="{
+           'text-red-600': paymentRequest.balance > 0, 
+           'text-green-600': paymentRequest.balance === 0
+         }"
+      >
+        {{paymentRequest.balance | currency}}
+      </p>
+    </div>
+  </div>
+
+  <!-- Services -->
+  <div class="services-section mt-8">
+    <h2 class="section-title text-lg font-semibold text-gray-800 mb-4">Services Provided</h2>
+    <div class="services-table border border-gray-200 rounded-lg overflow-hidden">
+      <div class="table-header grid grid-cols-5 bg-gray-100 text-sm font-medium text-gray-600">
+        <div class="header-cell p-3">CPT Code</div>
+        <div class="header-cell p-3">Description</div>
+        <div class="header-cell p-3">Service Date</div>
+        <div class="header-cell p-3">Units</div>
+        <div class="header-cell p-3 text-right">Amount</div>
+      </div>
+      <div class="table-body divide-y divide-gray-200">
+        <div *ngFor="let service of paymentRequest.services" 
+             class="table-row grid-cols-5 text-sm text-gray-700">
+          <div class="table-cell p-3">{{service.cptCode || 'N/A'}}</div>
+          <div class="table-cell p-3">{{service.description || 'No description'}}</div>
+          <div class="table-cell p-3">{{service.serviceDate | date:'MMM dd, yyyy'}}</div>
+          <div class="table-cell p-3">{{service.units}}</div>
+          <div class="table-cell p-3 text-right">{{service.chargedAmount | currency}}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payment History -->
+  <div class="payment-history mt-8">
+    <h2 class="section-title text-lg font-semibold text-gray-800 mb-4">Payment History</h2>
+    
+    <div *ngIf="paymentRequest.transactions.length === 0" 
+         class="empty-state flex flex-col items-center text-gray-500 p-6">
+      <svg class="empty-icon w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
+      </svg>
+      <p class="empty-text">No payments recorded yet</p>
+    </div>
+
+    <div *ngIf="paymentRequest.transactions.length > 0" class="transactions-list space-y-4">
+      <div *ngFor="let transaction of paymentRequest.transactions" 
+           class="transaction-item flex items-center justify-between p-4 bg-gray-50 rounded-lg shadow-sm">
+        <div class="transaction-icon">
+          <svg *ngIf="transaction.isSuccessful" 
+               class="success-icon w-6 h-6 text-green-600" 
+               fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+          <svg *ngIf="!transaction.isSuccessful" 
+               class="failed-icon w-6 h-6 text-red-600" 
+               fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </div>
+        <div class="transaction-details flex-1 ml-4">
+          <p class="transaction-amount text-lg font-bold text-gray-800">
+            {{transaction.amountPaid | currency}}
+          </p>
+          <p class="transaction-info text-sm text-gray-500">
+            {{transaction.paymentMethod || 'Unknown method'}} • 
+            {{transaction.paymentDate | date:'MMM dd, yyyy'}}
+          </p>
+          <p *ngIf="transaction.transactionReference" class="transaction-ref text-xs text-gray-400">
+            Ref: {{transaction.transactionReference}}
+          </p>
+        </div>
+        <div class="transaction-status">
+          <span class="status-badge px-3 py-1 text-xs font-medium rounded-full"
+                [ngClass]="{
+                  'bg-green-100 text-green-700': transaction.isSuccessful,
+                  'bg-red-100 text-red-700': !transaction.isSuccessful
+                }"
+          >
+            {{transaction.isSuccessful ? 'Success' : 'Failed'}}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notes -->
+  <div *ngIf="paymentRequest.notes" class="notes-section mt-8">
+    <h2 class="section-title text-lg font-semibold text-gray-800 mb-2">Notes</h2>
+    <p class="notes-content text-sm text-gray-600">{{paymentRequest.notes}}</p>
+  </div>
+</div>

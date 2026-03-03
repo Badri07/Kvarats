@@ -1,0 +1,70 @@
+name: Angular-Stage
+
+on:
+  push:
+    branches: ["stage"]
+  workflow_dispatch: # Triggered manually via the "Run workflow" button in the GitHub UI
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: stage
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install Angular CLI
+      run: npm install -g @angular/cli
+
+    - name: Install Dependencies
+      run: npm install
+
+    - name: Build
+      run: npm run build
+
+    # - name: Test
+    #   run: ls -lrt
+
+    - name: Archive Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: Angular-Build
+        path: |
+          dist/calendarly/browser/
+
+  deploy:
+    runs-on: ESTSERVER
+    needs: build
+    environment: stage
+    steps:
+
+    - name: Clean workspace folder
+      run: |
+        Get-ChildItem -Path "${{ github.workspace }}" -Recurse |
+            Where-Object { $_.Name -ne "web.config" } |
+            Remove-Item -Recurse -Force
+
+    - name: Download Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: Angular-Build
+        path: ${{ github.workspace }}
+
+    # - name: Test
+    #   run: |
+    #     dir
+    #     pwd
+
+    - name: Deploying the Build
+      shell: powershell
+      run: |
+        echo "Copying files to IIS directory"
+        robocopy ${{ github.workspace }} ${{ vars.FOLDER_PATH }} /MIR /XF web.config
+        if ($lastexitcode -lt 8) { $global:LASTEXITCODE = $null }
+        echo "Copy operation completed"

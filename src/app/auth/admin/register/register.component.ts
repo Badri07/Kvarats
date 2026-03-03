@@ -67,7 +67,6 @@ export class RegisterComponent {
   passError!:boolean;
 
   imageList: string[] = [
-  '/images/login-logo-removebg-preview.png',
   '/images/Login 2.png',
   '/images/Login 3.png',
   '/images/Login- 5.png'
@@ -99,8 +98,12 @@ currentIndex = 0;
   isSoloProvider: new FormControl(false, Validators.required),
   countryDataId: new FormControl("", Validators.required),
   address: new FormControl("", Validators.required),
-  phoneNumber: new FormControl('', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]),
-  country: new FormControl('',Validators.required),
+phoneNumber: new FormControl('', [
+  Validators.required,
+  Validators.minLength(10),
+  Validators.maxLength(17),
+ Validators.pattern(/^[0-9-]*$/) 
+]),  country: new FormControl('',Validators.required),
   state: new FormControl('',Validators.required),
   city: new FormControl('',Validators.required),
   adminFirstName: new FormControl("", Validators.required),
@@ -199,17 +202,31 @@ get isTouched(): boolean {
 }
 
 onRegisterSubmit() {
-if(this.registerForm.invalid){
-  this.registerSubmitted = true;
-  return
-}
-else{
-  const data:any = {
+  console.log({
+    name: this.registerForm.get('name')?.value,
+    isSoloProvider: this.registerForm.get('isSoloProvider')?.value,
+    countryDataId: Number(this.registerForm.get('countryDataId')?.value),
+    address: this.registerForm.get('address')?.value,
+    phoneNumber: String(this.registerForm.get('phoneNumber')?.value),
+    adminFirstName: this.registerForm.get('adminFirstName')?.value,
+    adminLastName: this.registerForm.get('adminLastName')?.value,
+    adminEmail: this.registerForm.get('adminEmail')?.value,
+    adminPassword: this.registerForm.get('confirmPassword')?.value
+  });
+
+  if (this.registerForm.invalid) {
+    this.registerSubmitted = true;
+    return;
+  } else {
+    const rawPhone = String(this.registerForm.get('phoneNumber')?.value || '');
+    const cleanedPhone = rawPhone.replace(/-/g, '');
+
+    const data: any = {
       name: this.registerForm.get('name')?.value,
       isSoloProvider: this.registerForm.get('isSoloProvider')?.value,
       countryDataId: Number(this.registerForm.get('countryDataId')?.value),
       address: this.registerForm.get('address')?.value,
-      phoneNumber: String(this.registerForm.get('phoneNumber')?.value),
+      phoneNumber: cleanedPhone,
       adminFirstName: this.registerForm.get('adminFirstName')?.value,
       adminLastName: this.registerForm.get('adminLastName')?.value,
       adminEmail: this.registerForm.get('adminEmail')?.value,
@@ -220,17 +237,24 @@ else{
       next: (res) => {
         this.registerForm.reset();
         this.toastr.success(res.message);
-        this.routes.navigate(['/login']);
-        console.log("res", res);
+        const isSolo = res?.data?.isSoloProvider;
+    //     if (!isSolo && isSolo !=='true') {
+    //     this.routes.navigate(['/verification-pending']);
+    // } else {
+      this.routes.navigate(['/login']);
+    // }
       },
       error: (err) => {
         const errorMessage = err.error?.message;
         this.toastr.error(errorMessage);
         console.error("Registration Error:", err);
       }
-    }); 
+    });
   }
 }
+
+
+onPasswordBlur(){}
 
  ngAfterViewInit() {
   setTimeout(() => this.startAutoSlide(),500);
@@ -287,7 +311,7 @@ onCityChange() {
 getMobilePrefixes() {
   if (this.selectedCountry) {
     this.authservice.getMobilePrefixes(this.selectedCountry).subscribe(res => {
-      this.mobilePrefixes = res;
+      this.mobilePrefixes = res.data;
     });
   }
 }
@@ -297,7 +321,7 @@ getStates() {
 
   if (this.selectedCountry) {
     this.authservice.getStates(this.selectedCountry).subscribe(res => {
-      this.states = res;
+      this.states = res.data;
     });
   }
 }
@@ -305,7 +329,7 @@ getStates() {
 getCities() {
   if (this.selectedCountry && this.selectedStateCode) {
     this.authservice.getCities(this.selectedCountry, this.selectedStateCode).subscribe(res => {
-      this.cities = res;
+      this.cities = res.data;
     });
   }
 
@@ -313,13 +337,13 @@ getCities() {
 }
 getCountries() {
   this.authservice.getCountries().subscribe(res => {
-    this.countries = res;
+    this.countries = res.data;
   });
 }
 getZipCodes() {
   if (this.selectedCountry && this.selectedStateCode && this.selectedCity) {
     this.authservice.getZipCodes(this.selectedCountry, this.selectedStateCode, this.selectedCity).subscribe(res => {
-      this.zipCodes = res;
+      this.zipCodes = res.data;
     });
   }
 }
@@ -358,4 +382,24 @@ onPasswordInput(){
   const control = this.registerForm.get('adminPassword');
   this.PasswordValue = control?.value || '';
 }
+
+formatUSPhone(event: Event) {
+  const input = event.target as HTMLInputElement;
+  let value = input.value.replace(/\D/g, '');
+
+  if (value.length > 17) {
+    value = value.slice(0, 17);
+  }
+
+  if (value.length > 6) {
+    value = value.replace(/(\d{3})(\d{3})(\d+)/, '$1-$2-$3');
+  } else if (value.length > 3) {
+    value = value.replace(/(\d{3})(\d+)/, '$1-$2');
+  }
+
+  input.value = value;
+  this.registerUser['phoneNumber'].setValue(value, { emitEvent: false });
+}
+
+
 }

@@ -134,7 +134,7 @@ export class InvoiceComponent implements OnInit {
 
   viewInvoices(rowData: any): void {
     if (rowData?.patientId) {
-      this.router.navigate(['admin/billing/invoice-details/patient', rowData.patientId]);
+      this.router.navigate(['/billing/invoice-details/patient', rowData.patientId]);
     } else {
       console.warn('Invalid row data:', rowData);
     }

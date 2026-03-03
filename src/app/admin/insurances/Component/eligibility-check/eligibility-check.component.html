@@ -1,0 +1,267 @@
+<div class="eligibility-container">
+  <div class="eligibility-header">
+
+    
+    <div class="header-content">
+      <h1 class="eligibility-title">Insurance Eligibility Check</h1>
+      <p class="eligibility-subtitle">Verify patient benefits and coverage details</p>
+    </div>
+  </div>
+
+  <div class="eligibility-content">
+    @if (!eligibilityResult()) {
+      <!-- Eligibility Check Form --> 
+      <div class="check-form-card">
+        <div class="form-header">
+          <div class="form-icon">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <h2 class="form-title">Run Eligibility Check</h2>
+          <p class="form-description">Select patient and insurance plan to verify benefits</p>
+        </div>
+
+        <form [formGroup]="eligibilityForm" (ngSubmit)="onSubmit()" class="eligibility-form">
+          <div class="form-group">
+            <label for="patientId" class="form-label">Patient<span class="text-danger">*</span></label>
+            <select 
+              id="patientId"
+              formControlName="patientId"
+              class="form-select"
+              [class.error]="isFieldInvalid('patientId')" (change)="onSelectPatients($event)">
+              <option value="">Select a patient...</option>
+              @for (patient of patientList; track patient.id) {
+                <option [value]="patient.id">
+                  {{ patient.firstName }} {{ patient.lastName }}
+                </option>
+              }
+            </select>
+            @if (isFieldInvalid('patientId')) {
+              <div class="form-error">Please select a patient</div>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="insuranceId" class="form-label">Insurance Plan<span class="text-danger">*</span></label>
+            <select 
+              id="insuranceId"
+              formControlName="insuranceId"
+              class="form-select"
+              [class.error]="isFieldInvalid('insuranceId')"
+              [disabled]="insurancePlanIds.length === 0">
+              <option value="">Select insurance plan...</option>
+              @for (insurance of insurancePlanIds; track insurance.id) {
+                <option [value]="insurance.id">
+                  {{ insurance.insuranceCarrier }}
+                  @if (insurance.isPrimary) {
+                    (Primary)
+                  }
+                </option>
+              }
+            </select>
+            @if (isFieldInvalid('insuranceId')) {
+              <div class="form-error">Please select an insurance plan</div>
+            }
+            @if (insurancePlanIds.length === 0 && eligibilityForm.get('patientId')?.value) {
+              <div class="form-info">No insurance plans found for selected patient</div>
+            }
+          </div>
+
+          <div class="form-actions">
+            <app-button 
+              type="submit"
+              variant="primary"
+              size="lg"
+              [fullWidth]="true"
+              [loading]="isChecking()"
+              [disabled]="eligibilityForm.invalid">
+              @if (isChecking()) {
+                Checking Eligibility...
+              } @else {
+                Run Eligibility Check
+              }
+            </app-button>
+          </div>
+        </form>
+      </div>
+    } @else {
+      <!-- Eligibility Results -->
+      <div class="results-container">
+        <div class="results-header">
+          <div class="success-icon">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <h2 class="results-title">Eligibility Check Results</h2>
+          <p class="results-subtitle">{{ getPatientName(eligibilityResult()!.patientId!) }} • {{ getInsuranceName(eligibilityResult()!.insuranceCarrierId!) }}</p>
+          <!-- <button type="button" class="new-check-btn" (click)="runNewCheck()">Run New Check</button> -->
+        </div>
+
+        <div class="results-grid">
+          <!-- Eligibility Status -->
+          <div class="result-card">
+            <h3 class="card-title">Eligibility Status</h3>
+            <div class="status-info">
+              <div class="status-badge" [ngClass]="getStatusColor(eligibilityResult()!.eligibilityStatus)">
+                {{ eligibilityResult()!.eligibilityStatus | titlecase }}
+              </div>
+              <div class="status-details">
+                @if (eligibilityResult()!.effectiveDate) {
+                  <div class="detail-item">
+                    <span class="detail-label">Effective Date:</span>
+                    <span class="detail-value">{{ eligibilityResult()!.effectiveDate | date:'MMM d, y' }}</span>
+                  </div>
+                }
+                @if (eligibilityResult()!.terminationDate) {
+                  <div class="detail-item">
+                    <span class="detail-label">Termination Date:</span>
+                    <span class="detail-value">{{ eligibilityResult()!.terminationDate | date:'MMM d, y' }}</span>
+                  </div>
+                }
+                <div class="detail-item">
+                  <span class="detail-label">Plan Type:</span>
+                  <span class="detail-value">{{ eligibilityResult()!.planType}}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Network Status:</span>
+                  <span class="detail-value">{{ eligibilityResult()!.networkStatus | titlecase }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Financial Information -->
+          <div class="result-card">
+            <h3 class="card-title">Financial Information</h3>
+            <div class="financial-grid">
+              @if (eligibilityResult()!.copay) {
+                <div class="financial-item">
+                  <div class="financial-label">Copay</div>
+                  <div class="financial-value">{{ formatCurrency(eligibilityResult()!.copay!) }}</div>
+                </div>
+              }
+              
+              @if (eligibilityResult()!.deductible) {
+                <div class="financial-item">
+                  <div class="financial-label">Annual Deductible</div>
+                  <div class="financial-value">{{ formatCurrency(eligibilityResult()!.deductible!) }}</div>
+                </div>
+              }
+                @if (eligibilityResult()!.deductibleRemaining) {
+                <div class="financial-item">
+                  <div class="financial-label">Deductible Remaining</div>
+                  <div class="financial-value">{{ formatCurrency(eligibilityResult()!.deductibleRemaining!) }}</div>
+                </div>
+              }
+                   @if (eligibilityResult()) {
+                <div class="financial-item">
+                  <div class="financial-label">Deductible Met</div>
+                  <div class="financial-value met">{{ formatCurrency(eligibilityResult()!.deductibleMet!) }}</div>
+                </div>
+              }
+                @if (eligibilityResult()!.outOfPocketRemaining) {
+                <div class="financial-item">
+                  <div class="financial-label">Out Of Pocket Remaining</div>
+                  <div class="financial-value">{{ formatCurrency(eligibilityResult()!.outOfPocketRemaining!) }}</div>
+                </div>
+              }
+              
+         
+              
+              @if (eligibilityResult()!.outOfPocketMax) {
+                <div class="financial-item">
+                  <div class="financial-label">Out-of-Pocket Max</div>
+                  <div class="financial-value">{{ formatCurrency(eligibilityResult()!.outOfPocketMax!) }}</div>
+                </div>
+              }
+              
+              @if (eligibilityResult()) {
+                <div class="financial-item">
+                  <div class="financial-label">Out-of-Pocket Met</div>
+                  <div class="financial-value met">{{ formatCurrency(eligibilityResult()!.outOfPocketMet!) }}</div>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Benefits Information -->
+          <div class="result-card">
+            <h3 class="card-title">Mental Health Benefits</h3>
+            <div class="benefits-info">
+              <div class="benefit-item">
+                <div class="benefit-icon" [class]="eligibilityResult()!.mentalHealthBenefits ? 'text-green-500' : 'text-red-500'">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="eligibilityResult()!.mentalHealthBenefits ? 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' : 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z'"></path>
+                  </svg>
+                </div>
+                <span class="benefit-label">Mental Health Coverage</span>
+                <span class="benefit-status" [class]="eligibilityResult()!.mentalHealthCoverage ? 'text-green-600' : 'text-red-600'">
+                  {{ eligibilityResult()!.mentalHealthCoverage ? 'Covered' : 'Not Covered' }}
+                </span>
+              </div>
+
+              <div class="benefit-item">
+                <div class="benefit-icon" [class]="eligibilityResult()!.authorizationRequired ? 'text-yellow-500' : 'text-green-500'">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="eligibilityResult()!.authorizationRequired ? 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z' : 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'"></path>
+                  </svg>
+                </div>
+                <span class="benefit-label">Prior Authorization</span>
+                <span class="benefit-status" [class]="eligibilityResult()!.authorizationRequired ? 'text-yellow-600' : 'text-green-600'">
+                  {{ eligibilityResult()!.authorizationRequired ? 'Required' : 'Not Required' }}
+                </span>
+              </div>
+
+              @if (eligibilityResult()) {
+                <div class="benefit-item">
+                  <div class="benefit-icon text-blue-500">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                  </div>
+                  <span class="benefit-label">Visit Limit</span>
+                  <span class="benefit-status text-blue-600">
+                    {{ eligibilityResult()!.visitsUsed || 0 }} / {{ eligibilityResult()!.visitLimit }} used
+                  </span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Check Information -->
+          <div class="result-card">
+            <h3 class="card-title">Check Information</h3>
+            <div class="check-info">
+              <div class="info-item">
+                <span class="info-label">Check Date:</span>
+                <span class="info-value"><p>{{ today | date:'MMM d, y - h:mm a' }}</p></span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Check Status:</span>
+                <span class="info-value">{{ status | titlecase }}</span>
+              </div>
+              @if (eligibilityResult()!.errorMessage) {
+                <div class="info-item error">
+                  <span class="info-label">Error:</span>
+                  <span class="info-value">{{ eligibilityResult()!.errorMessage }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="results-actions">
+          <app-button variant="outline" (click)="runNewCheck()">
+            Run Another Check
+          </app-button>
+          <app-button variant="primary" (click)="goBack()">
+            Back to Insurance
+          </app-button>
+        </div>
+      </div>
+    }
+  </div>
+</div>

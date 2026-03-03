@@ -1,0 +1,214 @@
+<div class="insurance-list-container">
+  <!-- Header -->
+  <div class="list-header">
+    <div class="header-content">
+      <h1 class="list-title">Insurance Plans</h1>
+      <p class="list-subtitle">Manage patient insurance plans and coverage details</p>
+    </div>
+    <div class="header-actions">
+      <app-button variant="primary" (click)="createInsurance()">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+        </svg>
+        Add Insurance Plan
+      </app-button>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-state">
+      <div class="loading-spinner"></div>
+      <p>Loading insurance plans...</p>
+    </div>
+  } @else {
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-blue">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ totalInsurances() }}</div>
+          <div class="stat-label">Total Insurance Plans</div>
+          <div class="stat-change positive">{{ activeInsurances() }} active</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-green">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ primaryInsurances() }}</div>
+          <div class="stat-label">Primary Plans</div>
+          <div class="stat-change neutral">{{ secondaryInsurances() }} secondary</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-purple">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ inNetworkPlans() }}</div>
+          <div class="stat-label">In-Network Plans</div>
+          <div class="stat-change positive">{{ Math.round((inNetworkPlans() / totalInsurances()) * 100) }}% coverage</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Insurance Plans Grid -->
+    <div class="insurance-grid">
+      @for (insurance of insurances(); track insurance.id) {
+        <div class="insurance-card" [class.primary]="insurance.isPrimary">
+          <div class="insurance-header">
+            <div class="insurance-provider-info">
+              <h3 class="provider-name">{{ insurance.provider }}</h3>
+              <p class="patient-name">{{ getPatientName(insurance.patientId) }}</p>
+              <div class="plan-details">
+                <span class="plan-type">{{ insurance.planType | uppercase }}</span>
+                <span class="network-status" [ngClass]="getNetworkStatusColor(insurance.networkStatus)">
+                  {{ insurance.networkStatus | titlecase }}
+                </span>
+              </div>
+            </div>
+            
+            <div class="insurance-status-section">
+              @if (insurance.isPrimary) {
+                <div class="primary-badge">Primary</div>
+              }
+              <div class="status-badge" [ngClass]="getStatusColor(insurance.isActive)">
+                {{ insurance.isActive ? 'Active' : 'Inactive' }}
+              </div>
+            </div>
+          </div>
+
+          <div class="insurance-details">
+            <div class="detail-grid">
+              <div class="detail-item">
+                <span class="detail-label">Policy #:</span>
+                <span class="detail-value">{{ insurance.policyNumber }}</span>
+              </div>
+              @if (insurance.groupNumber) {
+                <div class="detail-item">
+                  <span class="detail-label">Group #:</span>
+                  <span class="detail-value">{{ insurance.groupNumber }}</span>
+                </div>
+              }
+              @if (insurance.copay) {
+                <div class="detail-item">
+                  <span class="detail-label">Copay:</span>
+                  <span class="detail-value">${{ insurance.copay }}</span>
+                </div>
+              }
+              @if (insurance.deductible) {
+                <div class="detail-item">
+                  <span class="detail-label">Deductible:</span>
+                  <span class="detail-value">${{ insurance.deductible | number:'1.0-0' }}</span>
+                </div>
+              }
+            </div>
+
+            <div class="coverage-info">
+              <div class="coverage-item">
+                <svg class="w-4 h-4" [class]="insurance.mentalHealthCoverage ? 'text-green-500' : 'text-red-500'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="insurance.mentalHealthCoverage ? 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' : 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z'"></path>
+                </svg>
+                <span class="coverage-label">Mental Health Coverage</span>
+              </div>
+              
+              <div class="coverage-item">
+                <svg class="w-4 h-4" [class]="insurance.authorizationRequired ? 'text-yellow-500' : 'text-green-500'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="insurance.authorizationRequired ? 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z' : 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'"></path>
+                </svg>
+                <span class="coverage-label">{{ insurance.authorizationRequired ? 'Auth Required' : 'No Auth Required' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="insurance-actions">
+            <button class="action-btn view-btn" (click)="viewInsurance(insurance.id)">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+              </svg>
+              View
+            </button>
+            
+            <button class="action-btn edit-btn" (click)="editInsurance(insurance.id)">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+              </svg>
+              Edit
+            </button>
+
+            <button class="action-btn eligibility-btn" (click)="checkEligibility(insurance.id)">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              Check
+            </button>
+
+            @if (!insurance.isPrimary) {
+              <button class="action-btn primary-btn" (click)="setPrimaryInsurance(insurance)">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
+                </svg>
+                Set Primary
+              </button>
+            }
+
+            <button class="action-btn delete-btn" (click)="confirmDelete(insurance)">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+              </svg>
+              Delete
+            </button>
+          </div>
+        </div>
+      } @empty {
+        <div class="empty-state">
+          <div class="empty-icon">
+            <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+            </svg>
+          </div>
+          <h3 class="empty-title">No insurance plans</h3>
+          <p class="empty-description">Start by adding insurance plans for your patients to manage coverage and billing.</p>
+          <app-button variant="primary" class="mt-4" (click)="createInsurance()">Add First Insurance Plan</app-button>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- Delete Confirmation Modal -->
+<app-modal 
+  [isOpen]="showDeleteModal()"
+  title="Delete Insurance Plan"
+  size="sm"
+  (closed)="showDeleteModal.set(false)">
+  
+  <div class="delete-confirmation">
+    <div class="warning-icon">
+      <svg class="w-12 h-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+      </svg>
+    </div>
+    <h3 class="warning-title">Are you sure?</h3>
+    <p class="warning-message">
+      This will permanently delete the insurance plan for {{ insuranceToDelete() ? getPatientName(insuranceToDelete()!.patientId) : '' }}. 
+      This action cannot be undone.
+    </p>
+    <div class="confirmation-actions">
+      <app-button variant="outline" (click)="showDeleteModal.set(false)">Cancel</app-button>
+      <app-button variant="danger" [loading]="isDeleting()" (click)="deleteInsurance()">Delete Plan</app-button>
+    </div>
+  </div>
+</app-modal>

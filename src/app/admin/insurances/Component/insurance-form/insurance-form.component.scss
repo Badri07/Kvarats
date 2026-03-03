@@ -1,0 +1,120 @@
+.insurance-form-container {
+  @apply p-6  mx-auto;
+}
+
+.form-header {
+  @apply mb-8;
+}
+
+.back-button {
+  @apply flex items-center gap-2 text-gray-600 hover:text-gray-800 mb-6 transition-colors;
+}
+
+.header-content {
+  @apply text-left;
+}
+
+.form-title {
+  @apply text-3xl font-bold text-gray-900 mb-2;
+}
+
+.form-subtitle {
+  @apply text-gray-600;
+}
+
+.form-card {
+  @apply bg-white rounded-2xl shadow-lg border border-primary-100 p-8;
+  box-shadow: 0 8px 24px rgba(255, 161, 87, 0.08);
+}
+
+.insurance-form {
+  @apply space-y-8;
+}
+
+.form-section {
+  @apply space-y-6;
+}
+
+.section-title {
+  @apply text-xl font-semibold text-gray-900 pb-4 border-b border-gray-200;
+}
+
+.form-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 gap-6;
+}
+
+.form-group {
+  @apply space-y-2;
+  
+  &.full-width {
+    @apply md:col-span-2;
+  }
+  
+  &.checkbox-group {
+    @apply flex items-center;
+  }
+}
+
+.form-label {
+  @apply block text-sm font-medium text-gray-700;
+}
+
+.form-input, .form-select {
+  @apply block w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500 transition-all duration-300;
+  
+  &.error {
+    @apply border-red-300 focus:ring-red-500 focus:border-red-500;
+  }
+}
+
+.form-textarea {
+  @apply block w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500 resize-none transition-all duration-300;
+}
+
+.form-error {
+  @apply text-sm text-red-600;
+}
+
+.checkbox-label {
+  @apply flex items-center cursor-pointer;
+}
+
+.checkbox-input {
+  @apply sr-only;
+  
+  &:checked + .checkbox-custom {
+    @apply bg-primary-500 border-primary-500;
+    
+    &::after {
+      @apply opacity-100;
+    }
+  }
+}
+
+.checkbox-custom {
+  @apply w-4 h-4 border border-gray-300 rounded mr-3 flex items-center justify-center relative transition-all;
+  
+  &::after {
+    content: '';
+    @apply w-2 h-2 bg-white rounded-sm opacity-0 transition-opacity;
+  }
+}
+
+.checkbox-text {
+  @apply text-sm text-gray-700;
+}
+
+.form-actions {
+  @apply flex gap-4 justify-end pt-6 border-t border-gray-200;
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .form-grid {
+    @apply grid-cols-1;
+  }
+  
+  .form-actions {
+    @apply flex-col;
+  }
+}

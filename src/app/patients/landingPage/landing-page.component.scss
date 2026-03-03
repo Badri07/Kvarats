@@ -9,3 +9,177 @@
   }
 
 }
+
+
+  /* Custom Animations */
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+  
+  @keyframes float-delayed {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-15px);
+    }
+  }
+  
+  @keyframes float-slow {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+  
+  @keyframes float-delayed-slow {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-12px);
+    }
+  }
+  
+  @keyframes gentle-rotate {
+    0%, 100% {
+      transform: perspective(1000px) rotateY(10deg);
+    }
+    50% {
+      transform: perspective(1000px) rotateY(5deg);
+    }
+  }
+  
+  @keyframes pulse-slow {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.8;
+    }
+  }
+  
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  .animate-float-delayed {
+    animation: float-delayed 7s ease-in-out infinite;
+  }
+  
+  .animate-float-slow {
+    animation: float-slow 8s ease-in-out infinite;
+  }
+  
+  .animate-float-delayed-slow {
+    animation: float-delayed-slow 9s ease-in-out infinite;
+  }
+  
+  .animate-gentle-rotate {
+    animation: gentle-rotate 10s ease-in-out infinite;
+  }
+  
+  .animate-pulse-slow {
+    animation: pulse-slow 3s ease-in-out infinite;
+  }
+  
+  /* Custom Button Styles */
+  .custom-button {
+    background: #FFA157;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    // box-shadow: 0 4px 6px -1px rgba(255, 161, 87, 0.3);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .custom-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(255, 161, 87, 0.4);
+  }
+  
+  .custom-button::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transition: left 0.5s;
+  }
+  
+  .custom-button:hover::after {
+    left: 100%;
+  }
+  
+  /* Feature Card Hover Effects */
+  .feature-card {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(255, 161, 87, 0.05) 0%, rgba(255, 161, 87, 0) 100%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  
+  .feature-card:hover::before {
+    opacity: 1;
+  }
+  
+  .icon-hover {
+    transition: transform 0.3s ease;
+  }
+  
+  .feature-card:hover .icon-hover {
+    transform: scale(1.1);
+  }
+  
+  /* Step Icons Animation */
+  .step-icon {
+    transition: all 0.3s ease;
+  }
+  
+  .step-number {
+    transition: all 0.3s ease;
+  }
+  
+  .step-icon:hover {
+    transform: scale(1.05);
+  }
+  
+  .step-icon:hover + .step-number {
+    transform: scale(1.2);
+  }
+  
+  /* Hover Lift Effect */
+  .hover-lift:hover {
+    transform: translateY(-3px);
+  }
+  
+  /* Perspective for 3D effect */
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+  
+  .rotate-y-10 {
+    transform: rotateY(10deg);
+  }

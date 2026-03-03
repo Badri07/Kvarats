@@ -1,0 +1,690 @@
+<div class="note-editor-container">
+  @if (isLoading) {
+    <div class="loading-state">
+      <div class="loading-spinner"></div>
+      <p>Loading note editor...</p>
+    </div>
+  } @else {
+    <!-- Header with progress steps -->
+    <div class="bg-secondary-lightColor px-6 md:px-8 py-3 md:py-6 text-white">
+      <h1 class="text-2xl md:text-xl font-bold mb-1 text-orange-400">
+        {{ pageTitle }}
+        @if (isEditMode && currentNoteStatus === 'draft') {
+          <span class="text-sm bg-yellow-500 text-white px-2 py-1 rounded ml-2">DRAFT</span>
+        }
+        @if (isEditMode && currentNoteStatus === 'completed') {
+          <span class="text-sm bg-green-500 text-white px-2 py-1 rounded ml-2">COMPLETED</span>
+        }
+        @if (!isEditMode) {
+          <span class="text-sm bg-blue-500 text-white px-2 py-1 rounded ml-2">NEW</span>
+        }
+      </h1>
+    </div>
+
+    <!-- Progress Steps -->
+    <div class="flex items-center justify-between w-full max-w-md mx-auto mt-3">
+      <!-- Step 1: Basic Information -->
+      <div class="flex flex-col items-center relative z-10">
+        <div class="flex items-center cursor-pointer" (click)="setTab('basic-info')">
+          <div [ngClass]="selectedTab==='basic-info' ? 'w-10 h-10 rounded-full bg-primary-500 text-white flex items-center justify-center font-semibold shadow-lg' : 'w-10 h-10 rounded-full bg-secondary-200 text-secondary-500 flex items-center justify-center font-semibold hover:bg-secondary-300 transition-colors'">
+            1
+          </div>
+        </div>
+        <span class="mt-2 text-xs font-medium text-center" [ngClass]="selectedTab==='basic-info' ? 'text-primary-600' : 'text-secondary-500'">
+          Basic Info
+        </span>
+      </div>
+
+      <!-- Progress Line Container -->
+      <div class="flex-1 px-2 relative h-1">
+        <div 
+          [ngClass]="selectedTab==='basic-info' || selectedTab==='note-content' ? 'bg-primary-500' : 'bg-secondary-200'" 
+          class="w-full h-full rounded-full">
+        </div>
+      </div>
+
+      <!-- Step 2: Note Content -->
+      <div class="flex flex-col items-center relative z-10">
+        <div class="flex items-center cursor-pointer" (click)="setTab('note-content')">
+          <div [ngClass]="selectedTab==='note-content' ? 'w-10 h-10 rounded-full bg-primary-500 text-white flex items-center justify-center font-semibold shadow-lg' : 'w-10 h-10 rounded-full bg-secondary-200 text-secondary-500 flex items-center justify-center font-semibold hover:bg-secondary-300 transition-colors'">
+            2
+          </div>
+        </div>
+        <span class="mt-2 text-xs font-medium text-center" [ngClass]="selectedTab==='note-content' ? 'text-primary-600' : 'text-secondary-500'">
+          {{ getNoteTypeLabel(noteType) }} Content
+        </span>
+      </div>
+
+      <!-- Progress Line Container -->
+      <div class="flex-1 px-2 relative h-1">
+        <div 
+          [ngClass]="selectedTab==='note-content' || selectedTab==='review' ? 'bg-primary-500' : 'bg-secondary-200'" 
+          class="w-full h-full rounded-full">
+        </div>
+      </div>
+
+      <!-- Step 3: Review -->
+      <div class="flex flex-col items-center relative z-10">
+        <div class="flex items-center cursor-pointer" (click)="setTab('review')">
+          <div [ngClass]="selectedTab==='review' ? 'w-10 h-10 rounded-full bg-primary-500 text-white flex items-center justify-center font-semibold shadow-lg' : 'w-10 h-10 rounded-full bg-secondary-200 text-secondary-500 flex items-center justify-center font-semibold hover:bg-secondary-300 transition-colors'">
+            3
+          </div>
+        </div>
+        <span class="mt-2 text-xs font-medium text-center" [ngClass]="selectedTab==='review' ? 'text-primary-600' : 'text-secondary-500'">
+          Review
+        </span>
+      </div>
+    </div>
+
+    <!-- Form Container -->
+    <div class="p-6 md:p-8">
+      <form [formGroup]="noteForm" (ngSubmit)="onSubmit()" class="space-y-8">
+        <!-- BASIC INFO TAB -->
+        <div *ngIf="selectedTab === 'basic-info'" class="space-y-6">
+          <!-- Session Information -->
+          <div class="space-y-4">
+            <h2 class="text-xl font-bold text-secondary-800 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-primary-500" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
+              </svg>
+              {{ noteType === 'treatment' ? 'Treatment Information' : 'Session Information' }}
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <!-- Patient Dropdown -->
+              <div>
+                <label class="block text-sm font-medium text-secondary-700 mb-1">Patient <span class="text-danger">*</span></label>
+                <div class="relative">
+                  <select 
+                    class="form-select" 
+                    formControlName="patientId"
+                    [ngClass]="{'is-invalid': formSubmitted && noteForm.controls['patientId'].invalid}"
+                    [disabled]="isEditMode && currentNoteStatus === 'completed'">
+                    <option value="">Select a patient</option>
+                    @for (patient of filteredPatients; track patient.id) {
+                      <option [value]="patient.id" [selected]="patient.id === noteForm.get('patientId')?.value">
+                        {{ getPatientDisplayName(patient) }}
+                      </option>
+                    }
+                  </select>
+                  
+                  @if (patientTotalPages > 1) {
+                    <div class="flex items-center justify-between mt-2 text-sm text-secondary-600">
+                      <button 
+                        type="button" 
+                        class="px-2 py-1 border rounded hover:bg-secondary-50"
+                        (click)="onPatientPageChange(patientCurrentPage - 1)"
+                        [disabled]="patientCurrentPage === 1">
+                        ← Previous
+                      </button>
+                      <span>Page {{ patientCurrentPage }} of {{ patientTotalPages }}</span>
+                      <button 
+                        type="button" 
+                        class="px-2 py-1 border rounded hover:bg-secondary-50"
+                        (click)="onPatientPageChange(patientCurrentPage + 1)"
+                        [disabled]="patientCurrentPage === patientTotalPages">
+                        Next →
+                      </button>
+                    </div>
+                  }
+                </div>
+                @if (formSubmitted && noteForm.controls['patientId'].invalid) {
+                  <div class="text-sm text-red-500 mt-1">Please select a patient</div>
+                }
+              </div>
+
+              <!-- Therapist Dropdown -->
+              <div>
+                <label class="block text-sm font-medium text-secondary-700 mb-1">Therapist <span class="text-danger">*</span></label>
+                <select 
+                  class="form-select" 
+                  formControlName="therapistId"
+                  [ngClass]="{'is-invalid': formSubmitted && noteForm.controls['therapistId'].invalid}"
+                  [disabled]="isEditMode && currentNoteStatus === 'completed'">
+                  <option value="">Select a therapist</option>
+                  @for (therapist of therapistList; track therapist.id) {
+                    <option [value]="therapist.id" [selected]="therapist.id === noteForm.get('therapistId')?.value">
+                      {{ getTherapistDisplayName(therapist) }}
+                    </option>
+                  }
+                </select>
+                @if (formSubmitted && noteForm.controls['therapistId'].invalid) {
+                  <div class="text-sm text-red-500 mt-1">Please select a therapist</div>
+                }
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-secondary-700 mb-1">
+                  {{ noteType === 'treatment' ? 'Start Date' : 'Session Date' }} 
+                  <span class="text-danger">*</span>
+                </label>
+                <input 
+                  type="date" 
+                  class="form-control" 
+                  formControlName="sessionDate"
+                  [ngClass]="{'is-invalid': formSubmitted && noteForm.controls['sessionDate'].invalid}"
+                  [disabled]="isEditMode && currentNoteStatus === 'completed'">
+                @if (formSubmitted && noteForm.controls['sessionDate'].invalid) {
+                  <div class="text-sm text-red-500 mt-1">
+                    {{ noteType === 'treatment' ? 'Start date' : 'Session date' }} is required
+                  </div>
+                }
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-secondary-700 mb-1">
+                  {{ noteType === 'treatment' ? 'End Date' : 'Next Session Date' }}
+                </label>
+                <input 
+                  type="date" 
+                  class="form-control" 
+                  formControlName="nextSessionDate"
+                  [disabled]="isEditMode && currentNoteStatus === 'completed'">
+              </div>
+
+              <!-- Session Duration for SOAP and Progress Notes -->
+              @if (noteType === 'soap' || noteType === 'progress') {
+                <div>
+                  <label class="block text-sm font-medium text-secondary-700 mb-1">Session Duration (minutes)</label>
+                  <input 
+                    type="number" 
+                    class="form-control" 
+                    formControlName="sessionDurationMinutes"
+                    [disabled]="isEditMode && currentNoteStatus === 'completed'"
+                    min="1" max="480">
+                </div>
+              }
+
+              <!-- Treatment Plan Specific Fields -->
+              @if (noteType === 'treatment') {
+                <div class="md:col-span-2">
+                  <label class="block text-sm font-medium text-secondary-700 mb-1">Diagnosis <span class="text-danger">*</span></label>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    placeholder="Primary diagnosis"
+                    formControlName="diagnosis"
+                    [ngClass]="{'is-invalid': formSubmitted && noteForm.controls['diagnosis'].invalid}"
+                    [disabled]="isEditMode && currentNoteStatus === 'completed'">
+                  @if (formSubmitted && noteForm.controls['diagnosis'].invalid) {
+                    <div class="text-sm text-red-500 mt-1">Diagnosis is required</div>
+                  }
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-secondary-700 mb-1">Frequency <span class="text-danger">*</span></label>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    placeholder="e.g., 2x per week"
+                    formControlName="frequency"
+                    [ngClass]="{'is-invalid': formSubmitted && noteForm.controls['frequency'].invalid}"
+                    [disabled]="isEditMode && currentNoteStatus === 'completed'">
+                  @if (formSubmitted && noteForm.controls['frequency'].invalid) {
+                    <div class="text-sm text-red-500 mt-1">Frequency is required</div>
+                  }
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-secondary-700 mb-1">Duration <span class="text-danger">*</span></label>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    placeholder="e.g., 60 minutes"
+                    formControlName="duration"
+                    [ngClass]="{'is-invalid': formSubmitted && noteForm.controls['duration'].invalid}"
+                    [disabled]="isEditMode && currentNoteStatus === 'completed'">
+                  @if (formSubmitted && noteForm.controls['duration'].invalid) {
+                    <div class="text-sm text-red-500 mt-1">Duration is required</div>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- NOTE CONTENT TAB -->
+        <div *ngIf="selectedTab === 'note-content'" class="space-y-6">
+          <h2 class="text-xl font-bold text-secondary-800">{{ getNoteTypeLabel(noteType) }} Content</h2>
+          
+          <!-- Dynamic content based on note type -->
+          @switch (noteType) {
+            @case ('soap') {
+              <div class="space-y-6">
+                <div class="bg-secondary-50 p-4 rounded-lg border border-secondary-200">
+                  <h3 class="text-lg font-semibold text-secondary-700 mb-4">SOAP Documentation</h3>
+                  
+                  <div class="space-y-6">
+                    <div>
+                      <label class="block text-sm font-medium text-secondary-700 mb-1">Subjective <span class="text-danger">*</span></label>
+                      <textarea 
+                        class="form-textarea" 
+                        rows="4"
+                        placeholder="Patient's reported symptoms, concerns, and experiences..."
+                        formControlName="subjective"
+                        [ngClass]="{'is-invalid': formSubmitted && noteForm.controls['subjective'].invalid}"
+                        [disabled]="isEditMode && currentNoteStatus === 'completed'"></textarea>
+                      <p class="text-xs text-secondary-500 mt-1">Document what the patient reports about their condition</p>
+                      @if (formSubmitted && noteForm.controls['subjective'].invalid) {
+                        <div class="text-sm text-red-500 mt-1">Subjective section is required</div>
+                      }
+                    </div>
+
+                    <div>
+                      <label class="block text-sm font-medium text-secondary-700 mb-1">Objective <span class="text-danger">*</span></label>
+                      <textarea 
+                        class="form-textarea" 
+                        rows="4"
+                        placeholder="Therapist's observations, measurements, and clinical findings..."
+                        formControlName="objective"
+                        [ngClass]="{'is-invalid': formSubmitted && noteForm.controls['objective'].invalid}"
+                        [disabled]="isEditMode && currentNoteStatus === 'completed'"></textarea>
+                      <p class="text-xs text-secondary-500 mt-1">Document observable and measurable findings</p>
+                      @if (formSubmitted && noteForm.controls['objective'].invalid) {
+                        <div class="text-sm text-red-500 mt-1">Objective section is required</div>
+                      }
+                    </div>
+
+                    <div>
+                      <label class="block text-sm font-medium text-secondary-700 mb-1">Assessment <span class="text-danger">*</span></label>
+                      <textarea 
+                        class="form-textarea" 
+                        rows="4"
+                        placeholder="Clinical interpretation, diagnosis, and progress evaluation..."
+                        formControlName="assessment"
+                        [ngClass]="{'is-invalid': formSubmitted && noteForm.controls['assessment'].invalid}"
+                        [disabled]="isEditMode && currentNoteStatus === 'completed'"></textarea>
+                      <p class="text-xs text-secondary-500 mt-1">Professional interpretation and clinical judgment</p>
+                      @if (formSubmitted && noteForm.controls['assessment'].invalid) {
+                        <div class="text-sm text-red-500 mt-1">Assessment section is required</div>
+                      }
+                    </div>
+
+                    <div>
+                      <label class="block text-sm font-medium text-secondary-700 mb-1">Plan <span class="text-danger">*</span></label>
+                      <textarea 
+                        class="form-textarea" 
+                        rows="4"
+                        placeholder="Treatment plan, interventions, and next steps..."
+                        formControlName="plan"
+                        [ngClass]="{'is-invalid': formSubmitted && noteForm.controls['plan'].invalid}"
+                        [disabled]="isEditMode && currentNoteStatus === 'completed'"></textarea>
+                      <p class="text-xs text-secondary-500 mt-1">Outline the treatment plan and next steps</p>
+                      @if (formSubmitted && noteForm.controls['plan'].invalid) {
+                        <div class="text-sm text-red-500 mt-1">Plan section is required</div>
+                      }
+                    </div>
+
+                    <div>
+                      <label class="block text-sm font-medium text-secondary-700 mb-1">Additional Notes</label>
+                      <textarea 
+                        class="form-textarea" 
+                        rows="3"
+                        placeholder="Any additional notes or observations..."
+                        formControlName="additionalNotes"
+                        [disabled]="isEditMode && currentNoteStatus === 'completed'"></textarea>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
+
+            @case ('progress') {
+              <div class="space-y-6">
+                <div class="bg-secondary-50 p-4 rounded-lg border border-secondary-200">
+                  <h3 class="text-lg font-semibold text-secondary-700 mb-4">Progress Documentation</h3>
+
+                  <div class="space-y-6">
+                    <div>
+                      <label class="block text-sm font-medium text-secondary-700 mb-1">Progress Toward Goals <span class="text-danger">*</span></label>
+                      <textarea 
+                        class="form-textarea" 
+                        rows="4"
+                        placeholder="Describe progress toward treatment goals..."
+                        formControlName="progressTowardGoals"
+                        [ngClass]="{'is-invalid': formSubmitted && noteForm.controls['progressTowardGoals'].invalid}"
+                        [disabled]="isEditMode && currentNoteStatus === 'completed'"></textarea>
+                      <p class="text-xs text-secondary-500 mt-1">Document measurable progress</p>
+                      @if (formSubmitted && noteForm.controls['progressTowardGoals'].invalid) {
+                        <div class="text-sm text-red-500 mt-1">Progress toward goals is required</div>
+                      }
+                    </div>
+
+                    <div>
+                      <label class="block text-sm font-medium text-secondary-700 mb-1">Current Status <span class="text-danger">*</span></label>
+                      <textarea 
+                        class="form-textarea" 
+                        rows="3"
+                        placeholder="Patient's current clinical status..."
+                        formControlName="currentStatus"
+                        [ngClass]="{'is-invalid': formSubmitted && noteForm.controls['currentStatus'].invalid}"
+                        [disabled]="isEditMode && currentNoteStatus === 'completed'"></textarea>
+                      <p class="text-xs text-secondary-500 mt-1">Overall functioning and symptom status</p>
+                      @if (formSubmitted && noteForm.controls['currentStatus'].invalid) {
+                        <div class="text-sm text-red-500 mt-1">Current status is required</div>
+                      }
+                    </div>
+
+                    <div>
+                      <label class="block text-sm font-medium text-secondary-700 mb-1">Interventions Used <span class="text-danger">*</span></label>
+                      <textarea 
+                        class="form-textarea" 
+                        rows="3"
+                        placeholder="List interventions used in this session..."
+                        formControlName="interventionsUsed"
+                        [ngClass]="{'is-invalid': formSubmitted && noteForm.controls['interventionsUsed'].invalid}"
+                        [disabled]="isEditMode && currentNoteStatus === 'completed'"></textarea>
+                      <p class="text-xs text-secondary-500 mt-1">Therapeutic techniques and approaches</p>
+                      @if (formSubmitted && noteForm.controls['interventionsUsed'].invalid) {
+                        <div class="text-sm text-red-500 mt-1">Interventions used is required</div>
+                      }
+                    </div>
+
+                    <div>
+                      <label class="block text-sm font-medium text-secondary-700 mb-1">Patient Response <span class="text-danger">*</span></label>
+                      <textarea 
+                        class="form-textarea" 
+                        rows="3"
+                        placeholder="How did the patient respond to interventions?"
+                        formControlName="patientResponse"
+                        [ngClass]="{'is-invalid': formSubmitted && noteForm.controls['patientResponse'].invalid}"
+                        [disabled]="isEditMode && currentNoteStatus === 'completed'"></textarea>
+                      <p class="text-xs text-secondary-500 mt-1">Patient's engagement and response</p>
+                      @if (formSubmitted && noteForm.controls['patientResponse'].invalid) {
+                        <div class="text-sm text-red-500 mt-1">Patient response is required</div>
+                      }
+                    </div>
+
+                    <div>
+                      <label class="block text-sm font-medium text-secondary-700 mb-1">Barriers to Progress</label>
+                      <textarea 
+                        class="form-textarea" 
+                        rows="3"
+                        placeholder="Any barriers or challenges to progress..."
+                        formControlName="barriers"
+                        [disabled]="isEditMode && currentNoteStatus === 'completed'"></textarea>
+                      <p class="text-xs text-secondary-500 mt-1">Identify obstacles to treatment progress</p>
+                    </div>
+
+                    <div>
+                      <label class="block text-sm font-medium text-secondary-700 mb-1">Plan for Next Session <span class="text-danger">*</span></label>
+                      <textarea 
+                        class="form-textarea" 
+                        rows="3"
+                        placeholder="Plan and focus areas for next session..."
+                        formControlName="planForNextSession"
+                        [ngClass]="{'is-invalid': formSubmitted && noteForm.controls['planForNextSession'].invalid}"
+                        [disabled]="isEditMode && currentNoteStatus === 'completed'"></textarea>
+                      <p class="text-xs text-secondary-500 mt-1">Outline next steps and session plan</p>
+                      @if (formSubmitted && noteForm.controls['planForNextSession'].invalid) {
+                        <div class="text-sm text-red-500 mt-1">Plan for next session is required</div>
+                      }
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
+
+            @case ('treatment') {
+              <div class="space-y-6">
+                <div class="bg-secondary-50 p-4 rounded-lg border border-secondary-200">
+                  <h3 class="text-lg font-semibold text-secondary-700 mb-4">Treatment Details</h3>
+
+                  <div class="space-y-6">
+                    <div>
+                      <label class="block text-sm font-medium text-secondary-700 mb-1">Problem Statement <span class="text-danger">*</span></label>
+                      <textarea 
+                        class="form-textarea" 
+                        rows="3"
+                        placeholder="Describe the presenting problem..."
+                        formControlName="problemStatement"
+                        [ngClass]="{'is-invalid': formSubmitted && noteForm.controls['problemStatement'].invalid}"
+                        [disabled]="isEditMode && currentNoteStatus === 'completed'"></textarea>
+                      @if (formSubmitted && noteForm.controls['problemStatement'].invalid) {
+                        <div class="text-sm text-red-500 mt-1">Problem statement is required</div>
+                      }
+                    </div>
+
+                    <div>
+                      <label class="block text-sm font-medium text-secondary-700 mb-1">Treatment Goals <span class="text-danger">*</span></label>
+                      <textarea 
+                        class="form-textarea" 
+                        rows="4"
+                        placeholder="List the treatment goals..."
+                        formControlName="goals"
+                        [ngClass]="{'is-invalid': formSubmitted && noteForm.controls['goals'].invalid}"
+                        [disabled]="isEditMode && currentNoteStatus === 'completed'"></textarea>
+                      <p class="text-xs text-secondary-500 mt-1">Define clear, measurable treatment goals</p>
+                      @if (formSubmitted && noteForm.controls['goals'].invalid) {
+                        <div class="text-sm text-red-500 mt-1">Goals are required</div>
+                      }
+                    </div>
+
+                    <div>
+                      <label class="block text-sm font-medium text-secondary-700 mb-1">Objectives <span class="text-danger">*</span></label>
+                      <textarea 
+                        class="form-textarea" 
+                        rows="4"
+                        placeholder="List specific, measurable objectives..."
+                        formControlName="objectives"
+                        [ngClass]="{'is-invalid': formSubmitted && noteForm.controls['objectives'].invalid}"
+                        [disabled]="isEditMode && currentNoteStatus === 'completed'"></textarea>
+                      <p class="text-xs text-secondary-500 mt-1">Break down goals into specific, actionable objectives</p>
+                      @if (formSubmitted && noteForm.controls['objectives'].invalid) {
+                        <div class="text-sm text-red-500 mt-1">Objectives are required</div>
+                      }
+                    </div>
+
+                    <div>
+                      <label class="block text-sm font-medium text-secondary-700 mb-1">Interventions <span class="text-danger">*</span></label>
+                      <textarea 
+                        class="form-textarea" 
+                        rows="4"
+                        placeholder="Describe therapeutic interventions and techniques..."
+                        formControlName="interventions"
+                        [ngClass]="{'is-invalid': formSubmitted && noteForm.controls['interventions'].invalid}"
+                        [disabled]="isEditMode && currentNoteStatus === 'completed'"></textarea>
+                      <p class="text-xs text-secondary-500 mt-1">Detail the therapeutic approaches and techniques</p>
+                      @if (formSubmitted && noteForm.controls['interventions'].invalid) {
+                        <div class="text-sm text-red-500 mt-1">Interventions are required</div>
+                      }
+                    </div>
+
+                    <div>
+                      <label class="block text-sm font-medium text-secondary-700 mb-1">Progress Measurement <span class="text-danger">*</span></label>
+                      <textarea 
+                        class="form-textarea" 
+                        rows="3"
+                        placeholder="How will progress be measured and evaluated?"
+                        formControlName="progressMeasurement"
+                        [ngClass]="{'is-invalid': formSubmitted && noteForm.controls['progressMeasurement'].invalid}"
+                        [disabled]="isEditMode && currentNoteStatus === 'completed'"></textarea>
+                      <p class="text-xs text-secondary-500 mt-1">Define how progress will be tracked and measured</p>
+                      @if (formSubmitted && noteForm.controls['progressMeasurement'].invalid) {
+                        <div class="text-sm text-red-500 mt-1">Progress measurement is required</div>
+                      }
+                    </div>
+
+                    <div>
+                      <label class="block text-sm font-medium text-secondary-700 mb-1">Additional Notes</label>
+                      <textarea 
+                        class="form-textarea" 
+                        rows="3"
+                        placeholder="Any additional notes or observations..."
+                        formControlName="notes"
+                        [disabled]="isEditMode && currentNoteStatus === 'completed'"></textarea>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
+          }
+        </div>
+
+        <!-- REVIEW TAB -->
+        <div *ngIf="selectedTab === 'review'" class="space-y-6">
+          <h2 class="text-xl font-bold text-secondary-800">Review {{ getNoteTypeLabel(noteType) }}</h2>
+          
+          <div class="bg-secondary-50 p-4 rounded-lg border border-secondary-200">
+            <h3 class="text-lg font-semibold text-secondary-700 mb-4">Session Summary</h3>
+            
+            <div class="space-y-3">
+              <div class="flex justify-between">
+                <span class="text-secondary-600">Note Type:</span>
+                <span class="font-medium">{{ getNoteTypeLabel(noteForm.get('noteType')?.value) }}</span>
+              </div>
+              
+              <div class="flex justify-between">
+                <span class="text-secondary-600">Patient:</span>
+                <span class="font-medium">{{ getSelectedPatientDisplayName() }}</span>
+              </div>
+              
+              <div class="flex justify-between">
+                <span class="text-secondary-600">Therapist:</span>
+                <span class="font-medium">{{ getSelectedTherapistDisplayName() }}</span>
+              </div>
+              
+              <div class="flex justify-between">
+                <span class="text-secondary-600">
+                  {{ noteType === 'treatment' ? 'Start Date:' : 'Session Date:' }}
+                </span>
+                <span class="font-medium">{{ noteForm.get('sessionDate')?.value || 'Not set' }}</span>
+              </div>
+              
+              @if (noteForm.get('nextSessionDate')?.value) {
+                <div class="flex justify-between">
+                  <span class="text-secondary-600">
+                    {{ noteType === 'treatment' ? 'End Date:' : 'Next Session:' }}
+                  </span>
+                  <span class="font-medium">{{ noteForm.get('nextSessionDate')?.value }}</span>
+                </div>
+              }
+
+              @if (noteForm.get('sessionDurationMinutes')?.value && (noteType === 'soap' || noteType === 'progress')) {
+                <div class="flex justify-between">
+                  <span class="text-secondary-600">Session Duration:</span>
+                  <span class="font-medium">{{ noteForm.get('sessionDurationMinutes')?.value }} minutes</span>
+                </div>
+              }
+
+              @if (isEditMode) {
+                <div class="flex justify-between">
+                  <span class="text-secondary-600">Status:</span>
+                  <span class="font-medium" [ngClass]="currentNoteStatus === 'draft' ? 'text-yellow-600' : 'text-green-600'">
+                    {{ currentNoteStatus === 'draft' ? 'Draft' : 'Completed' }}
+                  </span>
+                </div>
+              }
+            </div>
+          </div>
+          
+          <div class="bg-white p-4 rounded-lg border border-secondary-200">
+            <h3 class="text-lg font-semibold text-secondary-700 mb-4">Content Preview</h3>
+            
+            @switch (noteType) {
+              @case ('soap') {
+                <div class="space-y-4">
+                  <div>
+                    <h4 class="font-medium text-secondary-600">Subjective:</h4>
+                    <p class="text-secondary-700 whitespace-pre-wrap">{{ noteForm.get('subjective')?.value || 'No content' }}</p>
+                  </div>
+                  
+                  <div>
+                    <h4 class="font-medium text-secondary-600">Objective:</h4>
+                    <p class="text-secondary-700 whitespace-pre-wrap">{{ noteForm.get('objective')?.value || 'No content' }}</p>
+                  </div>
+                  
+                  <div>
+                    <h4 class="font-medium text-secondary-600">Assessment:</h4>
+                    <p class="text-secondary-700 whitespace-pre-wrap">{{ noteForm.get('assessment')?.value || 'No content' }}</p>
+                  </div>
+                  
+                  <div>
+                    <h4 class="font-medium text-secondary-600">Plan:</h4>
+                    <p class="text-secondary-700 whitespace-pre-wrap">{{ noteForm.get('plan')?.value || 'No content' }}</p>
+                  </div>
+                </div>
+              }
+
+              @case ('progress') {
+                <div class="space-y-4">
+                  <div>
+                    <h4 class="font-medium text-secondary-600">Progress Toward Goals:</h4>
+                    <p class="text-secondary-700 whitespace-pre-wrap">{{ noteForm.get('progressTowardGoals')?.value || 'No content' }}</p>
+                  </div>
+                  
+                  <div>
+                    <h4 class="font-medium text-secondary-600">Current Status:</h4>
+                    <p class="text-secondary-700 whitespace-pre-wrap">{{ noteForm.get('currentStatus')?.value || 'No content' }}</p>
+                  </div>
+                  
+                  <div>
+                    <h4 class="font-medium text-secondary-600">Interventions Used:</h4>
+                    <p class="text-secondary-700 whitespace-pre-wrap">{{ noteForm.get('interventionsUsed')?.value || 'No content' }}</p>
+                  </div>
+                  
+                  <div>
+                    <h4 class="font-medium text-secondary-600">Plan for Next Session:</h4>
+                    <p class="text-secondary-700 whitespace-pre-wrap">{{ noteForm.get('planForNextSession')?.value || 'No content' }}</p>
+                  </div>
+                </div>
+              }
+
+              @case ('treatment') {
+                <div class="space-y-4">
+                  <div>
+                    <h4 class="font-medium text-secondary-600">Diagnosis:</h4>
+                    <p class="text-secondary-700 whitespace-pre-wrap">{{ noteForm.get('diagnosis')?.value || 'No content' }}</p>
+                  </div>
+                  
+                  <div>
+                    <h4 class="font-medium text-secondary-600">Treatment Goals:</h4>
+                    <p class="text-secondary-700 whitespace-pre-wrap">{{ noteForm.get('goals')?.value || 'No content' }}</p>
+                  </div>
+                  
+                  <div>
+                    <h4 class="font-medium text-secondary-600">Objectives:</h4>
+                    <p class="text-secondary-700 whitespace-pre-wrap">{{ noteForm.get('objectives')?.value || 'No content' }}</p>
+                  </div>
+                  
+                  <div>
+                    <h4 class="font-medium text-secondary-600">Interventions:</h4>
+                    <p class="text-secondary-700 whitespace-pre-wrap">{{ noteForm.get('interventions')?.value || 'No content' }}</p>
+                  </div>
+                </div>
+              }
+            }
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex flex-col-reverse md:flex-row justify-between px-6 md:px-8 pb-6 space-y-4 space-y-reverse md:space-y-0">
+      <button type="button" class="custom-button"
+              *ngIf="tabs.indexOf(selectedTab) > 0" (click)="onBack()">
+        Back
+      </button>
+      
+      <div class="flex space-x-4">
+        <!-- Show Save Draft only for draft notes or new notes -->
+        @if (currentNoteStatus === 'draft' || !isEditMode) {
+          <button type="button" class="custom-button-secondary" 
+                  (click)="saveDraft()" [disabled]="isLoading">
+            @if (isLoading) {
+              <div class="spinner-small"></div>
+            }
+            {{ getDraftButtonText() }}
+          </button>
+        }
+        
+        <button [type]="selectedTab === 'review' ? 'submit' : 'button'"
+                class="custom-button"
+                (click)="onNext()"
+                [disabled]="isEditMode && currentNoteStatus === 'completed'">
+          {{ selectedTab === 'review' ? getSubmitButtonText() : 'Next' }}
+        </button>
+      </div>
+    </div>
+  }
+</div>

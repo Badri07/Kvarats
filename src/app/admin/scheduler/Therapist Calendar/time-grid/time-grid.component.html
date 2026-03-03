@@ -1,0 +1,15 @@
+<div class="relative">
+  <div
+    *ngFor="let slot of timeSlots"
+    class="relative h-[60px] border-b flex items-center"
+    [class.border-gray-300]="slot.minute === 0"
+    [class.border-gray-100]="slot.minute === 30"
+  >
+    <div
+      *ngIf="showLabels"
+      class="w-full text-xs text-gray-500 font-medium pr-2 text-right leading-none"
+    >
+      {{ slot.display }}
+    </div>
+  </div>
+</div>

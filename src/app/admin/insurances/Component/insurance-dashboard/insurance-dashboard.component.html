@@ -1,0 +1,399 @@
+<!-- Insurance Management Dashboard -->
+<div class="insurance-dashboard">
+  <div class="dashboard-header">
+    <div class="header-content">
+      <h1 class="dashboard-title">Insurance Management</h1>
+      <p class="dashboard-subtitle">Handle eligibility checks, claims, and superbills for US healthcare</p>
+    </div>
+    <div class="header-actions">
+      <app-button variant="outline" (click)="runEligibilityCheck()">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        Check Eligibility
+      </app-button>
+      <app-button variant="primary" (click)="createSuperbill()">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+        </svg>
+        Create Superbill
+      </app-button>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-state">
+      <div class="loading-spinner"></div>
+      <p>Loading insurance data...</p>
+    </div>
+  } @else {
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+       <div class="flex items-center justify-center">
+         <div class="stat-icon stat-icon-blue">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+          </svg>
+        </div>
+       </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ activeInsurances() }}</div>
+          <div class="stat-label">Active Insurance Plans</div>
+          <div class="stat-change positive">{{ totalInsurances() }} total</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="flex items-center justify-center">
+        <div class="stat-icon stat-icon-green">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+          </svg>
+        </div>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ formatCurrency(claimStats()?.paidAmount || 0) }}</div>
+          <div class="stat-label">Total Paid Claims</div>
+          <div class="stat-change positive">{{ claimStats()?.paidClaims || 0 }} approved</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+               <div class="flex items-center justify-center">
+        <div class="stat-icon stat-icon-yellow">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ pendingClaims() }}</div>
+          <div class="stat-label">Pending Claims</div>
+          <div class="stat-change neutral">{{ claimStats()?.averageProcessingTime || 0 }} days avg</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+                       <div class="flex items-center justify-center">
+        <div class="stat-icon stat-icon-purple">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+          </svg>
+        </div>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ superbills().length }}</div>
+          <div class="stat-label">Superbills Created</div>
+          <div class="stat-change positive">{{ finalizedSuperbillsCount() }} finalized</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="content-grid">
+      <!-- Quick Actions -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Quick Actions</h3>
+        </div>
+        <div class="card-content">
+          <div class="quick-actions">
+            <button class="quick-action" (click)="runEligibilityCheck()">
+              <div class="action-icon">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </div>
+              <div class="action-content">
+                <span class="action-title">Eligibility Check</span>
+                <span class="action-description">Verify patient benefits</span>
+              </div>
+            </button>
+            
+            <button class="quick-action" (click)="createClaim()">
+              <div class="action-icon">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                </svg>
+              </div>
+              <div class="action-content">
+                <span class="action-title">Submit Claim</span>
+                <span class="action-description">Create insurance claim</span>
+              </div>
+            </button>
+            
+            <button class="quick-action" (click)="createSuperbill()">
+              <div class="action-icon">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                </svg>
+              </div>
+              <div class="action-content">
+                <span class="action-title">Create Superbill</span>
+                <span class="action-description">Generate billing document</span>
+              </div>
+            </button>
+
+           <!-- <button class="quick-action" (click)="createSalesReceipt()">
+          <div class="action-icon">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 17h6m-6-4h6m-7 8h8a2 2 0 002-2V5a2 2 0 
+                    00-2-2H9l-2 2H5a2 2 0 00-2 2v12a2 2 0 002 2h2" />
+          </svg>
+          </div>
+          <div class="action-content">
+          <span class="action-title">Create Sales Receipt</span>
+          <span class="action-description">Record customer payment instantly</span>
+          </div>
+           </button> -->
+            
+            <button class="quick-action" (click)="createInsurance()">
+              <div class="action-icon">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+              </div>
+              <div class="action-content">
+                <span class="action-title">Add Insurance</span>
+                <span class="action-description">Register new plan</span>
+              </div>
+            </button>
+            
+            <button class="quick-action" (click)="navigateToERAs()">
+              <div class="action-icon">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+              </div>
+              <div class="action-content">
+                <span class="action-title">Process ERA</span>
+                <span class="action-description">Electronic remittance</span>
+              </div>
+            </button>
+            
+            <button class="quick-action" (click)="navigateToEOBs()">
+              <div class="action-icon">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                </svg>
+              </div>
+              <div class="action-content">
+                <span class="action-title">View EOBs</span>
+                <span class="action-description">Explanation of benefits</span>
+              </div>
+            </button>
+               <!-- <button class="quick-action" (click)="navigateToClaims()">
+              <div class="action-icon">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                </svg>
+              </div>
+              <div class="action-content">
+                <span class="action-title">View Claims</span>
+                <span class="action-description">Explanation of claims</span>
+              </div>
+            </button> -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Claims -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Recent Claims</h3>
+          <button class="card-action" (click)="navigateToClaims()">View All</button>
+        </div>
+        <div class="card-content">
+          <div class="claims-list">
+            @for (claim of claims().slice(0, 5); track claim.id) {
+              <div class="claim-item" (click)="viewClaim(claim.id)">
+                <div class="claim-info">
+                  <div class="claim-number">{{ claim.claimNumber || 'Pending Assignment' }}</div>
+                  <div class="claim-patient">{{ getPatientName(claim.patientId) }}</div>
+                  <div class="claim-date">{{ claim.serviceDate | date:'MMM d, y' }}</div>
+                </div>
+                <div class="claim-details">
+                  <div class="claim-amount">{{ formatCurrency(claim.totalAmount) }}</div>
+                  <div class="claim-status" [ngClass]="getStatusColor(claim.status)">
+                    {{ claim.status | titlecase }}
+                  </div>
+                </div>
+              </div>
+            } @empty {
+              <div class="empty-state">
+                <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                </svg>
+                <h4 class="empty-title">No claims submitted</h4>
+                <p class="empty-description">Start by creating your first insurance claim.</p>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Superbills -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Recent Superbills</h3>
+          <button class="card-action" (click)="navigateToSuperbills()">View All</button>
+        </div>
+        <div class="card-content">
+          <div class="superbills-list">
+            @for (superbill of recentSuperbills(); track superbill.id) {
+              <div class="superbill-item" (click)="viewSuperbill(superbill.id)">
+                <div class="superbill-info">
+                  <div class="superbill-patient">{{ getPatientName(superbill.patientId) }}</div>
+                  <div class="superbill-date">{{ superbill.serviceDate | date:'MMM d, y' }}</div>
+                  <div class="superbill-services">{{ superbill.services.length }} service(s)</div>
+                </div>
+                <div class="superbill-details">
+                  <div class="superbill-amount">{{ formatCurrency(superbill.totalAmount) }}</div>
+                  <div class="superbill-status" [ngClass]="getStatusColor(superbill.status)">
+                    {{ superbill.status | titlecase }}
+                  </div>
+                </div>
+              </div>
+            } @empty {
+              <div class="empty-state">
+                <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                </svg>
+                <h4 class="empty-title">No superbills created</h4>
+                <p class="empty-description">Create superbills for patient billing.</p>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Insurance Plans -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Insurance Plans</h3>
+          <button class="card-action" (click)="navigateToInsurances()">Manage All</button>
+        </div>
+        <div class="card-content">
+          <div class="insurance-list">
+            @for (insurance of insurances().slice(0, 5); track insurance.id) {
+              <div class="insurance-item" (click)="viewInsurance(insurance.id)">
+                <div class="insurance-info">
+                  <div class="insurance-provider">{{ insurance.provider }}</div>
+                  <div class="insurance-patient">{{ getPatientName(insurance.patientId) }}</div>
+                  <div class="insurance-plan-details">
+                    {{ insurance.planType | uppercase }} • 
+                    @if (insurance.copay) {
+                      ${{ insurance.copay }} copay
+                    } @else {
+                      No copay
+                    }
+                  </div>
+                  @if (insurance.isPrimary) {
+                    <span class="primary-badge">Primary</span>
+                  }
+                </div>
+                <div class="insurance-details">
+                  <div class="insurance-network">{{ insurance.networkStatus | titlecase }}</div>
+                  <div class="insurance-status" [ngClass]="getStatusColor(insurance.isActive ? 'active' : 'inactive')">
+                    {{ insurance.isActive ? 'Active' : 'Inactive' }}
+                  </div>
+                </div>
+              </div>
+            } @empty {
+              <div class="empty-state">
+                <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                </svg>
+                <h4 class="empty-title">No insurance plans</h4>
+                <p class="empty-description">Add insurance plans for your patients.</p>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Eligibility Checks -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Recent Eligibility Checks</h3>
+          <button class="card-action" (click)="navigateToEligibility()">View All</button>
+        </div>
+        <div class="card-content">
+          <div class="eligibility-list">
+            @for (check of eligibilityChecks().slice(0, 5); track check.id) {
+              <div class="eligibility-item">
+                <div class="eligibility-info">
+                  <div class="eligibility-patient">{{ getPatientName(check.patientId) }}</div>
+                  <div class="eligibility-date">{{ check.checkDate | date:'MMM d, y' }}</div>
+                  <div class="eligibility-benefits">
+                    @if (check.visitLimit) {
+                      {{ check.visitsUsed || 0 }}/{{ check.visitLimit }} visits used
+                    } @else {
+                      Unlimited visits
+                    }
+                  </div>
+                </div>
+                <div class="eligibility-details">
+                  <div class="eligibility-status" [ngClass]="getStatusColor(check.eligibilityStatus)">
+                    {{ check.eligibilityStatus | titlecase }}
+                  </div>
+                  @if (check.copay) {
+                    <div class="eligibility-copay">${{ check.copay }} copay</div>
+                  }
+                </div>
+              </div>
+            } @empty {
+              <div class="empty-state">
+                <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <h4 class="empty-title">No eligibility checks</h4>
+                <p class="empty-description">Run eligibility checks to verify benefits.</p>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Claim Statistics -->
+      @if (claimStats()) {
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Claim Performance</h3>
+          </div>
+          <div class="card-content">
+            <div class="performance-stats">
+              <div class="performance-item">
+                <div class="performance-label">Approval Rate</div>
+                <div class="performance-value">{{ (100 - (claimStats()!.denialRate || 0)) | number:'1.1-1' }}%</div>
+                <div class="performance-bar">
+                  <div class="performance-fill" [style.width.%]="100 - (claimStats()!.denialRate || 0)"></div>
+                </div>
+              </div>
+              
+              <div class="performance-item">
+                <div class="performance-label">Average Processing</div>
+                <div class="performance-value">{{ claimStats()!.averageProcessingTime }} days</div>
+                <div class="performance-bar">
+                  <div class="performance-fill" [style.width.%]="Math.max(0, 100 - (claimStats()!.averageProcessingTime * 3))"></div>
+                </div>
+              </div>
+              
+              <div class="performance-item">
+                <div class="performance-label">Collection Rate</div>
+                <div class="performance-value">
+                  {{ claimStats()!.totalAmount > 0 ? ((claimStats()!.paidAmount / claimStats()!.totalAmount) * 100 | number:'1.1-1') : 0 }}%
+                </div>
+                <div class="performance-bar">
+                  <div class="performance-fill" [style.width.%]="claimStats()!.totalAmount > 0 ? (claimStats()!.paidAmount / claimStats()!.totalAmount) * 100 : 0"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

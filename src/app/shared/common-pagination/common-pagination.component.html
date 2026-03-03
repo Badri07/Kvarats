@@ -1,0 +1,28 @@
+<div class="content-wrapper">
+  <div class="table-or-list">
+    <ng-content></ng-content>
+  </div>
+
+  <div class="pagination-wrapper">
+    <div class="pagination">
+      <button class="page-btn" (click)="goToPrevious()" [disabled]="currentPage === 1">
+      <i class="fas fa-arrow-left"></i>
+      </button>
+
+      <ng-container *ngFor="let page of visiblePages">
+        <button 
+          *ngIf="page > 0"
+          class="page-btn"
+          [class.active]="page === currentPage"
+          (click)="goToPage(page)">
+          {{ page }}
+        </button>
+        <span *ngIf="page < 0" class="ellipsis">...</span>
+      </ng-container>
+
+      <button class="page-btn" (click)="goToNext()" [disabled]="currentPage === totalPages">
+       <i class="fas fa-arrow-right"></i>
+      </button>
+    </div>
+  </div>
+</div>

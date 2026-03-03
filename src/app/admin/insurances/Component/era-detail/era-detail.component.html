@@ -1,0 +1,186 @@
+<div class="era-detail-container">
+  @if (isLoading()) {
+    <div class="loading-state">
+      <div class="loading-spinner"></div>
+      <p>Loading ERA details...</p>
+    </div>
+  } @else if (era()) {
+    <!-- Header -->
+    <div class="detail-header">
+      <button type="button" class="back-button" (click)="goBack()">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+        Back to ERAs
+      </button>
+      
+      <div class="header-content">
+        <div class="era-info">
+          <h1 class="era-title">{{ era()!.payerName }}</h1>
+          <div class="era-meta">
+            <span class="era-check">Check #{{ era()!.checkNumber }}</span>
+            <span class="era-date">{{ era()!.checkDate | date:'mediumDate' }}</span>
+            <span class="era-status" [ngClass]="getStatusColor(era()!.status)">
+              {{ era()!.status | titlecase }}
+            </span>
+          </div>
+        </div>
+        
+        <div class="header-actions">
+          @if (canProcess()) {
+            <app-button 
+              variant="primary"
+              [loading]="isProcessing()"
+              (click)="processERA()">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              Process Payments
+            </app-button>
+          }
+          
+          @if (canReconcile()) {
+            <app-button 
+              variant="outline"
+              [loading]="isProcessing()"
+              (click)="reconcileERA()">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+              </svg>
+              Reconcile
+            </app-button>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- ERA Summary -->
+    <div class="era-summary">
+      <div class="summary-grid">
+        <div class="summary-item">
+          <div class="summary-label">Total Payment</div>
+          <div class="summary-value">{{ formatCurrency(era()!.totalPaymentAmount) }}</div>
+        </div>
+        <div class="summary-item">
+          <div class="summary-label">Payment Method</div>
+          <div class="summary-value">{{ era()!.paymentMethod }}</div>
+        </div>
+        <div class="summary-item">
+          <div class="summary-label">Trace Number</div>
+          <div class="summary-value">{{ era()!.traceNumber }}</div>
+        </div>
+        <div class="summary-item">
+          <div class="summary-label">Claims Count</div>
+          <div class="summary-value">{{ era()!.claims.length }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Claims List -->
+    <div class="claims-section">
+      <h2 class="section-title">Claims in this ERA</h2>
+      <div class="claims-list">
+        @for (claim of era()!.claims; track claim.id) {
+          <div class="claim-card">
+            <div class="claim-header">
+              <div class="claim-info">
+                <h3 class="claim-patient">{{ claim.patientName }}</h3>
+                <p class="claim-control">Control #{{ claim.patientControlNumber }}</p>
+                <p class="claim-service-date">Service: {{ claim.serviceDate | date:'MMM d, y' }}</p>
+              </div>
+              <div class="claim-status-section">
+                <div class="claim-status" [ngClass]="getClaimStatusColor(claim.claimStatus)">
+                  {{ claim.claimStatus | titlecase }}
+                </div>
+                <div class="claim-amount">{{ formatCurrency(claim.totalPaymentAmount) }}</div>
+              </div>
+            </div>
+
+            <div class="claim-details">
+              <div class="amounts-grid">
+                <div class="amount-item">
+                  <span class="amount-label">Charged:</span>
+                  <span class="amount-value">{{ formatCurrency(claim.totalChargeAmount) }}</span>
+                </div>
+                <div class="amount-item">
+                  <span class="amount-label">Paid:</span>
+                  <span class="amount-value paid">{{ formatCurrency(claim.totalPaymentAmount) }}</span>
+                </div>
+                <div class="amount-item">
+                  <span class="amount-label">Patient Responsibility:</span>
+                  <span class="amount-value responsibility">{{ formatCurrency(claim.totalPatientResponsibility) }}</span>
+                </div>
+              </div>
+
+              <!-- Services -->
+              <div class="services-section">
+                <h4 class="services-title">Services ({{ claim.services.length }})</h4>
+                <div class="services-list">
+                  @for (service of claim.services; track service.id) {
+                    <div class="service-item">
+                      <div class="service-info">
+                        <span class="service-code">{{ service.procedureCode }}</span>
+                        @if (service.modifiers && service.modifiers.length > 0) {
+                          <span class="service-modifiers">{{ service.modifiers.join(', ') }}</span>
+                        }
+                        <span class="service-units">{{ service.units }} unit(s)</span>
+                      </div>
+                      <div class="service-amounts">
+                        <div class="service-amount-item">
+                          <span class="service-amount-label">Charged:</span>
+                          <span class="service-amount-value">{{ formatCurrency(service.chargedAmount) }}</span>
+                        </div>
+                        <div class="service-amount-item">
+                          <span class="service-amount-label">Allowed:</span>
+                          <span class="service-amount-value">{{ formatCurrency(service.allowedAmount) }}</span>
+                        </div>
+                        <div class="service-amount-item">
+                          <span class="service-amount-label">Paid:</span>
+                          <span class="service-amount-value paid">{{ formatCurrency(service.paidAmount) }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <!-- Adjustments -->
+              @if (claim.adjustments.length > 0) {
+                <div class="adjustments-section">
+                  <h4 class="adjustments-title">Adjustments</h4>
+                  <div class="adjustments-list">
+                    @for (adjustment of claim.adjustments; track adjustment.id) {
+                      <div class="adjustment-item">
+                        <span class="adjustment-code">{{ adjustment.adjustmentCode }}</span>
+                        <span class="adjustment-reason">{{ adjustment.adjustmentReason }}</span>
+                        <span class="adjustment-amount">{{ formatCurrency(adjustment.adjustmentAmount) }}</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+
+              <!-- Remarks -->
+              @if (claim.remarks.length > 0) {
+                <div class="remarks-section">
+                  <h4 class="remarks-title">Remarks</h4>
+                  <div class="remarks-list">
+                    @for (remark of claim.remarks; track remark) {
+                      <div class="remark-item">{{ remark }}</div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  } @else {
+    <div class="error-state">
+      <h2>ERA Not Found</h2>
+      <p>The requested ERA could not be found.</p>
+      <app-button variant="primary" (click)="goBack()">Back to ERAs</app-button>
+    </div>
+  }
+</div>

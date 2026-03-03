@@ -20,7 +20,7 @@ export class PopupService {
   public loaderState$ = this.loaderSubject.asObservable();
 
   private appointmentDefaultsSubject = new BehaviorSubject<AppointmentDefaults | null>(null);
-  appointmentDefaults$ = this.appointmentDefaultsSubject.asObservable(); // ✅ Expose as observable
+  appointmentDefaults$ = this.appointmentDefaultsSubject.asObservable();
 
   show() {
     this.loaderSubject.next(true);

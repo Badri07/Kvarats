@@ -1,0 +1,80 @@
+<div class="flex flex-col h-full bg-white">
+  <div class="flex border-b border-gray-200 bg-white sticky top-0 z-20">
+    <div class="w-20 flex-shrink-0 border-r border-gray-200 flex items-center justify-center h-[72px]">
+      <div class="text-xs font-medium text-gray-500 uppercase">
+        Time
+      </div>
+    </div>
+    <div class="flex flex-1">
+      <div
+        *ngFor="let day of weekDays; let last = last"
+        class="flex-1 min-w-0 text-center flex flex-col items-center justify-center h-[72px] border-r border-gray-200"
+      >
+        <div class="text-xs font-medium text-gray-500 uppercase">
+          {{ day.toLocaleDateString('en-US', { weekday: 'short' }) }}
+        </div>
+        <div
+          class="text-lg font-semibold mt-1"
+          [class.text-orange-600]="isToday(day)"
+          [class.text-gray-900]="!isToday(day)"
+        >
+          {{ day.getDate() }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex-1 overflow-auto">
+    <div class="flex">
+      <div class="w-20 flex-shrink-0 border-r border-gray-200">
+        <app-time-grid [startHour]="startHour" [endHour]="endHour" [showLabels]="true"></app-time-grid>
+      </div>
+      <div class="flex flex-1">
+        <div
+          *ngFor="let day of weekDays; let last = last"
+          class="flex-1 min-w-0 relative border-r border-gray-200">
+          <app-time-grid [startHour]="startHour" [endHour]="endHour" [showLabels]="false"></app-time-grid>
+          <div class="absolute inset-0 pointer-events-none">
+            <div
+              *ngFor="let slot of timeSlots; let i = index"
+              class="h-[60px] pointer-events-auto transition-colors border-b border-transparent"
+              [class.bg-gray-100]="isSlotUnavailable(day, i)"
+              [class.cursor-not-allowed]="isSlotUnavailable(day, i)"
+              [class.cursor-pointer]="!isSlotUnavailable(day, i)"
+              [class.hover:bg-orange-50]="!isSlotUnavailable(day, i)"
+              (click)="onTimeSlotClick(day, i)"
+            ></div>
+          </div>
+          <div class="absolute inset-0 pointer-events-none px-1 pt-1">
+            <div
+              *ngFor="let event of getEventsForDay(day)"
+              class="pointer-events-auto absolute left-0 right-0"
+              [style.top.px]="getEventPosition(event).top"
+              [style.height.px]="getEventPosition(event).height > 28 ? getEventPosition(event).height - 2 : 28"
+              [style.z-index]="10"
+            >
+              <app-appointment-card
+                [event]="event"
+                (cardClick)="onEventClick(event)"
+              ></app-appointment-card>
+            </div>
+            <div
+              *ngIf="shouldShowIndicatorForDay(day)"
+              class="absolute left-0 right-0 pointer-events-none"
+              [style.top.px]="getCurrentTimeTop()"
+              style="z-index: 20;"
+            >
+              <div class="flex items-center">
+                <div class="w-2 h-2 bg-red-500 rounded-full -ml-1 flex-shrink-0"></div>
+                <div class="flex-1 h-0.5 bg-red-500"></div>
+              </div>
+              <div class="text-xs bg-red-500 text-white px-2 py-0.5 rounded absolute -left-1 -top-5 font-semibold shadow-lg whitespace-nowrap">
+                NOW: {{ getCurrentTimeString() }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

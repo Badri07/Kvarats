@@ -1,0 +1,225 @@
+.eligibility-container {
+  @apply p-6  mx-auto;
+}
+
+.eligibility-header {
+  @apply mb-8;
+}
+
+.back-button {
+  @apply flex items-center gap-2 text-gray-600 hover:text-gray-800 mb-6 transition-colors;
+}
+
+.header-content {
+  @apply text-center;
+}
+
+.eligibility-title {
+  @apply text-3xl font-bold text-gray-900 mb-2;
+}
+
+.eligibility-subtitle {
+  @apply text-gray-600;
+}
+
+.eligibility-content {
+  @apply space-y-6;
+}
+
+.check-form-card {
+  @apply bg-white rounded-2xl shadow-lg border border-primary-100 p-8;
+  box-shadow: 0 8px 24px rgba(255, 161, 87, 0.08);
+}
+
+.form-header {
+  @apply text-center mb-8;
+}
+
+.form-icon {
+  @apply w-16 h-16 bg-primary-100 text-primary-600 rounded-2xl flex items-center justify-center mx-auto mb-4;
+}
+
+.form-title {
+  @apply text-2xl font-bold text-gray-900 mb-2;
+}
+
+.form-description {
+  @apply text-gray-600;
+}
+
+.eligibility-form {
+  @apply space-y-6;
+}
+
+.form-group {
+  @apply space-y-2;
+}
+
+.form-label {
+  @apply block text-sm font-medium text-gray-700;
+}
+
+.form-select {
+  @apply block w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500 transition-all duration-300;
+  
+  &.error {
+    @apply border-red-300 focus:ring-red-500 focus:border-red-500;
+  }
+  
+  &:disabled {
+    @apply bg-gray-100 text-gray-500 cursor-not-allowed;
+  }
+}
+
+.form-error {
+  @apply text-sm text-red-600;
+}
+
+.form-info {
+  @apply text-sm text-blue-600;
+}
+
+.form-actions {
+  @apply pt-6;
+}
+
+.results-container {
+  @apply space-y-6;
+}
+
+.results-header {
+  @apply text-center bg-white rounded-2xl shadow-lg border border-primary-100 p-8;
+  box-shadow: 0 8px 24px rgba(255, 161, 87, 0.08);
+}
+
+.success-icon {
+  @apply w-16 h-16 bg-green-100 text-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4;
+}
+
+.results-title {
+  @apply text-2xl font-bold text-gray-900 mb-2;
+}
+
+.results-subtitle {
+  @apply text-gray-600 mb-6;
+}
+
+.new-check-btn {
+  @apply px-4 py-2 text-sm font-medium text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-colors;
+}
+
+.results-grid {
+  @apply grid grid-cols-1 lg:grid-cols-2 gap-6;
+}
+
+.result-card {
+  @apply bg-white rounded-2xl shadow-lg border border-primary-100 p-6;
+  box-shadow: 0 8px 24px rgba(255, 161, 87, 0.08);
+}
+
+.card-title {
+  @apply text-lg font-semibold text-gray-900 mb-4;
+}
+
+.status-info {
+  @apply space-y-4;
+}
+
+.status-badge {
+  @apply inline-block px-4 py-2 text-sm font-bold rounded-full;
+}
+
+.status-details {
+  @apply space-y-3;
+}
+
+.detail-item {
+  @apply flex justify-between items-center;
+}
+
+.detail-label {
+  @apply text-sm font-medium text-gray-600;
+}
+
+.detail-value {
+  @apply text-sm font-semibold text-gray-900;
+}
+
+.financial-grid {
+  @apply grid grid-cols-1 sm:grid-cols-2 gap-4;
+}
+
+.financial-item {
+  @apply text-center p-4 bg-gray-50 rounded-xl;
+}
+
+.financial-label {
+  @apply text-sm font-medium text-gray-600 mb-2;
+}
+
+.financial-value {
+  @apply text-lg font-bold text-gray-900;
+  
+  &.met {
+    @apply text-green-600;
+  }
+}
+
+.benefits-info {
+  @apply space-y-4;
+}
+
+.benefit-item {
+  @apply flex items-center gap-3;
+}
+
+.benefit-icon {
+  @apply flex-shrink-0;
+}
+
+.benefit-label {
+  @apply flex-1 text-sm font-medium text-gray-700;
+}
+
+.benefit-status {
+  @apply text-sm font-semibold;
+}
+
+.check-info {
+  @apply space-y-3;
+}
+
+.info-item {
+  @apply flex justify-between items-center;
+  
+  &.error {
+    @apply text-red-600;
+  }
+}
+
+.info-label {
+  @apply text-sm font-medium text-gray-600;
+}
+
+.info-value {
+  @apply text-sm font-semibold text-gray-900;
+}
+
+.results-actions {
+  @apply flex gap-4 justify-center;
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .results-grid {
+    @apply grid-cols-1;
+  }
+  
+  .financial-grid {
+    @apply grid-cols-1;
+  }
+  
+  .results-actions {
+    // @apply flex-col;
+  }
+}

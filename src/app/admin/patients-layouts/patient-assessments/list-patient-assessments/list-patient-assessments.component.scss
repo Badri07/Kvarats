@@ -1,0 +1,23 @@
+::ng-deep .custom-grid-theme .ag-header {
+  background-color: #3863A7 !important;
+  color: white;
+}
+
+::ng-deep .custom-grid-theme .ag-header-cell-label {
+  color: white;
+}
+
+::ng-deep .custom-grid-theme .ag-cell {
+  color: black;
+;
+}
+
+/* Add in your component's CSS or global styles */
+@keyframes slideUp {
+  0% { transform: translateY(30px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.35s ease-out;
+}

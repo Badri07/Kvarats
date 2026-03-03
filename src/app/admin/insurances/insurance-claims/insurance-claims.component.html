@@ -1,91 +1,213 @@
 
+<div class="bg-[#fdfbf9] min-h-screen font-sans">
+  <div class="p-6">
+    <!-- Page Header -->
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-800">Insurance Management</h1>
+        <p class="text-sm text-gray-500">Handle eligibility checks, claims, and superbills for US healthcare</p>
+      </div>
+      <div class="space-x-2">
+        <button class="px-4 py-2 rounded-md border text-sm text-gray-700 hover:bg-gray-100">Check Eligibility</button>
+        <button class="px-4 py-2 rounded-md bg-orange-300 text-white text-sm hover:bg-orange-400">Create Superbill</button>
+      </div>
+    </div>
 
-<div class="dashboard-container">
-<div class="container mx-auto p-1">
-<h4 class="text-2xl font-semibold  text-primary-border-color">Claims List</h4>
-
-
-<!-- 
-<div class="w-full flex justify-end">
-<div class="mb-2">
-    <div class="relative flex items-center">
-      <input
-        type="text"
-        id="searchInput"
-        class="w-full px-4 m-2 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-[#3863A7] focus:border-transparent"
-        [(ngModel)]="searchValue"
-        (input)="onQuickFilterChanged()"
-        placeholder="Search patients...">
-      <button
-        class="px-4 py-2 bg-gray-100 text-gray-600 border border-l-0 border-gray-300 rounded-r-lg hover:bg-[#3863A7] hover:text-white transition-colors"
-        *ngIf="searchValue"
-        (click)="searchValue=''; onQuickFilterChanged()">
-        Clear
-      </button>
+    <!-- Top Summary Cards -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+  <!-- Card 1 -->
+  <div class="bg-white rounded-xl p-4 shadow-sm">
+    <div class="flex items-center gap-3">
+      <div class="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
+        <!-- Users Icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-4-4h-1M9 20H4v-2a4 4 0 014-4h1m8-4a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+      </div>
+      <div>
+        <p class="text-2xl font-semibold">2</p>
+        <p class="text-sm text-gray-500">Active Insurance Plans</p>
+        <span class="text-xs text-gray-400">2 total</span>
+      </div>
     </div>
   </div>
 
-   </div>
-<ag-grid-angular
-    class="ag-theme-alpine custom-grid-theme"
-    style="width: 100%; height: 300px;"
-    [columnDefs]="columnDefs"
-    [rowData]="rowData"
-    [pagination]="true"
-   [paginationPageSize]="paginationPageSize"
-  [paginationPageSizeSelector]="paginationPageSizeSelector"
-    (gridReady)="onGridReady($event)"
-    [quickFilterText]="searchValue"
->
-</ag-grid-angular>
- -->
-
- <div class=" mt-1">
-   <div class="mt-4 rounded-xl bg-white">
-     <div class="flex gap-2 justify-between mb-3">
-      <div class="relative flex items-center">
-      <input
-        type="text"
-        id="searchInput"
-        class="w-full px-4 m-2 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-primary-border-color focus:border-transparent"
-        [(ngModel)]="searchValue"
-        (input)="onQuickFilterChanged()"
-        placeholder="Search patients...">
-      <button
-        class="px-4 py-2 bg-gray-100 text-gray-600 border border-l-0 border-gray-300 rounded-r-lg hover:bg-primary-border-color hover:text-white transition-colors"
-        *ngIf="searchValue"
-        (click)="searchValue=''; onQuickFilterChanged()">
-        Clear
-      </button>
+  <!-- Card 2 -->
+  <div class="bg-white rounded-xl p-4 shadow-sm">
+    <div class="flex items-center gap-3">
+      <div class="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center">
+        <!-- Dollar Icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 1.343-3 3v1c0 1.657 1.343 3 3 3s3-1.343 3-3v-1c0-1.657-1.343-3-3-3zM12 3v2m0 14v2" />
+        </svg>
+      </div>
+      <div>
+        <p class="text-2xl font-semibold">$96.00</p>
+        <p class="text-sm text-gray-500">Total Paid Claims</p>
+        <span class="text-xs text-green-600">1 approved</span>
+      </div>
     </div>
-    
- <button 
-  class="flex items-center gap-2 px-2.5 py-1 border border-green-600 text-green-600 rounded-md text-sm hover:bg-green-600 hover:text-white transition"
-  (click)="onExportClick()"
->
-  <i class="fas fa-file-excel text-sm"></i>
-  <span>Export Excel</span>
-</button>
-
-</div>
-
-  
-
-<ag-grid-angular
-  class="ag-theme-alpine ag-theme-custom"
-  [gridOptions]="gridOptions"
-  [rowData]="rowData"
-  [columnDefs]="columnDefs"
-  [defaultColDef]="defaultColDef"
-  [pagination]="true"
-  [paginationPageSize]="paginationPageSize"
-  style="width: 100%; height: 500px;">
-</ag-grid-angular>
-
-
-</div>
-
   </div>
 
+  <!-- Card 3 -->
+  <div class="bg-white rounded-xl p-4 shadow-sm">
+    <div class="flex items-center gap-3">
+      <div class="w-12 h-12 bg-yellow-50 rounded-lg flex items-center justify-center">
+        <!-- Clock Icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z" />
+        </svg>
+      </div>
+      <div>
+        <p class="text-2xl font-semibold">0</p>
+        <p class="text-sm text-gray-500">Pending Claims</p>
+        <span class="text-xs text-gray-400">14 days avg</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 4 -->
+  <div class="bg-white rounded-xl p-4 shadow-sm">
+    <div class="flex items-center gap-3">
+      <div class="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center">
+        <!-- Document Icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-6h13V7H9V3L4 8l5 5v-4h13v6H9z"/>
+        </svg>
+      </div>
+      <div>
+        <p class="text-2xl font-semibold">1</p>
+        <p class="text-sm text-gray-500">Superbills Created</p>
+        <span class="text-xs text-purple-600">1 finalized</span>
+      </div>
+    </div>
+  </div>
 </div>
+
+
+
+
+    <!-- Quick Actions (with header divider) -->
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
+      <div class="p-4 border-b border-gray-200">
+        <h2 class="text-lg font-semibold text-gray-800">Quick Actions</h2>
+      </div>
+      <div class="p-4">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <button class="border rounded-lg p-3 hover:bg-gray-50 text-sm text-gray-700">Eligibility Check</button>
+          <button class="border rounded-lg p-3 hover:bg-gray-50 text-sm text-gray-700">Submit Claim</button>
+          <button class="border rounded-lg p-3 hover:bg-gray-50 text-sm text-gray-700">Create Superbill</button>
+          <button class="border rounded-lg p-3 hover:bg-gray-50 text-sm text-gray-700">Add Insurance</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Middle Row -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <!-- Recent Claims -->
+      <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+        <div class="p-4 flex items-center justify-between border-b border-gray-200">
+          <h3 class="font-semibold text-gray-800">Recent Claims</h3>
+          <a href="#" class="text-sm text-orange-300">View All</a>
+        </div>
+        <div class="p-4">
+          <div class="border rounded-lg p-3">
+            <p class="font-medium text-gray-800">CLM-2025-001</p>
+            <p class="text-sm text-gray-500">Unknown Patient · Jan 15, 2025</p>
+            <p class="text-sm font-semibold text-green-600 mt-1">$150.00 · Paid</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Superbills -->
+      <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+        <div class="p-4 flex items-center justify-between border-b border-gray-200">
+          <h3 class="font-semibold text-gray-800">Recent Superbills</h3>
+          <a href="#" class="text-sm text-orange-300">View All</a>
+        </div>
+        <div class="p-4">
+          <div class="border rounded-lg p-3">
+            <p class="font-medium text-gray-800">Unknown Patient</p>
+            <p class="text-sm text-gray-500">Jan 15, 2025 · 1 service(s)</p>
+            <p class="text-sm font-semibold text-green-600 mt-1">$150.00 · Finalized</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Claim Performance -->
+      <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+        <div class="p-4 border-b border-gray-200">
+          <h3 class="font-semibold text-gray-800">Claim Performance</h3>
+        </div>
+        <div class="p-4">
+          <div class="mb-3">
+            <p class="text-sm text-gray-600">Approval Rate</p>
+            <div class="w-full bg-gray-100 rounded-full h-2 mt-1">
+              <div class="bg-orange-300 h-2 rounded-full" style="width:94.8%"></div>
+            </div>
+            <span class="text-xs text-gray-600">94.8%</span>
+          </div>
+          <div class="mb-3">
+            <p class="text-sm text-gray-600">Average Processing</p>
+            <div class="w-full bg-gray-100 rounded-full h-2 mt-1">
+              <div class="bg-orange-300 h-2 rounded-full" style="width:70%"></div>
+            </div>
+            <span class="text-xs text-gray-600">14 days</span>
+          </div>
+          <div>
+            <p class="text-sm text-gray-600">Collection Rate</p>
+            <div class="w-full bg-gray-100 rounded-full h-2 mt-1">
+              <div class="bg-orange-300 h-2 rounded-full" style="width:64%"></div>
+            </div>
+            <span class="text-xs text-gray-600">64.0%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Row -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+      <!-- Insurance Plans -->
+      <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+        <div class="p-4 flex items-center justify-between border-b border-gray-200">
+          <h3 class="font-semibold text-gray-800">Insurance Plans</h3>
+          <a href="#" class="text-sm text-orange-300">Manage All</a>
+        </div>
+        <div class="p-4 space-y-3">
+          <div class="border rounded-lg p-3 flex justify-between">
+            <div>
+              <p class="font-medium text-gray-800">Blue Cross Blue Shield</p>
+              <p class="text-xs text-gray-500">Unknown Patient · PPO - $25 copay</p>
+              <span class="text-xs bg-orange-100 text-orange-400 px-2 py-1 rounded">Primary</span>
+            </div>
+            <span class="text-xs bg-green-100 text-green-600 px-2 py-1 h-fit rounded">In-network · Active</span>
+          </div>
+          <div class="border rounded-lg p-3 flex justify-between">
+            <div>
+              <p class="font-medium text-gray-800">Aetna</p>
+              <p class="text-xs text-gray-500">Unknown Patient · HMO - $30 copay</p>
+              <span class="text-xs bg-orange-100 text-orange-400 px-2 py-1 rounded">Primary</span>
+            </div>
+            <span class="text-xs bg-green-100 text-green-600 px-2 py-1 h-fit rounded">In-network · Active</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Eligibility Checks -->
+      <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+        <div class="p-4 flex items-center justify-between border-b border-gray-200">
+          <h3 class="font-semibold text-gray-800">Recent Eligibility Checks</h3>
+          <a href="#" class="text-sm text-orange-300">View All</a>
+        </div>
+        <div class="p-8 flex flex-col items-center justify-center">
+          <svg class="w-10 h-10 text-gray-300 mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+          <p class="text-sm text-gray-600">No eligibility checks</p>
+          <p class="text-xs text-gray-400">Run eligibility checks to verify benefits.</p>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+

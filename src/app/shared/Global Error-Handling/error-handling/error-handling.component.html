@@ -1,0 +1,46 @@
+<!-- global-error-modal.component.html -->
+<div *ngIf="isVisible" 
+     class="fixed bottom-6 right-6 z-50 animate-slide-up">
+
+  <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full transform transition-all">
+    
+    <!-- Header -->
+    <div class="p-4 border-b border-gray-200">
+      <div class="flex items-center gap-3 text-orange-500">
+        <i class="fas fa-exclamation-circle text-xl"></i>
+        <h3 class="text-lg font-semibold text-orange-500">Send Error Report</h3>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="p-4">
+      <p class="text-gray-700 mb-2">We encountered the following issue:</p>
+      <p class="text-gray-900 font-medium mb-3">
+        "{{ errorInfo.message }}"
+      </p>
+
+      <div *ngIf="errorInfo.status" class="text-sm text-gray-600 mb-2">
+        Error Code: {{ errorInfo.status }}
+      </div>
+
+      <p class="text-sm text-gray-500">Would you like to send this error to our support team?</p>
+
+      <!-- Buttons -->
+      <div class="flex gap-3 mt-4">
+        <button 
+          (click)="closeErrorModal()"
+          class="flex-1 px-3 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition">
+          Cancel
+        </button>
+
+        <button 
+          (click)="sendErrorReport()"
+          class="flex-1 px-3 py-2 bg-orange-500 text-white rounded-lg font-medium ">
+          <i class="fas fa-paper-plane"></i>
+          Send Report
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>

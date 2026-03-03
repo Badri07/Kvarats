@@ -1,0 +1,100 @@
+:host {
+  display: block;
+}
+
+// Custom AG-Grid theme overrides
+.ag-theme-alpine {
+  --ag-header-height: 56px;
+  --ag-row-height: 72px;
+  --ag-border-color: #e5e7eb;
+  --ag-header-background-color: #f9fafb;
+  --ag-odd-row-background-color: #ffffff;
+  --ag-even-row-background-color: #fafafa;
+  --ag-row-hover-color: #fff7ed;
+  
+  .ag-header {
+    border-bottom: 2px solid #e5e7eb;
+  }
+  
+  .ag-header-cell {
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+  }
+  
+  .ag-row {
+    border-bottom: 1px solid #f3f4f6;
+    transition: background-color 0.2s ease;
+    
+    &:hover {
+      background-color: #fff7ed !important;
+    }
+  }
+  
+  .ag-cell {
+    padding: 0 1rem;
+    display: flex;
+    align-items: center;
+  }
+  
+  // Remove AG-Grid focus outlines and use our own
+  .ag-cell-focus:not(.ag-cell-range-selected):focus-within {
+    border: none !important;
+    outline: none !important;
+  }
+}
+
+// Custom scrollbar
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+  
+  &:hover {
+    background: #9ca3af;
+  }
+}
+
+// Loading animation
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+// Smooth transitions
+* {
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+// Responsive adjustments
+@media (max-width: 640px) {
+  .ag-theme-alpine {
+    --ag-row-height: 64px;
+    
+    .ag-header-cell {
+      font-size: 0.75rem;
+    }
+    
+    .ag-cell {
+      padding: 0 0.5rem;
+    }
+  }
+}

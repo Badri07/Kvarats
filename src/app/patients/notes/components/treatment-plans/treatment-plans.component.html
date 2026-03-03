@@ -1,0 +1,409 @@
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+  <div class="lg:col-span-1 bg-white rounded-lg shadow-sm p-3">
+    <div class="flex justify-between items-center mb-3">
+      <h3 class="text-lg font-semibold text-gray-900">Treatment Plans</h3>
+    </div>
+
+    <div *ngIf="error" class="mb-4 p-3 bg-red-50 text-red-700 rounded-md">
+      {{ error }}
+    </div>
+
+    <div *ngIf="loading" class="text-center text-gray-500 py-8">
+      Loading...
+    </div>
+
+    <div *ngIf="patientId && !loading" class="space-y-2">
+      <div
+        *ngFor="let plan of plans"
+        (click)="selectPlan(plan)"
+        [class.bg-orange-400]="selectedPlan?.id === plan.id"
+        [class.bg-opacity-10]="selectedPlan?.id === plan.id"
+        [class.border-orange-400]="selectedPlan?.id === plan.id"
+        class="p-3 border rounded-md cursor-pointer hover:bg-gray-50 transition-colors">
+        <div class="flex justify-between items-start">
+          <div class="flex-1">
+            <div class="text-sm font-medium text-gray-900">
+              v{{ plan.version }} - {{ plan.startDate | date: 'MMM d, y' }}
+            </div>
+            <div class="text-xs text-gray-500">
+              {{ plan.estimatedSessions }} sessions
+              <span *ngIf="plan.isDraft" class="ml-2 px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded">
+                Draft
+              </span>
+              <span *ngIf="!plan.isDraft" class="ml-2 px-2 py-0.5 bg-green-100 text-green-800 rounded">
+                Published
+              </span>
+            </div>
+          </div>
+          <div class="text-xs text-gray-400">
+            by {{ plan.therapistName }}
+          </div>
+        </div>
+        <div class="mt-2">
+          <p class="text-xs text-gray-600 line-clamp-2">
+            {{ plan.presentingProblem }}
+          </p>
+        </div>
+      </div>
+
+      <div *ngIf="plans.length === 0" class="text-center text-gray-500 py-4">
+        No treatment plans found
+      </div>
+
+     
+    </div>
+  </div>
+
+  <div class="lg:col-span-2 bg-white rounded-lg shadow-sm p-3">
+    <div *ngIf="!selectedPlan && !isCreating" class="text-center text-gray-500 py-8">
+      Select a plan to view details or create a new one
+    </div>
+
+    <div *ngIf="selectedPlan && !isEditing">
+      <div class="flex justify-between items-start mb-6">
+        <div>
+          <h3 class="text-xl font-semibold text-gray-900">
+            Treatment Plan v{{ selectedPlan.version }}
+          </h3>
+          <p class="text-sm text-gray-500">
+            Therapist: {{ selectedPlan.therapistName }} | 
+            Sessions: {{ selectedPlan.estimatedSessions }} | 
+            Start: {{ selectedPlan.startDate | date: 'MMM d, y' }}
+          </p>
+        </div>
+        <div class="flex gap-2">
+<button
+  *ngIf="selectedPlan.isDraft"
+  (click)="openPublishPopup(selectedPlan.id)"
+  class="relative group p-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+  </svg>
+  <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
+    Publish
+  </div>
+</button>
+
+  <!-- Download PDF Button -->
+  <button
+    (click)="downloadPDF()"
+    class="relative group p-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+    </svg>
+    <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
+      Download PDF
+    </div>
+  </button>
+
+  <!-- Edit Button -->
+  <button
+    *ngIf="selectedPlan.isDraft"
+    (click)="editPlan(selectedPlan)"
+    class="relative group p-2 bg-orange-400 text-white rounded-md hover:bg-orange-600 transition-colors">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+    </svg>
+    <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
+      Edit
+    </div>
+  </button>
+
+  <!-- Delete Button -->
+  <button
+    (click)="confirmDelete(selectedPlan)"
+    class="relative group p-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+    </svg>
+    <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
+      Delete
+    </div>
+  </button>
+</div>
+      </div>
+
+      <div class="space-y-4">
+        <div class="grid grid-cols-2 gap-4 pb-4 border-b">
+          <div *ngIf="selectedPlan.startDate">
+            <p class="text-gray-500 text-xs">Start Date</p>
+            <p class="font-medium text-sm">{{ selectedPlan.startDate | date: 'MMM d, y' }}</p>
+          </div>
+          <div *ngIf="selectedPlan.estimatedEndDate">
+            <p class="text-gray-500 text-xs">Estimated End Date</p>
+            <p class="font-medium text-sm">{{ selectedPlan.estimatedEndDate | date: 'MMM d, y' }}</p>
+          </div>
+          <div *ngIf="selectedPlan.estimatedSessions">
+            <p class="text-gray-500 text-xs">Estimated Sessions</p>
+            <p class="font-medium text-sm">{{ selectedPlan.estimatedSessions }}</p>
+          </div>
+          <div *ngIf="selectedPlan.nextReviewDate">
+            <p class="text-gray-500 text-xs">Next Review Date</p>
+            <p class="font-medium text-sm">{{ selectedPlan.nextReviewDate | date: 'MMM d, y' }}</p>
+          </div>
+        </div>
+
+        <div>
+          <h4 class="text-sm font-semibold text-gray-700 mb-2">Presenting Problem</h4>
+          <p class="text-gray-900 whitespace-pre-wrap">{{ selectedPlan.presentingProblem }}</p>
+        </div>
+
+        <div>
+          <h4 class="text-sm font-semibold text-gray-700 mb-2">Treatment Goals</h4>
+          <p class="text-gray-900 whitespace-pre-wrap">{{ selectedPlan.treatmentGoals }}</p>
+        </div>
+
+        <div>
+          <h4 class="text-sm font-semibold text-gray-700 mb-2">Interventions</h4>
+          <p class="text-gray-900 whitespace-pre-wrap">{{ selectedPlan.interventions }}</p>
+        </div>
+
+        <div *ngIf="selectedPlan.objectives">
+          <h4 class="text-sm font-semibold text-gray-700 mb-2">Objectives</h4>
+          <p class="text-gray-900 whitespace-pre-wrap">{{ selectedPlan.objectives }}</p>
+        </div>
+
+        <div *ngIf="selectedPlan.targetSymptoms">
+          <h4 class="text-sm font-semibold text-gray-700 mb-2">Target Symptoms</h4>
+          <p class="text-gray-900 whitespace-pre-wrap">{{ selectedPlan.targetSymptoms }}</p>
+        </div>
+
+        <div *ngIf="selectedPlan.strengths">
+          <h4 class="text-sm font-semibold text-gray-700 mb-2">Patient Strengths</h4>
+          <p class="text-gray-900 whitespace-pre-wrap">{{ selectedPlan.strengths }}</p>
+        </div>
+
+        <div *ngIf="selectedPlan.barriers">
+          <h4 class="text-sm font-semibold text-gray-700 mb-2">Barriers to Treatment</h4>
+          <p class="text-gray-900 whitespace-pre-wrap">{{ selectedPlan.barriers }}</p>
+        </div>
+
+        <div *ngIf="selectedPlan.reviewNotes">
+          <h4 class="text-sm font-semibold text-gray-700 mb-2">Review Notes</h4>
+          <p class="text-gray-900 whitespace-pre-wrap">{{ selectedPlan.reviewNotes }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="isEditing || isCreating">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-semibold text-gray-900">
+          {{ isCreating ? 'New Treatment Plan' : 'Edit Treatment Plan' }}
+        </h3>
+        <div class="flex gap-2">
+          <button
+            (click)="cancelEdit()"
+            class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors">
+            Cancel
+          </button>
+          <button
+            (click)="savePlan()"
+            [disabled]="loading"
+            class="px-4 py-2 bg-orange-400 text-white rounded-md hover:bg-orange-600 disabled:bg-gray-300 transition-colors">
+            {{ loading ? 'Saving...' : 'Save' }}
+          </button>
+        </div>
+      </div>
+
+      <form class="space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+            <input
+              type="date"
+              [(ngModel)]="planForm.startDate"
+              name="startDate"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Estimated End Date</label>
+            <input
+              type="date"
+              [(ngModel)]="planForm.estimatedEndDate"
+              name="estimatedEndDate"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Estimated Sessions</label>
+            <input
+              type="number"
+              [(ngModel)]="planForm.estimatedSessions"
+              name="estimatedSessions"
+              min="1"
+              placeholder="e.g., 12"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Next Review Date</label>
+            <input
+              type="date"
+              [(ngModel)]="planForm.nextReviewDate"
+              name="nextReviewDate"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Presenting Problem<span class="text-danger">*</span></label>
+          <textarea
+            [(ngModel)]="planForm.presentingProblem"
+            name="presentingProblem"
+            required
+            rows="4"
+            placeholder="Describe the main problem or issue the patient is seeking treatment for..."
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Treatment Goals<span class="text-danger">*</span></label>
+          <textarea
+            [(ngModel)]="planForm.treatmentGoals"
+            name="treatmentGoals"
+            required
+            rows="4"
+            placeholder="Define the specific, measurable goals for treatment..."
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Interventions<span class="text-danger">*</span></label>
+          <textarea
+            [(ngModel)]="planForm.interventions"
+            name="interventions"
+            required
+            rows="4"
+            placeholder="List the therapeutic interventions and techniques to be used..."
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Objectives</label>
+          <textarea
+            [(ngModel)]="planForm.objectives"
+            name="objectives"
+            rows="3"
+            placeholder="Specific, measurable objectives to achieve the treatment goals..."
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Target Symptoms</label>
+          <textarea
+            [(ngModel)]="planForm.targetSymptoms"
+            name="targetSymptoms"
+            rows="3"
+            placeholder="Specific symptoms to be targeted during treatment..."
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Patient Strengths</label>
+          <textarea
+            [(ngModel)]="planForm.strengths"
+            name="strengths"
+            rows="3"
+            placeholder="Patient's strengths and resources that can support treatment..."
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Barriers to Treatment</label>
+          <textarea
+            [(ngModel)]="planForm.barriers"
+            name="barriers"
+            rows="3"
+            placeholder="Potential obstacles or challenges to treatment success..."
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Review Notes</label>
+          <textarea
+            [(ngModel)]="planForm.reviewNotes"
+            name="reviewNotes"
+            rows="3"
+            placeholder="Notes for reviewing and updating this treatment plan..."
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"></textarea>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<app-modal 
+  [isOpen]="showDeleteModal" 
+  title="Delete Treatment Plan" 
+  size="sm" 
+  (closed)="showDeleteModal = false">
+  <div class="delete-confirmation">
+    <div class="warning-icon">
+      <svg class="w-12 h-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+      </svg>
+    </div>
+    <h3 class="warning-title">Are you sure?</h3>
+    <p class="warning-message">
+      This will permanently delete Treatment Plan v{{ planToDelete?.version }} 
+      from {{ planToDelete?.startDate | date:'MMM d, y' }}. 
+      This action cannot be undone.
+    </p>
+    <div class="confirmation-actions">
+      <app-button variant="outline" (click)="showDeleteModal = false">Cancel</app-button>
+      <app-button 
+        variant="danger" 
+        [loading]="isDeleting" 
+        (click)="deletePlan()">
+        Delete Plan
+      </app-button>
+    </div>
+  </div>
+</app-modal>
+
+
+<!-- Publish Confirmation Popup -->
+<div *ngIf="showPublishPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  <div class="bg-white rounded-lg shadow-xl w-96 p-6">
+    <!-- Header -->
+    <div class="flex items-center mb-4">
+      <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
+        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-900">Publish Treatment Plan</h3>
+    </div>
+
+    <!-- Content -->
+    <div class="mb-6">
+      <p class="text-gray-700 mb-4">Are you sure you want to publish this treatment plan?</p>
+      
+      <!-- Important Note -->
+      <div class="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+        <div class="flex">
+          <svg class="w-5 h-5 text-yellow-600 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+          </svg>
+          <div>
+            <p class="text-sm text-yellow-800 font-medium">Important Note</p>
+            <p class="text-sm text-yellow-700 mt-1">Published treatment plan version cannot be edited.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex justify-end space-x-3">
+      <button
+        (click)="showPublishPopup = false"
+        class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+        Cancel
+      </button>
+      <button
+        (click)="confirmPublish()"
+        class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors">
+        Publish Plan
+      </button>
+    </div>
+  </div>
+</div>

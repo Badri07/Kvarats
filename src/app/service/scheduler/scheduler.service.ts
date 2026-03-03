@@ -32,7 +32,7 @@ export class SchedulerService {
                    date.getDate().toString().padStart(2, '0');
 
     return this.http
-      .get(`${environment.apidev}/Appointment/GetSchedulerUsersByDate?date=${dateString}`)
+      .get(`${environment.apidev}/Appointments/GetSchedulerUsersByDate?date=${dateString}`)
       .pipe(
         map((response: any) => response?.data || response),
         catchError((error) => throwError(() => error))
@@ -40,7 +40,7 @@ export class SchedulerService {
   }
 
   getCheckUserAvailability(data:Slot){
-     return this.http.post(`${environment.apidev}/Appointment/CheckUserAvailabilityForSlot`,data).pipe(
+     return this.http.post(`${environment.apidev}/Appointments/CheckUserAvailabilityForSlot`,data).pipe(
       map((response: any) => {
         return response?.data || response;
       }),
@@ -104,7 +104,7 @@ private handleError = (error: any): Observable<User[]> => {
     const params = new HttpParams().set('date', date);
 
     return this.http
-      .get<User[]>(`${environment.apidev}/Appointment/GetSchedulerUsersByDate`, {
+      .get<User[]>(`${environment.apidev}/Appointments/GetSchedulerUsersByDate`, {
 
         params,
       })
@@ -115,31 +115,30 @@ private handleError = (error: any): Observable<User[]> => {
       );
   }
 
-  getDropdownsByCategory(category: string): Observable<any[]> {
-  if (!category) {
-    console.warn('SchedulerService: category is empty or null, skipping request.');
-    return of([]);
-  }
-
-  const params = new HttpParams().set('category', category);
-
+getDropdownsByCategory(category: string): Observable<any[]> {
   return this.http
-    .get<any[]>(`${environment.apidev}/Dropdowns/GetDropdowns`, {
-      params,
-    })
+    .get<any>(`${environment.apidev}/Dropdowns/${category}`)
     .pipe(
-      map((items) => items || []),
+      map((response) => {
+        if (response && response.success && Array.isArray(response.data)) {
+          return response.data;
+        } else {
+          console.warn('Unexpected dropdown response:', response);
+          return [];
+        }
+      }),
       catchError((error) => {
         console.error('Dropdown fetch error:', error);
-        return of([]);
+        return of([]); // Return an empty list on error
       }),
       shareReplay(1)
     );
 }
 
+
   getAllPatientsList(): Observable<any[]> {
   return this.http
-    .get<any[]>(`${environment.apidev}/Patients/GetAllPatientsList`, {
+    .get<any[]>(`${environment.apidev}/Patients`, {
     })
     .pipe(
       map((patients) => patients || []),
@@ -151,6 +150,35 @@ private handleError = (error: any): Observable<User[]> => {
     );
 }
 
+  GetPatientWithInsurance(): Observable<any[]> {
+  return this.http
+    .get<any[]>(`${environment.apidev}/Patients/GetPatientWithInsurance`, {
+    })
+    .pipe(
+      map((patients) => patients || []),
+      catchError((error) => {
+        console.error('Patient list fetch error:', error);
+        return of([]);
+      }),
+      shareReplay(1)
+    );
+}
+
+
+
+  GetAllPatientsWithoutInsurance(): Observable<any[]> {
+  return this.http
+    .get<any[]>(`${environment.apidev}/Patients/GetAllPatientsWithoutInsurance`, {
+    })
+    .pipe(
+      map((patients) => patients || []),
+      catchError((error) => {
+        console.error('Patient list fetch error:', error);
+        return of([]);
+      }),
+      shareReplay(1)
+    );
+}
 
 
 
@@ -173,4 +201,20 @@ private handleError = (error: any): Observable<User[]> => {
   setTherapistList(list: User[]) {
     this.therapistListSubject.next(list);
   }
+
+    getTherapistList(): Observable<any[]> {
+      return this.http.get(`${environment.apidev}/Users/therapists`).pipe(
+        map((response: any) => {
+          const therapists = response?.data || response || [];
+          // this.therapistsSignal.set(therapists);
+          return therapists;
+        }),
+        catchError(error => {
+          console.error('Error fetching therapists:', error);
+          // this.therapistsSignal.set([]);
+          return throwError(() => error);
+        })
+      );
+    }
+    
 }

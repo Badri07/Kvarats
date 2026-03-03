@@ -1,0 +1,700 @@
+.availability-container {
+  @apply p-6 space-y-6;
+}
+
+.availability-header {
+  @apply mb-8;
+}
+
+.header-content {
+  @apply text-center space-y-2;
+}
+
+.availability-title {
+  @apply text-3xl font-bold text-gray-900;
+}
+
+.availability-subtitle {
+  @apply text-gray-600;
+}
+
+.loading-state {
+  @apply flex flex-col items-center justify-center py-16 space-y-4;
+}
+
+.loading-spinner {
+  @apply w-8 h-8 border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin;
+}
+
+.therapist-selection {
+  @apply bg-white rounded-2xl shadow-lg border border-primary-100 p-6 mb-6;
+  box-shadow: 0 8px 24px rgba(255, 161, 87, 0.08);
+}
+
+.selection-form {
+  @apply max-w-md;
+}
+
+.form-group {
+  @apply space-y-2;
+}
+
+.form-label {
+  @apply block text-sm font-medium text-gray-700;
+}
+
+.form-select {
+  @apply block w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500 transition-all duration-300;
+}
+
+.availability-grid-card {
+  @apply bg-white rounded-2xl shadow-lg border border-primary-100 overflow-hidden;
+  box-shadow: 0 8px 24px rgba(255, 161, 87, 0.08);
+}
+
+.grid-header {
+  @apply p-6 border-b border-gray-200 bg-gray-50;
+}
+
+.grid-title {
+  @apply text-xl font-semibold text-gray-900 mb-2;
+}
+
+.grid-subtitle {
+  @apply text-gray-600;
+}
+
+.weekly-grid {
+  @apply overflow-x-auto;
+}
+
+.grid-headers {
+  @apply grid grid-cols-5 gap-0 bg-gray-100 border-b border-gray-200;
+}
+
+.day-header, .time-header, .status-header, .actions-header {
+  @apply p-4 text-sm font-semibold text-gray-700 border-r border-gray-200 last:border-r-0;
+}
+
+.day-row {
+  @apply grid grid-cols-5 gap-0 border-b border-gray-100 hover:bg-gray-50 transition-colors;
+  
+  &.unavailable {
+    @apply bg-red-50;
+  }
+}
+
+.day-cell {
+  @apply p-4 border-r border-gray-200;
+}
+
+.day-name {
+  @apply text-sm font-semibold text-gray-900;
+}
+
+.day-short {
+  @apply text-xs text-gray-500 md:hidden;
+}
+
+.time-cell {
+  @apply p-4 border-r border-gray-200 text-center;
+  
+  &.empty {
+    @apply bg-gray-50;
+  }
+}
+
+.time-value {
+  @apply text-sm font-medium text-gray-900;
+}
+
+.empty-text {
+  @apply text-sm text-gray-400 italic;
+}
+
+.status-cell {
+  @apply p-4 border-r border-gray-200 text-center;
+  
+  &.empty {
+    @apply bg-gray-50;
+  }
+}
+
+.availability-toggle {
+  @apply flex justify-center;
+}
+
+.toggle-btn {
+  @apply flex items-center gap-2 px-3 py-1 text-xs font-medium rounded-full transition-all duration-300;
+  
+  &.available {
+    @apply bg-green-100 text-green-700 hover:bg-green-200;
+  }
+  
+  &.unavailable {
+    @apply bg-red-100 text-red-700 hover:bg-red-200;
+  }
+}
+
+.actions-cell {
+  @apply p-4 flex items-center gap-2;
+}
+
+.action-btn {
+  @apply flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-lg transition-all duration-300;
+}
+
+.edit-btn {
+  @apply text-primary-600 hover:text-primary-700 hover:bg-primary-50;
+}
+
+.delete-btn {
+  @apply text-red-600 hover:text-red-700 hover:bg-red-50;
+}
+
+.add-btn {
+  @apply text-green-600 hover:text-green-700 hover:bg-green-50;
+}
+
+.no-therapist-selected {
+  @apply bg-white rounded-2xl shadow-lg border border-primary-100 p-16;
+  box-shadow: 0 8px 24px rgba(255, 161, 87, 0.08);
+}
+
+.selection-prompt {
+  @apply flex justify-center items-center flex-col space-y-4;
+}
+
+
+.prompt-title {
+  @apply text-xl font-semibold text-gray-900 mt-4;
+}
+
+.prompt-description {
+  @apply text-gray-500 max-w-md mx-auto text-center;
+}
+
+// Form Styles
+.availability-form {
+  @apply space-y-6;
+}
+
+.form-input {
+  @apply block w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500 transition-all duration-300;
+  
+  &.error {
+    @apply border-red-300 focus:ring-red-500 focus:border-red-500;
+  }
+}
+
+.form-error {
+  @apply text-sm text-red-600;
+}
+
+.checkbox-label {
+  @apply flex items-center cursor-pointer;
+}
+
+.checkbox-input {
+  @apply sr-only;
+  
+  &:checked + .checkbox-custom {
+    @apply bg-primary-500 border-primary-500;
+    
+    &::after {
+      @apply opacity-100;
+    }
+  }
+}
+
+.checkbox-custom {
+  @apply w-4 h-4 border border-gray-300 rounded mr-3 flex items-center justify-center relative transition-all;
+  
+  &::after {
+    content: '';
+    @apply w-2 h-2 bg-white rounded-sm opacity-0 transition-opacity;
+  }
+}
+
+.checkbox-text {
+  @apply text-sm text-gray-700;
+}
+
+.time-section {
+  @apply p-4 bg-gray-50 rounded-xl;
+}
+
+.time-section-title {
+  @apply text-sm font-semibold text-gray-900 mb-4;
+}
+
+.time-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 gap-4;
+}
+
+.form-actions {
+  @apply flex gap-4 justify-end pt-6 border-t border-gray-200;
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .grid-headers, .day-row {
+    @apply grid-cols-3;
+  }
+  
+  .time-header:first-of-type, .time-cell:first-of-type {
+    @apply hidden;
+  }
+  
+  .actions-header, .actions-cell {
+    @apply hidden;
+  }
+  
+  .day-name {
+    @apply hidden;
+  }
+  
+  .day-short {
+    @apply block;
+  }
+  
+  .time-grid {
+    @apply grid-cols-1;
+  }
+}
+
+@media (max-width: 640px) {
+  .weekly-grid {
+    @apply text-xs;
+  }
+  
+  .action-btn {
+    @apply px-1 py-1;
+  }
+}
+
+
+.availability-container {
+  @apply p-6 space-y-6;
+}
+
+.availability-header {
+  @apply mb-8;
+}
+
+.header-content {
+  @apply text-center space-y-2;
+}
+
+.availability-title {
+  @apply text-3xl font-bold text-gray-900;
+}
+
+.availability-subtitle {
+  @apply text-gray-600;
+}
+
+.loading-state {
+  @apply flex flex-col items-center justify-center py-16 space-y-4;
+}
+
+.loading-spinner {
+  @apply w-8 h-8 border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin;
+}
+
+.therapist-selection {
+  @apply bg-white rounded-2xl shadow-lg border border-primary-100 p-6 mb-6;
+  box-shadow: 0 8px 24px rgba(255, 161, 87, 0.08);
+}
+
+.selection-form {
+  @apply max-w-md;
+}
+
+.form-group {
+  @apply space-y-2;
+}
+
+.form-label {
+  @apply block text-sm font-medium text-gray-700;
+}
+
+.form-select {
+  @apply block w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500 transition-all duration-300;
+}
+
+.availability-grid-card {
+  @apply bg-white rounded-2xl shadow-lg border border-primary-100 overflow-hidden;
+  box-shadow: 0 8px 24px rgba(255, 161, 87, 0.08);
+}
+
+.grid-header {
+  @apply p-6 border-b border-gray-200 bg-gray-50;
+}
+
+.grid-title {
+  @apply text-xl font-semibold text-gray-900 mb-2;
+}
+
+.grid-subtitle {
+  @apply text-gray-600;
+}
+
+.weekly-grid {
+  @apply overflow-x-auto;
+}
+
+.grid-headers {
+  @apply grid grid-cols-5 gap-0 bg-gray-100 border-b border-gray-200;
+}
+
+.day-header, .time-header, .status-header, .actions-header {
+  @apply p-4 text-sm font-semibold text-gray-700 border-r border-gray-200 last:border-r-0;
+}
+
+.day-row {
+  @apply grid grid-cols-5 gap-0 border-b border-gray-100 hover:bg-gray-50 transition-colors;
+  
+  &.unavailable {
+    @apply bg-red-50;
+  }
+}
+
+.day-cell {
+  @apply p-4 border-r border-gray-200;
+}
+
+.day-name {
+  @apply text-sm font-semibold text-gray-900;
+}
+
+.day-short {
+  @apply text-xs text-gray-500 md:hidden;
+}
+
+.time-cell {
+  @apply p-4 border-r border-gray-200 text-center;
+  
+  &.empty {
+    @apply bg-gray-50;
+  }
+}
+
+.time-value {
+  @apply text-sm font-medium text-gray-900;
+}
+
+.empty-text {
+  @apply text-sm text-gray-400 italic;
+}
+
+.status-cell {
+  @apply p-4 border-r border-gray-200 text-center;
+  
+  &.empty {
+    @apply bg-gray-50;
+  }
+}
+
+.availability-toggle {
+  @apply flex justify-center;
+}
+
+.toggle-btn {
+  @apply flex items-center gap-2 px-3 py-1 text-xs font-medium rounded-full transition-all duration-300;
+  
+  &.available {
+    @apply bg-green-100 text-green-700 hover:bg-green-200;
+  }
+  
+  &.unavailable {
+    @apply bg-red-100 text-red-700 hover:bg-red-200;
+  }
+}
+
+.actions-cell {
+  @apply p-4 flex items-center gap-2;
+}
+
+.action-btn {
+  @apply flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-lg transition-all duration-300;
+}
+
+.edit-btn {
+  @apply text-primary-600 hover:text-primary-700 hover:bg-primary-50;
+}
+
+.delete-btn {
+  @apply text-red-600 hover:text-red-700 hover:bg-red-50;
+}
+
+.add-btn {
+  @apply text-green-600 hover:text-green-700 hover:bg-green-50;
+}
+
+.no-therapist-selected {
+  @apply bg-white rounded-2xl shadow-lg border border-primary-100 p-16;
+  box-shadow: 0 8px 24px rgba(255, 161, 87, 0.08);
+}
+
+.selection-prompt {
+  @apply flex justify-center items-center flex-col space-y-4;
+}
+
+.prompt-title {
+  @apply text-xl font-semibold text-gray-900 mt-4;
+}
+
+.prompt-description {
+  @apply text-gray-500 max-w-md mx-auto text-center;
+}
+
+// Modal and Form Styles - UPDATED FOR PROPER ALIGNMENT
+.availability-form {
+  @apply space-y-6 p-1; // Added padding for better spacing
+}
+
+// Form group with proper alignment
+.form-group {
+  @apply space-y-2 w-full;
+}
+
+.form-label {
+  @apply block text-sm font-medium text-gray-700 mb-2; // Added margin-bottom
+}
+
+.form-input, .form-select {
+  @apply block w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500 transition-all duration-300;
+  
+  &.error {
+    @apply border-red-300 focus:ring-red-500 focus:border-red-500;
+  }
+}
+
+.form-error {
+  @apply text-sm text-red-600 mt-1; // Added margin-top
+}
+
+// Checkbox alignment
+.checkbox-label {
+  @apply flex items-center cursor-pointer space-x-3; // Changed from margin to space-x
+}
+
+.checkbox-input {
+  @apply sr-only;
+  
+  &:checked + .checkbox-custom {
+    @apply bg-primary-500 border-primary-500;
+    
+    &::after {
+      @apply opacity-100;
+    }
+  }
+}
+
+.checkbox-custom {
+  @apply w-5 h-5 border border-gray-300 rounded flex items-center justify-center relative transition-all flex-shrink-0; // Added flex-shrink-0
+  
+  &::after {
+    content: '';
+    @apply w-2 h-2 bg-white rounded-sm opacity-0 transition-opacity;
+  }
+}
+
+.checkbox-text {
+  @apply text-sm text-gray-700;
+}
+
+// Time section alignment
+.time-section {
+  @apply p-4 bg-gray-50 rounded-xl space-y-4; // Added space-y
+}
+
+.time-section-title {
+  @apply text-sm font-semibold text-gray-900 mb-4;
+}
+
+.time-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 gap-4;
+}
+
+// Form actions with proper alignment
+.form-actions {
+  @apply flex gap-4 justify-end pt-6 border-t border-gray-200;
+}
+
+// Delete Modal Styles - ADD THESE
+.delete-confirmation {
+  @apply text-center space-y-4 p-4; // Added padding
+}
+
+.warning-icon {
+  @apply flex justify-center mb-4; // Added margin-bottom
+}
+
+.warning-title {
+  @apply text-lg font-semibold text-gray-900 mb-3; // Added margin-bottom
+}
+
+.warning-message {
+  @apply text-gray-600 mb-2; // Added margin-bottom
+  
+  &:last-of-type {
+    @apply mb-4; // More space before buttons
+  }
+}
+
+.confirmation-actions {
+  @apply flex gap-3 justify-center pt-4;
+}
+
+// Modal container fixes
+:host ::ng-deep {
+  // Ensure modal backdrop covers entire screen
+  .modal-backdrop {
+    @apply fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4;
+  }
+  
+  // Modal container alignment
+  .modal-container {
+    @apply bg-white rounded-2xl shadow-xl max-w-md w-full mx-auto max-h-[90vh] overflow-y-auto;
+  }
+  
+  // Modal header alignment
+  .modal-header {
+    @apply flex items-center justify-between p-6 border-b border-gray-200;
+  }
+  
+  // Modal body alignment
+  .modal-body {
+    @apply p-6;
+  }
+  
+  // Ensure form elements are properly aligned
+  .availability-form .form-group {
+    @apply text-left; // Ensure left alignment
+  }
+  
+  // Button alignment in confirmation modals
+  .confirmation-actions app-button {
+    min-width: 120px;
+    
+    button {
+      @apply w-full justify-center;
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .grid-headers, .day-row {
+    @apply grid-cols-3;
+  }
+  
+  .time-header:first-of-type, .time-cell:first-of-type {
+    @apply hidden;
+  }
+  
+  .actions-header, .actions-cell {
+    @apply hidden;
+  }
+  
+  .day-name {
+    @apply hidden;
+  }
+  
+  .day-short {
+    @apply block;
+  }
+  
+  .time-grid {
+    @apply grid-cols-1;
+  }
+  
+  // Mobile modal fixes
+  :host ::ng-deep {
+    .modal-container {
+      @apply m-4 max-h-[85vh]; // Smaller margins on mobile
+    }
+    
+    .form-actions {
+      @apply flex-col gap-3;
+      
+      app-button {
+        @apply w-full;
+      }
+    }
+    
+    .confirmation-actions {
+      @apply flex-col gap-3;
+      
+      app-button {
+        @apply w-full;
+      }
+    }
+  }
+}
+
+@media (max-width: 640px) {
+  .weekly-grid {
+    @apply text-xs;
+  }
+  
+  .action-btn {
+    @apply px-1 py-1;
+  }
+  
+  // Mobile form improvements
+  .availability-form {
+    @apply space-y-4; // Tighter spacing on mobile
+  }
+  
+  .time-section {
+    @apply p-3; // Less padding on mobile
+  }
+}
+
+
+.leave-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  padding: 2px 6px;
+  background-color: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  color: #856404;
+}
+
+.leave-text {
+  font-weight: 500;
+}
+
+.leave-info {
+  .leave-time {
+    color: #6c757d;
+    font-style: italic;
+  }
+  
+  .leave-reason {
+    color: #6c757d;
+    font-size: 0.875rem;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.day-row.unavailable {
+  background-color: #f8f9fa;
+  
+  .day-cell,
+  .time-cell,
+  .status-cell,
+  .actions-cell {
+    opacity: 0.6;
+  }
+}

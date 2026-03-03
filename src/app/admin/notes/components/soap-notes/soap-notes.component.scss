@@ -1,0 +1,14 @@
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.border-orange-600{
+  border-color: #ea580c !important;
+}

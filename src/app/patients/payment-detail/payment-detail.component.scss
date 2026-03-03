@@ -1,0 +1,221 @@
+
+.payment-detail {
+  @apply animate-fade-in;
+}
+
+.detail-header {
+  @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6;
+  
+  .header-content {
+    @apply mb-4;
+  }
+  
+  .back-button {
+      @apply bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium px-4 py-2 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-300 mb-4 flex items-center space-x-2;  }
+  
+  .back-icon {
+    @apply w-4 h-4;
+  }
+  
+  .invoice-header {
+    .invoice-title {
+      @apply text-2xl font-bold text-gray-900 mb-2;
+    }
+    
+    .invoice-date {
+      @apply text-gray-600;
+    }
+  }
+  
+  .header-actions {
+    @apply flex items-center justify-between pt-6 border-t border-gray-200;
+  }
+  
+  .btn-make-payment {
+    @apply bg-primary-orange hover:bg-primary-600 text-white font-medium px-6 py-3 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-300;
+  }
+}
+
+.amount-summary {
+  @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6 grid grid-cols-1 md:grid-cols-5 gap-6;
+  
+  .summary-item {
+    .summary-label {
+      @apply text-sm text-gray-500 mb-1;
+    }
+    
+    .summary-value {
+      @apply text-xl font-semibold;
+      
+      &.total {
+        @apply text-gray-900;
+      }
+      
+      &.discount {
+        @apply text-primary-orange;
+      }
+      
+      &.final {
+        @apply text-gray-900;
+      }
+      
+      &.paid {
+        @apply text-green-600;
+      }
+      
+      &.balance {
+        &.overdue {
+          @apply text-red-600;
+        }
+        
+        &.paid-full {
+          @apply text-green-600;
+        }
+      }
+    }
+  }
+}
+
+.services-section {
+  @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6;
+  
+  .section-title {
+    @apply text-lg font-semibold text-gray-900 mb-4;
+  }
+  
+  .services-table {
+    @apply overflow-x-auto;
+    
+    .table-header {
+      @apply grid grid-cols-5 gap-4 pb-3 border-b border-gray-200;
+      
+      .header-cell {
+        @apply font-medium text-gray-700 text-sm;
+        
+        &.amount {
+          @apply text-right;
+        }
+      }
+    }
+    
+    .table-body {
+      .table-row {
+        @apply grid grid-cols-5 gap-4 py-3 border-b border-gray-100;
+        
+        &:last-child {
+          @apply border-b-0;
+        }
+        
+        .table-cell {
+          @apply text-sm;
+          
+          &.amount {
+            @apply text-right;
+          }
+          
+          .cpt-code {
+            @apply font-medium text-gray-900;
+          }
+          
+          .service-description {
+            @apply text-gray-600;
+          }
+          
+          .service-date {
+            @apply text-gray-600;
+          }
+          
+          .service-units {
+            @apply text-gray-600;
+          }
+          
+          .service-amount {
+            @apply font-medium text-gray-900;
+          }
+        }
+      }
+    }
+  }
+}
+
+.payment-history {
+  @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6;
+  
+  .section-title {
+    @apply text-lg font-semibold text-gray-900 mb-4;
+  }
+  
+  .empty-state {
+    @apply text-center py-8 text-gray-500;
+    
+    .empty-icon {
+      @apply w-12 h-12 mx-auto mb-4 text-gray-300;
+    }
+    
+    .empty-text {
+      @apply text-gray-500;
+    }
+  }
+  
+  .transactions-list {
+    @apply space-y-4;
+    
+    .transaction-item {
+      @apply flex items-center justify-between p-4 bg-gray-50 rounded-lg;
+      
+      .transaction-icon {
+        @apply w-10 h-10 rounded-full flex items-center justify-center mr-4;
+        
+        .success-icon {
+          @apply w-5 h-5 text-green-600;
+        }
+        
+        .failed-icon {
+          @apply w-5 h-5 text-red-600;
+        }
+      }
+      
+      .transaction-details {
+        @apply flex-1;
+        
+        .transaction-amount {
+          @apply font-medium text-gray-900;
+        }
+        
+        .transaction-info {
+          @apply text-sm text-gray-600;
+        }
+        
+        .transaction-ref {
+          @apply text-xs text-gray-500;
+        }
+      }
+      
+      .transaction-status {
+        .status-badge {
+          @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+          
+          &.success {
+            @apply bg-green-100 text-green-800;
+          }
+          
+          &.failed {
+            @apply bg-red-100 text-red-800;
+          }
+        }
+      }
+    }
+  }
+}
+
+.notes-section {
+  @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6;
+  
+  .section-title {
+    @apply text-lg font-semibold text-gray-900 mb-3;
+  }
+  
+  .notes-content {
+    @apply text-gray-600;
+  }
+}

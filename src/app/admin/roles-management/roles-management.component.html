@@ -1,0 +1,249 @@
+<div class="roles-dashboard-container min-h-screen bg-gray-50 dark-mode-1">
+
+  <!-- Header Section -->
+  <div class="mb-4">
+    <div class="flex justify-between items-center">
+      <div>
+        <h1 class="text-2xl font-semibold text-gray-800">Roles Management</h1>
+        <p class="roles-subtitle mt-2">Manage system roles, permissions, and user access controls</p>
+      </div>
+      <button 
+        (click)="showAddRoleModal = true"
+        class="custom-button">
+        <i class="fas fa-plus"></i>
+        Add New Role
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <!-- <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div *ngFor="let stat of stats" 
+         class="stat-card text-white rounded-xl p-6 shadow-lg transition-all duration-300 hover:shadow-xl transform hover:-translate-y-1 {{stat.color}}">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="text-3xl font-bold mb-2">{{stat.value}}</div>
+          <div class="text-orange-100 text-sm font-medium">{{stat.label}}</div>
+          <div class="text-xs mt-2 flex items-center" 
+               [ngClass]="stat.trendType === 'positive' ? 'text-green-200' : 'text-red-200'">
+            <i class="fas mr-1" 
+               [class.fa-arrow-up]="stat.trendType === 'positive'" 
+               [class.fa-arrow-down]="stat.trendType === 'negative'"></i>
+            {{stat.trend}}
+          </div>
+        </div>
+        <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+          <i class="fas fa-{{stat.icon}} text-xl"></i>
+        </div>
+      </div>
+    </div>
+  </div> -->
+
+  <!-- Roles Grid -->
+  <div class="">
+    <!-- <div class="d-flex align-items-center">
+      <h2 class="text-md font-semibold text-gray-800">System Roles</h2>
+      <p class="text-gray-600 text-xs mt-1 ml-2">Manage and configure role-based access controls</p>
+    </div> -->
+
+    <!-- Loading State -->
+
+    <!-- Roles Grid -->
+    <div  class="py-3">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Edit Mode Card -->
+        <div *ngIf="selectedRole && editingRole" class="role-card bg-gradient-to-br from-orange-50 to-indigo-50 border-2 border-orange-200 rounded-xl p-6">
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center">
+                <i class="fas fa-{{getRoleIcon(selectedRole.name)}} text-white text-lg"></i>
+              </div>
+              <div>
+                <h3 class="font-semibold text-gray-800">Editing Role</h3>
+                <p class="text-sm text-gray-500">Update role details</p>
+              </div>
+            </div>
+          </div>
+
+          <form [formGroup]="editRoleForm" (ngSubmit)="updateRole()">
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Role Name</label>
+              <input 
+                type="text" 
+                formControlName="roleName"
+                class="form-control"
+                placeholder="Enter role name">
+              <div *ngIf="editRoleForm.get('roleName')?.invalid && editRoleForm.get('roleName')?.touched" 
+                   class="text-red-500 text-xs mt-1">
+                Role name is required and must be at least 2 characters
+              </div>
+            </div>
+
+            <div class="flex justify-content-end gap-2 mt-6">
+              <button 
+                type="button"
+                (click)="cancelEdit()"
+                class="custom-button btn-outline">
+                Cancel
+              </button>
+              <button 
+                type="submit"
+                [disabled]="editRoleForm.invalid "
+                class="custom-button">
+                <i class="fas fa-save mr-2"></i>
+                Update Role
+              </button>              
+            </div>
+          </form>
+        </div>
+
+        <!-- Regular Role Cards -->
+        <div *ngFor="let role of roles" 
+             class="role-card shadow-sm border border-gray-200  hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+             [class.border-orange-300]="selectedRole?.id === role.id">
+          
+          <!-- Role Header -->
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 {{getRoleColor(role.name)}} rounded-xl flex items-center justify-center shadow-sm">
+                <i class="fas fa-{{getRoleIcon(role.name)}} text-white text-lg"></i>
+              </div>
+              <div>
+                <h3 class="font-semibold text-gray-800">{{ role.name }}</h3>
+                <p class="text-sm text-gray-500">Created {{ role.createdAt | date:'MMM d, y' }}</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="text-2xl font-bold text-gray-800">{{ role.users }}</div>
+              <div class="text-xs text-gray-500">users</div>
+            </div>
+          </div>
+
+          <!-- Permissions Preview -->
+          <div class="mb-4">
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-sm font-medium text-gray-700 dark-mode-text">Permissions</span>
+              <span class="text-xs text-gray-500">
+  {{ getEnabledPermissionsCount(role.permissions) }}/{{ role.permissions.length }} enabled
+</span>
+            </div>
+            <div class="flex flex-wrap gap-1">
+              <span *ngFor="let perm of role.permissions.slice(0, 3)" 
+                    class="text-xs px-2 py-1 rounded-full"
+                    [ngClass]="perm.enabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'">
+                {{ perm.label }}
+              </span>
+              <span *ngIf="role.permissions.length > 3" 
+                    class="text-xs px-2 py-1 bg-orange-100 text-orange-800 rounded-full">
+                +{{ role.permissions.length - 3 }} more
+              </span>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex gap-2 pt-4 border-t border-gray-100">
+            <button 
+              (click)="editRole(role)"
+              class="flex-1 bg-blue-50 text-blue-600 py-2 px-3 text-sm rounded-lg hover:bg-blue-100 transition flex items-center justify-center gap-2">
+              <i class="fas fa-edit text-sm"></i>
+              Edit
+            </button>
+            <button 
+              (click)="confirmDelete(role)"
+              class="flex-1 bg-red-50 text-red-600 py-2 px-3 text-sm rounded-lg hover:bg-red-100 transition flex items-center justify-center gap-2">
+              <i class="fas fa-trash text-sm"></i>
+              Delete
+            </button>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="roles.length === 0" class="col-span-full text-center py-12">
+          <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-user-shield text-gray-400 text-2xl"></i>
+          </div>
+          <h3 class="text-lg font-medium text-gray-900 mb-2">No roles found</h3>
+          <p class="text-gray-500 mb-4">Get started by creating your first role</p>
+          <button 
+            (click)="showAddRoleModal = true"
+            class="bg-orange-500 text-white px-6 py-2 rounded-lg font-medium hover:bg-orange-600 transition">
+            Create Role
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Role Modal -->
+  <div *ngIf="showAddRoleModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-1000">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full transform transition-all">
+      <div class="p-6 border-b border-gray-200">
+        <h3 class="text-xl font-semibold text-gray-800">Create New Role</h3>
+        <p class="text-gray-600 text-sm mt-1">Add a new role to your system</p>
+      </div>
+
+      <form [formGroup]="roleForm" (ngSubmit)="addRole()" class="p-6">
+        <div class="mb-6">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Role Name</label>
+          <input 
+            type="text" 
+            formControlName="roleName"
+            class="form-control"
+            placeholder="e.g., Content Manager">
+          <div *ngIf="roleForm.get('roleName')?.invalid && roleForm.get('roleName')?.touched" 
+               class="text-red-500 text-xs mt-2">
+            Role name is required and must be at least 2 characters
+          </div>
+        </div>
+
+        <div class="flex gap-3 border-top border-gray-200 pt-3 justify-content-end">
+          <button 
+            type="button"
+            (click)="showAddRoleModal = false"
+            class="custom-button btn-outline">
+            Cancel
+          </button>
+          <button 
+            type="submit"
+            [disabled]="roleForm.invalid "
+            class="custom-button">
+            <i class="fas fa-plus"></i>
+            Create Role
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div *ngIf="showDeleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-1000">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full transform transition-all">
+      <div class="p-6 border-b border-gray-200">
+        <div class="flex items-center gap-3 text-red-500">
+          <i class="fas fa-exclamation-triangle text-xl"></i>
+          <h3 class="text-xl font-semibold">Delete Role</h3>
+        </div>
+      </div>
+
+      <div class="p-6">
+        <p class="text-gray-700 mb-2 dark-mode-text">Are you sure you want to delete the role <strong>"{{ selectedRole?.name }}"</strong>?</p>
+        <p class="text-sm text-gray-500">This action cannot be undone and will remove this role from all assigned users.</p>
+
+        <div class="flex justify-content-end gap-2 mt-6">
+          <button 
+            (click)="showDeleteModal = false"
+            class="custom-button btn-outline">
+            Cancel
+          </button>
+          <button 
+            (click)="deleteRole()"
+            
+            class="bg-red-500 text-white py-2 px-3 rounded-lg font-medium hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center gap-2">
+            <i class="fas fa-trash"></i>
+            Delete Role
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

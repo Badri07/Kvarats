@@ -1,17 +1,17 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
-import { AuthService } from '../../../service/auth/auth.service';
-import { loginModel, LoginResponse } from '../../../models/user-model';
 import { Router } from '@angular/router';
+import { finalize } from 'rxjs';
+
+import { AuthService } from '../../../service/auth/auth.service';
 import { TosterService } from '../../../service/toaster/tostr.service';
 import { PopupService } from '../../../service/popup/popup-service';
 
+/* -------------------- EMAIL VALIDATOR -------------------- */
 export function emailWithComValidator(control: AbstractControl): ValidationErrors | null {
   const email = control.value;
   const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-
   if (!email) return null;
-
   return emailRegex.test(email) ? null : { invalidComEmail: true };
 }
 
@@ -19,60 +19,68 @@ export function emailWithComValidator(control: AbstractControl): ValidationError
   selector: 'app-login',
   standalone: false,
   templateUrl: './login.component.html',
-  styleUrl: './login.component.scss'
+  styleUrls: ['./login.component.scss']
 })
 export class LoginComponent {
 
-  
-  image:string ='/images/login-logo-removebg-preview.png';
-  // image:string ='/images/login.png';
-  title:string ="Sign in to your account";
-  titleImg:string ='/images/Calendarly Logo.svg';
+  /* -------------------- FORM -------------------- */
+  loginForm = new FormGroup({
+    usernameOrEmail: new FormControl('', [
+      Validators.required,
+      Validators.email,
+      emailWithComValidator
+    ]),
+    password: new FormControl('', Validators.required)
+  });
 
-  loginSubmitted:boolean =false;
+  loginSubmitted = false;
 
-  
+  /* -------------------- STEP -------------------- */
+  step: 'login' | 'emailOtp' = 'login';
 
-  public loginForm = new FormGroup({
-    usernameOrEmail: new FormControl("",[Validators.required,Validators.email,emailWithComValidator]),
-    password:new FormControl("",Validators.required),
-  })
+  /* -------------------- OTP -------------------- */
+  otpDigits: string[] = ['', '', '', '', '', ''];
+  otpCode = '';
+  tempToken!: string;
 
+  /* -------------------- UI -------------------- */
+  showPassword = false;
+  PasswordValue = '';
 
-  constructor(
-    private authservice:AuthService,
-    private router:Router,
-    private toastr:TosterService,
-    private _loader:PopupService
-  ){}
-
-
-  imageList: string[] = [
-  '/images/login-logo-removebg-preview.png',
-  '/images/Login 2.png',
-  '/images/Login 3.png',
-  '/images/Login- 5.png'
-];
-
-currentIndex = 0;
-  intervalId: any;
-
-
+  /* -------------------- IMAGE SLIDER -------------------- */
   @ViewChild('sliderRef') sliderRef!: ElementRef;
 
-
+  currentIndex = 0;
   isTransitionEnabled = true;
 
+  imageList = [
+    '/images/Login 2.png',
+    '/images/Login 3.png',
+    '/images/Login- 5.png'
+  ];
 
-  ngAfterViewInit() {
-  setTimeout(() => this.startAutoSlide(),500);
-  }  
-  startAutoSlide() {
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    private toastr: TosterService,
+    private loader: PopupService
+  ) {}
+
+  /* -------------------- INIT -------------------- */
+  ngOnInit(): void {
+    this.authService.setUserType('Admin', true);
+  }
+
+  ngAfterViewInit(): void {
+    setTimeout(() => this.startAutoSlide(), 500);
+  }
+
+  startAutoSlide(): void {
     setInterval(() => {
       this.currentIndex++;
       this.isTransitionEnabled = true;
+
       if (this.currentIndex === this.imageList.length) {
-        this.isTransitionEnabled = true;
         setTimeout(() => {
           this.isTransitionEnabled = false;
           this.currentIndex = 0;
@@ -81,72 +89,171 @@ currentIndex = 0;
     }, 3000);
   }
 
-  onloginSubmit() {
-  if (this.loginForm.invalid) {
-    this.loginSubmitted = true;
-    return;
-  } else {
-    this._loader.show();
-    const data: any = {
-      usernameOrEmail: this.loginForm.get('usernameOrEmail')?.value,
-      password: this.loginForm.get('password')?.value
-    };
+  /* -------------------- PASSWORD -------------------- */
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
+  }
 
-    this.authservice.logIn(data).subscribe({
+  onPasswordInput(): void {
+    this.PasswordValue = this.loginForm.get('password')?.value || '';
+  }
+
+  togglePassword() {
+    this.showPassword = !this.showPassword;
+  }
+
+  /* -------------------- LOGIN (STEP 1) -------------------- */
+  onloginSubmit(): void {
+  this.loginSubmitted = true;
+
+  if (this.loginForm.invalid) {
+    this.loginForm.markAllAsTouched(); // 🔥 THIS LINE
+    this.loader.hide();
+    return;
+  }
+
+  this.loader.show();
+
+  const payload = {
+    email: this.loginForm.value.usernameOrEmail,
+    password: this.loginForm.value.password
+  };
+
+  this.authService.logIn(payload)
+    .pipe(finalize(() => this.loader.hide()))
+    .subscribe({
       next: (res: any) => {
-        // console.log("res",res.message);
-         this._loader.hide();
-        let getToken = res.data.token;
-        const user: any = res.user;
-        this.toastr.success(res.message);
-        localStorage.setItem('token', getToken!);
-        var getUserRole = this.authservice.getUserRole();
-        if (getUserRole === 'SuperAdmin' || getUserRole === 'Admin') {
-          this.router.navigate(['/admin/dashboard']);
-        } else {
-          this.router.navigate(['/therapist/dashboard']);
+        if (!res.success) {
+          this.toastr.error(res.message || 'Login failed');
+          return;
         }
+
+        this.tempToken = res.data.tempToken;
+        this.toastr.success('OTP has been sent to your email');
+        this.step = 'emailOtp';
       },
       error: (err) => {
-         this._loader.hide();
-        if (err.status === 401) {
-          const errorMessage = err.error?.message;
-          this.toastr.error(errorMessage);
-        } else {
-          const errorMessage = err.error?.message;
-          this.toastr.error(errorMessage);
-        }
+        this.toastr.error(err?.error?.message || 'Login failed');
       }
     });
+}
+
+
+  /* -------------------- OTP INPUT -------------------- */
+  handle2FAInput(event: Event, index: number): void {
+    const input = event.target as HTMLInputElement;
+    const value = input.value;
+
+    if (!/^\d$/.test(value) && value !== '') {
+      input.value = '';
+      return;
+    }
+
+    this.otpDigits[index] = value;
+    this.otpCode = this.otpDigits.join('');
+
+    if (value && index < 5) {
+      const next = input.parentElement?.querySelectorAll('input')[index + 1] as HTMLInputElement;
+      next?.focus();
+    }
+
+    if (!value && index > 0) {
+      const prev = input.parentElement?.querySelectorAll('input')[index - 1] as HTMLInputElement;
+      prev?.focus();
+    }
   }
-}
 
+  onOtpKeyDown(event: KeyboardEvent, index: number): void {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      if (this.otpCode.length === 6) {
+        this.verifyOtp();
+      }
+      return;
+    }
 
-  get loginUser():{[key:string]:AbstractControl}{
-    return this.loginForm.controls
+    if (
+      !/^\d$/.test(event.key) &&
+      !['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight'].includes(event.key)
+    ) {
+      event.preventDefault();
+    }
   }
 
+  /* -------------------- VERIFY OTP (STEP 2) -------------------- */
+  verifyOtp(): void {
+  if (this.otpCode.length !== 6) {
+    this.toastr.error('Enter valid OTP');
+    return;
+  }
 
-  // imageslider
+  this.loader.show();
 
-prevImage() {
-  this.currentIndex = (this.currentIndex - 1 + this.imageList.length) % this.imageList.length;
+  const payload = {
+    tempToken: this.tempToken,
+    otp: this.otpCode
+  };
+
+  this.authService.verify2FA(payload)
+    .pipe(finalize(() => this.loader.hide()))
+    .subscribe({
+      next: (res: any) => {
+        if (!res.success) {
+          this.toastr.error(res.message || 'Invalid OTP');
+          return;
+        }
+
+        localStorage.setItem('token', res.data.token);
+        this.toastr.success('Login successful');
+        this.router.navigate(['/dashboard']);
+      },
+      error: (err) => {
+        this.toastr.error(err?.error?.message || 'Invalid OTP');
+      }
+    });
 }
 
-nextImage() {
-  this.currentIndex = (this.currentIndex + 1) % this.imageList.length;
+  resendOtp(): void {
+  if (this.loginForm.invalid) {
+    this.toastr.error('Email or password missing');
+    return;
+  }
+
+  this.loader.show();
+
+  const payload = {
+    email: this.loginForm.value.usernameOrEmail,
+    password: this.loginForm.value.password
+  };
+
+  this.authService.logIn(payload)
+    .pipe(finalize(() => this.loader.hide()))
+    .subscribe({
+      next: (res: any) => {
+        if (!res.success) {
+          this.toastr.error(res.message || 'Failed to resend OTP');
+          return;
+        }
+
+        // IMPORTANT: update tempToken again
+        this.tempToken = res.data.tempToken;
+        this.toastr.success('OTP has been resent to your email');
+      },
+      error: (err) => {
+        this.toastr.error(err?.error?.message || 'Failed to resend OTP');
+      }
+    });
 }
 
-showPassword: boolean = false;
-
-togglePasswordVisibility() {
-  this.showPassword = !this.showPassword;
+closeOtpModal(): void {
+  this.step = 'login';
+  this.otpDigits = ['', '', '', '', '', ''];
+  this.otpCode = '';
 }
 
-PasswordValue: any = '';
 
-onPasswordInput(){
-  const control = this.loginForm.get('password');
-  this.PasswordValue = control?.value || '';
-}
+  /* -------------------- HELPERS -------------------- */
+  get loginUser(): { [key: string]: AbstractControl } {
+    return this.loginForm.controls;
+  }
 }

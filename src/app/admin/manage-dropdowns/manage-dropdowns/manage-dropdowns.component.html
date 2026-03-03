@@ -1,12 +1,9 @@
 <div>
-  <div class="mb-8">
-    <h1 class="text-3xl font-bold text-gray-900">Manage Dropdowns</h1>
-    <!-- <p class="text-gray-600">
-      Manage your application's dropdown data including countries, lookup values, and medications.
-    </p> -->
+  <div class="mb-4">
+    <h1 class="text-2xl font-semibold text-gray-900">Manage Dropdowns</h1>
   </div>
 
-  <div class="animated-tabs mb-1" #tabContainer>
+  <div class="animated-tabs mb-3" #tabContainer>
     <div
       class="slider"
       [ngStyle]="{
@@ -31,5 +28,7 @@
     <app-countries-data *ngIf="activeTab === 'countries'"></app-countries-data>
     <app-lookup-data *ngIf="activeTab === 'lookup'"></app-lookup-data>
     <app-medication *ngIf="activeTab === 'medication'"></app-medication>
+    <app-diagnosis *ngIf="activeTab === 'diagnosis'"></app-diagnosis>
+    <app-cheif-complaint *ngIf="activeTab === 'chiefComplaint'"></app-cheif-complaint>
   </div>
 </div>

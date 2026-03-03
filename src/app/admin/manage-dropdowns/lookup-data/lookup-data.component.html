@@ -1,189 +1,87 @@
-<div class="space-y-6">
-  <!-- Header -->
-  <div class="flex justify-between items-center">
-    <div>
-      <!-- <h2 class="text-2xl font-semibold text-gray-900">Lookup Data</h2> -->
-      <p class="text-gray-600 mt-1">Manage lookup values for various categories like allergies, conditions, and status types.</p>
-    </div>
-    <button
-      (click)="showAddForm()"
-      class="customBtn-secondary"
-    >
-      <!-- <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-      </svg> -->
-      Add Lookup Value
-    </button>
-  </div>
+ <div class="space-y-8">
+      <!-- Header -->
+     
 
-  <!-- Form -->
-  <div *ngIf="showForm" class="card p-6">
-    <h3 class="text-lg font-medium text-gray-900 mb-4">
-      {{ isEditing ? 'Edit Lookup Value' : 'Add New Lookup Value' }}
-    </h3>
-    
-    <form [formGroup]="lookupForm" (ngSubmit)="onSubmit()">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-  <div>
+  
 
-     <label class="block text-sm font-medium text-gray-700 mb-2">Parent Name</label>
+      <!-- Quick Actions -->
+      <div class="">
+        <!-- <h2 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2> -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <button (click)="navigateToCategories()" class="flex items-center p-4 border border-gray-200 rounded-lg hover:border-primary-300 hover:bg-primary-50 transition-colors bg-white">
+            <div class="flex-shrink-0 w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center mr-4">
+              <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+              </svg>
+            </div>
+            <div class="text-left">
+              <h3 class="font-medium text-gray-900">Manage Categories</h3>
+              <p class="text-gray-500 text-sm">Create, edit, and delete categories</p>
+            </div>
+          </button>
 
-      <select formControlName="parentId" class="form-control">
-      <option value="">Select a parent name</option>
-      <option *ngFor="let _paratentlist of paratentlist" [value]="_paratentlist.id">{{ _paratentlist.category }}</option>
-    </select>
-    <div *ngIf="lookupForm.get('parentId')?.invalid && lookupForm.get('parentId')?.touched" class="text-red-500 text-sm mt-1">
-      Parent Name is required.
-    </div>
-
-    
-  </div>
-
-  <!-- Value -->
-  <div>
-    <label class="block text-sm font-medium text-gray-700 mb-2">Value</label>
-    <input
-      type="text"
-      formControlName="value"
-      class="form-control"
-      placeholder="Enter lookup value"
-    >
-    <div *ngIf="lookupForm.get('value')?.invalid && lookupForm.get('value')?.touched" class="text-red-500 text-sm mt-1">
-      Value is required 
-    </div>
-  </div>
-
-  <div class="md:col-span-2">
-   
-    <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
-     <input
-      type="text"
-      formControlName="category"
-      class="form-control"
-      placeholder="Enter category value"
-    >
-    <div *ngIf="lookupForm.get('category')?.invalid && lookupForm.get('category')?.touched" class="text-red-500 text-sm mt-1">
-      Category is required.
-    </div>   
-  </div>
-
-  <div class="md:col-span-2">
-    <label class="inline-flex items-center">
-      <input
-        type="checkbox"
-        formControlName="active"
-        class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-      >
-      <span class="ml-2 text-sm text-gray-700">Active</span>
-    </label>
-  </div>
-</div>
-
-
-      <div class="flex justify-end space-x-3 mt-6 pt-6 border-t border-gray-200">
-        <button
-          type="button"
-          (click)="cancelForm()"
-          class="btn-secondary"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          [disabled]="lookupForm.invalid"
-          class="customBtn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {{ isEditing ? 'Update' : 'Create' }} Lookup Value
-        </button>
-      </div>
-    </form>
-  </div>
-
-  <!-- Lookup Data by Category -->
-  <div *ngIf="isshowTable">
-     <ag-grid-angular
-  class="ag-theme-alpine"
-  [rowData]="rowData"
-  [columnDefs]="columnDefs"
-  [defaultColDef]="defaultColDef"
-  [paginationPageSize]="paginationPageSize"
-  style="width: 100%; height: 500px;"
-  (cellClicked)="onCellClicked($event)">
-</ag-grid-angular>
-<div class="bg-white rounded-b-xl border-t-0 border border-gray-200 shadow-sm">
-
-  <!-- Table here -->
-  <table class="min-w-full text-sm text-left">
-    <!-- Your table headers and rows -->
-  </table>
-
-  <!-- Pagination Footer -->
-  <div class="flex flex-col md:flex-row justify-between items-center gap-4 px-4 py-3 border-t border-gray-200 text-sm text-gray-700">
-    
-    <!-- Left: Page Size + Info -->
-    <div class="flex flex-col md:flex-row items-center gap-4">
-      <!-- Page Size Selector -->
-      <div class="flex items-center gap-2">
-        <label for="pageSize" class="font-medium">Page Size:</label>
-        <select id="pageSize"
-                [(ngModel)]="paginationPageSize"
-                (change)="onPageSizeChange()"
-                class="border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-orange-500">
-          <option *ngFor="let size of paginationPageSizeSelector" [value]="size">{{ size }}</option>
-        </select>
+          <button (click)="navigateToValues()" class="flex items-center p-4 border border-gray-200 rounded-lg hover:border-primary-300 hover:bg-primary-50 transition-colors bg-white">
+            <div class="flex-shrink-0 w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center mr-4">
+              <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+            </div>
+            <div class="text-left">
+              <h3 class="font-medium text-gray-900">Manage Values</h3>
+              <p class="text-gray-500 text-sm">Add, edit, and reorder dropdown values</p>
+            </div>
+          </button>
+        </div>
       </div>
 
-      <!-- Page Info -->
-      <div>
-        Showing <span class="font-semibold">{{ pageStart }}</span> to
-        <span class="font-semibold">{{ pageEnd }}</span> of
-        <span class="font-semibold">{{ totalCount }}</span> records
+      <!-- Categories Overview -->
+      <div class="">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-lg font-semibold text-gray-900">Categories Overview</h2>
+          <button (click)="navigateToCategories()" class="text-primary-500 hover:text-primary-600 font-medium text-sm">
+            View All →
+          </button>
+        </div>
+
+        <div class="space-y-4">
+          <div
+            *ngFor="let category of categories"
+            class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors bg-white"
+          >
+            <div>
+              <h3 class="font-medium text-gray-900">{{ category.category }}</h3>
+              <p class="text-gray-500 text-sm" *ngIf="category.description">{{ category.description }}</p>
+              <div class="text-xs text-gray-400 mt-1">
+                Created {{ category.lastUpdated | date:'medium' }}
+              </div>
+            </div>
+            <div class="flex items-center space-x-6">
+              <div class="text-right">
+                <div class="text-2xl font-semibold text-gray-900">{{ category.valueCount }}</div>
+                <div class="text-xs text-gray-500">values</div>
+              </div>
+              <button
+                (click)="manageCategory(category)"
+                class="text-primary-500 hover:text-primary-600 transition-colors"
+                title="Manage Values"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m9 5 7 7-7 7"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="categories.length === 0" class="text-center py-8">
+          <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+          </svg>
+          <h3 class="text-lg font-medium text-gray-900 mb-2">No Categories Yet</h3>
+          <p class="text-gray-600 mb-4">Create your first dropdown category to get started.</p>
+          <button (click)="navigateToCategories()" class="custom-button">
+            Create Category
+          </button>
+        </div>
       </div>
     </div>
-
-    <!-- Right: Pagination Controls -->
-    <div class="flex items-center gap-2 ml-auto">
-      <button (click)="goToPreviousPage()"
-              [disabled]="currentPage === 1"
-              class="px-4 py-1.5 rounded bg-orange-500 text-white disabled:bg-gray-300 disabled:cursor-not-allowed">
-        Previous
-      </button>
-
-      <span>
-        Page <span class="font-semibold">{{ currentPage }}</span> of
-        <span class="font-semibold">{{ totalPages }}</span>
-      </span>
-
-      <button (click)="goToNextPage()"
-              [disabled]="currentPage === totalPages"
-              class="px-4 py-1.5 rounded bg-orange-500 text-white disabled:bg-gray-300 disabled:cursor-not-allowed">
-        Next
-      </button>
-    </div>
-
-  </div>
-</div>
-    <!-- <div *ngIf="lookupData.length === 0" class="card p-8 text-center">
-      <div class="text-gray-500">
-        <svg class="w-12 h-12 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
-        </svg>
-        <p class="text-lg">No lookup data found</p>
-        <p class="text-sm mt-1">Add your first lookup value to get started.</p>
-      </div>
-    </div> -->
- 
- 
-  </div>
-</div>
-
-<!-- Delete Confirmation Dialog -->
-<app-confirm-dialog
-  *ngIf="showDeleteConfirm"
-  title="Delete Lookup Value"
-  message="Are you sure you want to delete this lookup value? This action cannot be undone."
-  confirmText="Delete"
-  cancelText="Cancel"
-  (confirm)="deleteLookup()"
-  (cancel)="cancelDelete()"
-></app-confirm-dialog>

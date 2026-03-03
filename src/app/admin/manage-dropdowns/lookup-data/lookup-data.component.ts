@@ -4,6 +4,8 @@ import { DropdownDataService } from '../../../service/dropdown/dropdown-data-ser
 import { LookupData } from '../../../models/dropdown-data-model';
 import { ColDef, Column, GridApi, PaginationChangedEvent } from 'ag-grid-community';
 import { ToastrService } from 'ngx-toastr';
+import { AdminService } from '../../../service/admin/admin.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-lookup-data',
@@ -23,7 +25,7 @@ export class LookupDataComponent implements OnInit {
     public _toastr = inject(ToastrService);
     
 isshowTable:boolean = true;
-  categories = ['Allergy', 'ChronicCondition', 'SmokingStatus', 'BloodType', 'Gender', 'MaritalStatus'];
+  categories: any
 
   constructor(
     private fb: FormBuilder,
@@ -37,8 +39,9 @@ isshowTable:boolean = true;
   }
 
   ngOnInit(): void {
-    this.loadLookupData();
-    this.getParentDropdown()
+    // this.loadLookupData();
+    // this.getParentDropdown();
+    this.loadDashboardData();
   }
 
 
@@ -190,10 +193,10 @@ columnDefs: ColDef[] = [
     cellRenderer: (params: any) => {
       return `
         <div class="flex space-x-2">
-          <button class="text-primary-600 hover:text-primary-900 text-sm font-medium" data-action="edit">
+          <button class="text-sm font-medium" data-action="edit">
             <i class="fa fa-edit"></i>
           </button>
-          <button class="text-red-600 hover:text-red-900 text-sm font-medium" data-action="delete">
+          <button class="text-red-600 text-sm font-medium" data-action="delete">
             <i class="fa fa-trash"></i>
           </button>
         </div>
@@ -298,4 +301,50 @@ getParentDropdown(){
     this.paratentlist = res
   })
 }
+
+  totalCategories = 0;
+  totalValues = 0;
+  activeValues = 0;
+  averagePerCategory = 0;
+
+  public _adminservice = inject(AdminService);
+  public router = inject(Router);
+
+  loadDashboardData(): void {
+    this._adminservice.getAllCategories().subscribe({
+      next: (response) => {
+        this.categories = response.data;
+        this.totalCategories = this.categories.length;
+        // this.totalValues = this.categories.reduce((sum, cat) => sum + cat.valueCount, 0);
+        this.averagePerCategory = this.totalCategories > 0 ? Math.round(this.totalValues / this.totalCategories) : 0;
+        
+        // For active values, we'd need to load all values - for demo, we'll estimate 80%
+        this.activeValues = Math.round(this.totalValues * 0.8);
+      },
+      error: (error) => {
+        console.error('Error loading dashboard data:', error);
+      }
+    });
+  }
+
+  navigateToCategories(): void {
+    console.log('Navigate to categories');
+this.router.navigate(['/settings/dropdowns/categoryList']);
+    // In a real app, you would use Angular Router here
+  }
+
+  navigateToValues(): void {
+    console.log('Navigate to values');
+    this.router.navigate(['/settings/dropdowns/dropdownsValues']);
+
+    // In a real app, you would use Angular Router here
+  }
+
+  categoryName: string = '';
+  manageCategory(category: any): void {
+  this.router.navigate(['/settings/dropdowns/dropdownsValues'], {
+    queryParams: { selectedCategory: category.category }
+  });
+}
+
 }

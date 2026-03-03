@@ -36,7 +36,7 @@ navigateToLogin(): void {
 
   setTimeout(() => {
     console.log('Navigating now');
-    this.Router.navigate(['/patient/login']).then(() => {
+    this.Router.navigate(['/patient/registration']).then(() => {
       console.log('Hiding loader');
       this._loader.hide();
     });

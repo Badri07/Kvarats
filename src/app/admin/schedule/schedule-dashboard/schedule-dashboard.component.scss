@@ -1,0 +1,321 @@
+.schedule-dashboard {
+  @apply p-6 space-y-6 min-h-full;
+}
+
+.dashboard-header {
+  @apply flex items-start justify-between mb-8;
+}
+
+.header-content {
+  @apply space-y-2;
+}
+
+.dashboard-title {
+  @apply text-3xl font-bold text-gray-900;
+}
+
+.dashboard-subtitle {
+  @apply text-gray-600;
+}
+
+.header-actions {
+  @apply flex items-center gap-3;
+}
+
+.loading-state {
+  @apply flex flex-col items-center justify-center py-16 space-y-4;
+}
+
+.loading-spinner {
+  @apply w-8 h-8 border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin;
+}
+
+.stats-grid {
+  @apply grid grid-cols-1 md:grid-cols-3 gap-6;
+}
+
+.stat-card {
+  @apply bg-white rounded-2xl shadow-lg border border-primary-100 p-6 hover:shadow-xl transition-all duration-300;
+  box-shadow: 0 8px 24px rgba(255, 161, 87, 0.08);
+}
+
+.stat-icon {
+  @apply flex items-center justify-center w-12 h-12 rounded-xl mb-4 w-full md:w-1/4;
+}
+
+.stat-icon-blue {
+  @apply bg-blue-100 text-blue-600;
+}
+
+.stat-icon-green {
+  @apply bg-green-100 text-green-600;
+}
+
+.stat-icon-purple {
+  @apply bg-purple-100 text-purple-600;
+}
+
+.stat-content {
+  @apply space-y-1 text-center;
+}
+
+.stat-value {
+  @apply text-2xl font-bold text-gray-900;
+}
+
+.stat-label {
+  @apply text-sm text-gray-600;
+}
+
+.stat-change {
+  @apply text-xs font-medium;
+}
+
+.stat-change.positive {
+  @apply text-green-600;
+}
+
+.stat-change.neutral {
+  @apply text-gray-600;
+}
+
+.content-grid {
+  @apply grid grid-cols-1 lg:grid-cols-3 gap-6;
+}
+
+.card {
+  @apply bg-white rounded-2xl shadow-lg border border-primary-100;
+  box-shadow: 0 8px 24px rgba(255, 161, 87, 0.08);
+}
+
+.card-header {
+  @apply flex items-center justify-between p-6 border-b border-gray-200;
+}
+
+.card-title {
+  @apply text-lg font-semibold text-gray-900;
+}
+
+.card-action {
+  @apply text-sm text-primary-600 hover:text-primary-700 font-medium transition-colors;
+}
+
+.card-content {
+  @apply p-6;
+}
+
+.quick-actions {
+  @apply space-y-4;
+}
+
+.quick-action {
+  @apply w-full flex items-center gap-4 p-4 text-left bg-gray-50 hover:bg-primary-50 rounded-xl transition-all duration-300;
+  
+  &:hover {
+    transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(255, 161, 87, 0.1);
+    
+    .action-icon {
+      @apply bg-primary-100 text-primary-600;
+    }
+  }
+}
+
+.action-icon {
+  @apply w-10 h-10 bg-gray-200 text-gray-600 rounded-lg flex items-center justify-center transition-all duration-300;
+}
+
+.action-content {
+  @apply flex-1;
+}
+
+.action-title {
+  @apply block text-sm font-semibold text-gray-900;
+}
+
+.action-description {
+  @apply block text-xs text-gray-600 mt-1;
+}
+
+.leaves-list {
+  @apply space-y-4;
+}
+
+.leave-item {
+  @apply flex items-center gap-4 p-4 bg-gray-50 rounded-xl;
+}
+
+.leave-date-info {
+  @apply text-center;
+}
+
+.leave-date {
+  @apply text-sm font-bold text-gray-900;
+}
+
+.leave-type {
+  @apply text-xs font-medium px-2 py-1 rounded-full;
+  
+  &.full-day {
+    @apply bg-blue-100 text-blue-700;
+  }
+  
+  &.partial {
+    @apply bg-purple-100 text-purple-700;
+  }
+}
+
+.leave-details {
+  @apply flex-1 space-y-1;
+}
+
+.leave-time {
+  @apply text-sm font-medium text-gray-900;
+}
+
+.leave-reason {
+  @apply text-sm text-gray-600;
+}
+
+.empty-leaves {
+  @apply text-center py-8;
+}
+
+.empty-title {
+  @apply text-lg font-semibold text-gray-900 mt-4 mb-2;
+}
+
+.empty-description {
+  @apply text-gray-600;
+}
+
+.availability-summary {
+  @apply grid grid-cols-7 gap-2;
+}
+
+.day-summary {
+  @apply text-center p-3 rounded-lg border;
+  
+  &.available {
+    @apply bg-green-50 border-green-200;
+  }
+  
+  &.unavailable {
+    @apply bg-red-50 border-red-200;
+  }
+}
+
+.day-name {
+  @apply text-xs font-semibold text-gray-700 mb-2;
+}
+
+.day-hours {
+  @apply text-xs font-medium;
+  
+  &:not(.unavailable) {
+    @apply text-green-700;
+  }
+  
+  &.unavailable {
+    @apply text-red-700;
+  }
+}
+
+.admin-summary {
+  @apply text-center space-y-4;
+}
+
+.summary-text {
+  @apply text-gray-600;
+}
+
+// Days of week data
+.daysOfWeek {
+  // This would be defined in the component
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .dashboard-header {
+    @apply flex-col gap-4;
+  }
+  
+  .header-actions {
+    @apply w-full justify-end;
+  }
+  
+  .stats-grid {
+    // @apply grid-cols-1;
+  }
+  
+  .content-grid {
+    @apply grid-cols-1;
+  }
+  
+  .availability-summary {
+    @apply grid-cols-4;
+  }
+}
+
+@media (max-width: 640px) {
+  .availability-summary {
+    // @apply grid-cols-2;
+  }
+}
+
+.leave-form {
+  @apply space-y-6;
+}
+
+.form-group {
+  @apply space-y-2;
+}
+
+.form-label {
+  @apply block text-sm font-medium text-gray-700;
+}
+
+.form-input, .form-select {
+  @apply block w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-primary-500 focus:border-primary-500 transition-all duration-300;
+  
+  &.error {
+    @apply border-red-300 focus:ring-red-500 focus:border-red-500;
+  }
+}
+
+.form-textarea {
+  @apply block w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-primary-500 focus:border-primary-500 resize-none transition-all duration-300;
+}
+
+.form-error {
+  @apply text-sm text-red-600;
+}
+
+.checkbox-label {
+  @apply flex items-center cursor-pointer;
+}
+
+.checkbox-input {
+  @apply sr-only;
+  
+  &:checked + .checkbox-custom {
+    @apply bg-primary-500 border-primary-500;
+    
+    &::after {
+      @apply opacity-100;
+    }
+  }
+}
+
+.checkbox-custom {
+  @apply w-4 h-4 border border-gray-300 rounded mr-3 flex items-center justify-center relative transition-all;
+  
+  &::after {
+    content: '';
+    @apply w-2 h-2 bg-white rounded-sm opacity-0 transition-opacity;
+  }
+}
+
+.checkbox-text {
+  @apply text-sm text-gray-700;
+}

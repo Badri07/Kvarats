@@ -1,89 +1,748 @@
-<div class="bg-white text-gray-800 font-sans p-8">
+<div class="min-h-screen py-6">
+  <div class="">
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="flex justify-center items-center py-20">
+      <div
+        class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"
+      ></div>
+      <span class="ml-3 text-gray-600">Loading profile...</span>
+    </div>
 
-  <!-- Header -->
-  <div class="flex justify-between items-center mb-10">
-    <h1 class="text-3xl font-bold text-primary-orange flex items-center gap-2">
-      <i class="fas fa-user-circle text-3xl"></i> User Profile
-    </h1>
-    <div class="space-x-3">
-      <button class="customBtn transition-transform duration-300 hover:scale-105">Schedule Slots</button>
-      <button class="customBtn-secondary transition-transform duration-300 hover:scale-105">Edit Profile</button>
+    <!-- Main Content -->
+    <div *ngIf="!isLoading && profileData">
+      <!-- Profile Content -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Sidebar Profile Card -->
+        <div class="lg:col-span-1 space-y-6 bg-white rounded-lg border border-gray-200 p-6">
+          <!-- Profile Summary -->
+            <div class="text-center">
+              <!-- Profile Picture with actual image if available -->
+              <div
+                *ngIf="profileData.profilePicture; else summaryInitials"
+                class="w-24 h-24 rounded-full bg-orange-100 mx-auto mb-4 border-4 border-white shadow-sm overflow-hidden"
+              >
+                <img
+                  [src]="profileData.profilePicture"
+                  [alt]="getFullName()"
+                  class="w-full h-full object-cover"
+                />
+              </div>
+              <ng-template #summaryInitials>
+                <div
+                  class="w-24 h-24 rounded-full bg-orange-100 mx-auto mb-4 flex items-center justify-center text-orange-600 text-2xl font-semibold border-4 border-white shadow-sm"
+                >
+                  {{ getInitials() }}
+                </div>
+              </ng-template>
+              <h3 class="font-semibold text-gray-900 text-lg">
+                {{ getFullName() }}
+              </h3>
+              <div class="flex flex-wrap justify-center gap-2 mt-2">
+                <span
+                  *ngFor="let role of profileData.roles"
+                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200"
+                >
+                  <i class="fas fa-user-shield text-blue-600 mr-1 text-xs"></i>
+                  {{ role }}
+                </span>
+                <span
+                  *ngIf="!profileData.roles || profileData.roles.length === 0"
+                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200"
+                >
+                  <i class="fas fa-user mr-1 text-xs"></i>
+                  Super Admin
+                </span>
+              </div>
+
+              <!-- <div class="mt-4 inline-flex items-center gap-2 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                  <i class="fas fa-circle text-xs"></i>
+                  {{ profileData.active ? 'Active' : 'Inactive' }}
+                </div> -->
+            </div>
+
+            <div class="mt-4">
+              <button
+                (click)="toggleEdit()"
+                class="w-100 bg-orange-400 text-white py-2 px-3 text-sm rounded-lg hover:bg-orange-500 transition flex items-center justify-center gap-2"
+              >
+                <i class="fas fa-edit"></i>
+                Edit Profile
+              </button>
+            </div>
+
+            <!-- <div class="mt-6 space-y-4 text-sm">
+                <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                  <span class="font-medium text-gray-600">Member Since</span>
+                  <span class="text-gray-900">{{ formatDate(profileData.createdAt) }}</span>
+                </div>
+                <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                  <span class="font-medium text-gray-600">Status</span>
+                  <span class="text-green-600 font-medium">{{ profileData.active ? 'Active' : 'Inactive' }}</span>
+                </div>
+                <div class="flex justify-between items-center py-2">
+                  <span class="font-medium text-gray-600">2FA</span>
+                  <span class="{{ get2FAColor() }} font-medium">
+                    {{ get2FAStatus() }}
+                  </span>
+                </div>
+              </div> -->
+
+          <!-- Security Card -->
+          <!-- <div class="bg-white rounded-lg border border-gray-200 p-6">
+              <div class="text-center">
+                <div class="flex items-center justify-between mb-4">
+                  <h3 class="font-semibold text-gray-700">Security</h3>
+                  <i class="fas fa-shield-alt text-orange-600"></i>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-4">
+                  <p class="text-sm text-gray-600 mb-2">Two-Factor Authentication</p>
+                  <div class="flex items-center justify-between">
+                    <span class="text-lg font-semibold {{ get2FAColor() }}">
+                      {{ get2FAStatus() }}
+                    </span>
+                    <button class="text-orange-600 hover:text-orange-800 text-sm font-medium">
+                      Manage
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div> -->
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Personal Information -->
+          <div class="bg-white rounded-lg border border-gray-200 p-6">
+            <h2
+              class="text-xl font-semibold text-gray-900 mb-6 flex items-center gap-3"
+            >
+              <div
+                class="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center"
+              >
+                <i class="fas fa-user text-orange-600"></i>
+              </div>
+              Personal Information
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="space-y-1">
+                <label class="text-sm font-medium text-gray-600"
+                  >First Name</label
+                >
+                <div class="text-gray-900 font-medium">
+                  {{ profileData.firstName || "Not provided" }}
+                </div>
+              </div>
+
+              <div class="space-y-1">
+                <label class="text-sm font-medium text-gray-600"
+                  >Last Name</label
+                >
+                <div class="text-gray-900 font-medium">
+                  {{ profileData.lastName || "Not provided" }}
+                </div>
+              </div>
+
+              <div class="space-y-1">
+                <label class="text-sm font-medium text-gray-600"
+                  >Email Address</label
+                >
+                <div class="text-gray-900 font-medium">
+                  {{ profileData.email }}
+                </div>
+              </div>
+
+              <div class="space-y-1">
+                <label class="text-sm font-medium text-gray-600"
+                  >Phone Number</label
+                >
+                <div class="text-gray-900 font-medium">
+                  {{ formatPhoneNumber(profileData.phoneNumber) }}
+                </div>
+              </div>
+
+              <div class="space-y-1">
+                <label class="text-sm font-medium text-gray-600">Country</label>
+                <div class="text-gray-900 font-medium">
+                  {{ profileData.country || "Not provided" }}
+                </div>
+              </div>
+
+              <div class="space-y-1">
+                <label class="text-sm font-medium text-gray-600"
+                  >Two-Factor Auth</label
+                >
+                <div class="flex items-center gap-2">
+                  <span
+                    class="w-2 h-2 rounded-full {{
+                      profileData.isTwoFactorEnabled
+                        ? 'bg-green-500'
+                        : 'bg-gray-300'
+                    }}"
+                  ></span>
+                  <span
+                    class="{{
+                      profileData.isTwoFactorEnabled
+                        ? 'text-green-600'
+                        : 'text-gray-600'
+                    }} font-medium"
+                  >
+                    {{ get2FAStatus() }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Account Details -->
+          <div class="bg-white rounded-lg border border-gray-200 p-6">
+            <h2
+              class="text-xl font-semibold text-gray-900 mb-6 flex items-center gap-3"
+            >
+              <div
+                class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center"
+              >
+                <i class="fas fa-chart-line text-green-600"></i>
+              </div>
+              Account Details
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="space-y-1">
+                <label class="text-sm font-medium text-gray-600"
+                  >Account Created</label
+                >
+                <div class="text-gray-900 font-medium">
+                  {{ formatDate(profileData.createdAt) }}
+                </div>
+              </div>
+
+              <div class="space-y-1">
+                <label class="text-sm font-medium text-gray-600"
+                  >Account Status</label
+                >
+                <div class="flex items-center gap-2">
+                  <span
+                    class="w-2 h-2 rounded-full {{
+                      profileData.active ? 'bg-green-500' : 'bg-gray-300'
+                    }}"
+                  ></span>
+                  <span
+                    class="{{
+                      profileData.active ? 'text-green-600' : 'text-gray-600'
+                    }} font-medium"
+                  >
+                    {{ profileData.active ? "Active" : "Inactive" }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- <div class="space-y-1">
+                  <label class="text-sm font-medium text-gray-600">Country Code</label>
+                  <div class="text-gray-900 font-medium">{{ profileData.countryDataId || 'Not provided' }}</div>
+                </div> -->
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          <!-- <div class="bg-white rounded-lg border border-gray-200 p-6">
+              <h2 class="text-xl font-semibold text-gray-900 mb-6 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
+                  <i class="fas fa-bolt text-purple-600"></i>
+                </div>
+                Quick Actions
+              </h2>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <button class="p-4 border border-gray-200 rounded-lg hover:border-orange-300 hover:bg-orange-50 transition-colors duration-200 text-left">
+                  <i class="fas fa-key text-orange-600 text-lg mb-2"></i>
+                  <h3 class="font-medium text-gray-900">Change Password</h3>
+                  <p class="text-sm text-gray-600 mt-1">Update your security password</p>
+                </button>
+
+                <button class="p-4 border border-gray-200 rounded-lg hover:border-green-300 hover:bg-green-50 transition-colors duration-200 text-left">
+                  <i class="fas fa-shield-alt text-green-600 text-lg mb-2"></i>
+                  <h3 class="font-medium text-gray-900">Security Settings</h3>
+                  <p class="text-sm text-gray-600 mt-1">Manage 2FA and security</p>
+                </button>
+
+                <button class="p-4 border border-gray-200 rounded-lg hover:border-purple-300 hover:bg-purple-50 transition-colors duration-200 text-left">
+                  <i class="fas fa-bell text-purple-600 text-lg mb-2"></i>
+                  <h3 class="font-medium text-gray-900">Notifications</h3>
+                  <p class="text-sm text-gray-600 mt-1">Configure alert preferences</p>
+                </button>
+              </div>
+            </div> -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Error State -->
+    <div
+      *ngIf="!isLoading && !profileData"
+      class="bg-white rounded-lg border border-gray-200 p-8 text-center"
+    >
+      <i class="fas fa-exclamation-triangle text-yellow-500 text-4xl mb-4"></i>
+      <h2 class="text-xl font-semibold text-gray-900 mb-2">
+        Profile Not Found
+      </h2>
+      <p class="text-gray-600 mb-4">Unable to load profile information.</p>
+      <button
+        (click)="loadProfileData()"
+        class="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors"
+      >
+        Try Again
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div
+  *ngIf="isEditing"
+  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+>
+  <div
+    class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+  >
+    <!-- Modal Header -->
+    <div class="flex items-center justify-between p-6 border-b border-gray-200">
+      <h2 class="text-2xl font-semibold text-gray-900 flex items-center gap-3">
+        <div
+          class="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center"
+        >
+          <i class="fas fa-user-edit text-orange-600"></i>
+        </div>
+        Edit Profile
+      </h2>
+      <button
+        (click)="cancelEdit()"
+        class="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+      >
+        <i class="fas fa-times text-xl"></i>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="p-6">
+      <form [formGroup]="profileForm" class="space-y-6">
+        <!-- Profile Picture Section with File Upload -->
+        <div class="flex items-center gap-6 pb-6 border-b border-gray-100">
+          <!-- Profile Picture Display -->
+          <div class="relative">
+            <div
+              *ngIf="
+                profileData.profilePicture || selectedFilePreview;
+                else editInitials
+              "
+              class="w-20 h-20 rounded-full bg-orange-100 border-4 border-white shadow-lg overflow-hidden"
+            >
+              <img
+                [src]="selectedFilePreview || profileData.profilePicture"
+                [alt]="getFullName()"
+                class="w-full h-full object-cover"
+              />
+            </div>
+            <ng-template #editInitials>
+              <div
+                class="w-20 h-20 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 text-xl font-semibold border-4 border-white shadow-lg"
+              >
+                {{ getInitials() }}
+              </div>
+            </ng-template>
+
+            <!-- File Upload Input -->
+            <div class="absolute -bottom-2 -right-2">
+              <label for="profilePictureUpload" class="cursor-pointer">
+                <div
+                  class="w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center text-white shadow-lg hover:bg-orange-700 transition-colors duration-200"
+                >
+                  <i class="fas fa-camera text-xs"></i>
+                </div>
+                <input
+                  id="profilePictureUpload"
+                  type="file"
+                  (change)="onFileSelected($event)"
+                  accept="image/*"
+                  class="hidden"
+                />
+              </label>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="font-semibold text-gray-900">{{ getFullName() }}</h3>
+            <p class="text-gray-600 text-sm mt-1">Super Admin</p>
+            <div class="flex gap-2 mt-2">
+              <label
+                for="profilePictureUpload"
+                class="text-orange-600 hover:text-orange-800 text-sm font-medium cursor-pointer"
+              >
+                Change Photo
+              </label>
+              <span
+                *ngIf="selectedFile"
+                class="text-green-600 text-sm font-medium"
+              >
+                <i class="fas fa-check"></i> Selected
+              </span>
+            </div>
+            <p class="text-xs text-gray-500 mt-1">JPG, PNG or GIF - Max 5MB</p>
+
+            <!-- Upload Progress -->
+            <div *ngIf="isUploading" class="mt-2">
+              <div class="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  class="bg-orange-600 h-2 rounded-full transition-all duration-300"
+                  [style.width]="uploadProgress + '%'"
+                ></div>
+              </div>
+              <p class="text-xs text-gray-600 mt-1">
+                Uploading... {{ uploadProgress }}%
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Personal Information Section -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- First Name -->
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-gray-700">First Name</label>
+            <input
+              type="text"
+              formControlName="firstName"
+              class="w-full form-control"
+              [class.border-red-300]="isControlInvalid('firstName')"
+              [class.bg-red-50]="isControlInvalid('firstName')"
+              placeholder="Enter first name"
+            />
+            <div
+              *ngIf="isControlInvalid('firstName')"
+              class="text-red-500 text-sm mt-1 flex items-center gap-1"
+            >
+              <i class="fas fa-exclamation-circle"></i>
+              {{ getControlError("firstName") }}
+            </div>
+          </div>
+
+          <!-- Last Name -->
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-gray-700">Last Name</label>
+            <input
+              type="text"
+              formControlName="lastName"
+              class="w-full form-control"
+              [class.border-red-300]="isControlInvalid('lastName')"
+              [class.bg-red-50]="isControlInvalid('lastName')"
+              placeholder="Enter last name"
+            />
+            <div
+              *ngIf="isControlInvalid('lastName')"
+              class="text-red-500 text-sm mt-1 flex items-center gap-1"
+            >
+              <i class="fas fa-exclamation-circle"></i>
+              {{ getControlError("lastName") }}
+            </div>
+          </div>
+
+          <!-- Username -->
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-gray-700">Username</label>
+            <input
+              type="text"
+              formControlName="userName"
+              class="w-full form-control"
+              [class.border-red-300]="isControlInvalid('userName')"
+              [class.bg-red-50]="isControlInvalid('userName')"
+              placeholder="Enter username"
+            />
+            <div
+              *ngIf="isControlInvalid('userName')"
+              class="text-red-500 text-sm mt-1 flex items-center gap-1"
+            >
+              <i class="fas fa-exclamation-circle"></i>
+              {{ getControlError("userName") }}
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-gray-700"
+              >Email Address</label
+            >
+            <input
+              type="email"
+              formControlName="email"
+              class="w-full form-control"
+              [class.border-red-300]="isControlInvalid('email')"
+              [class.bg-red-50]="isControlInvalid('email')"
+              placeholder="Enter email address"
+            />
+            <div
+              *ngIf="isControlInvalid('email')"
+              class="text-red-500 text-sm mt-1 flex items-center gap-1"
+            >
+              <i class="fas fa-exclamation-circle"></i>
+              {{ getControlError("email") }}
+            </div>
+          </div>
+
+          <!-- Phone Number -->
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-gray-700"
+              >Phone Number</label
+            >
+            <input
+              type="text"
+              formControlName="phoneNumber"
+              class="w-full form-control"
+              placeholder="Enter phone number"
+            />
+          </div>
+        </div>
+        <!-- Location Section - Only for Admin and Therapist -->
+        <div *ngIf="showLocationFields" class="border-t border-gray-200 pt-6">
+          <h3
+            class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2"
+          >
+            <i class="fas fa-map-marker-alt text-orange-600"></i>
+            Location Information
+          </h3>
+
+          <!-- Address Field -->
+          <div class="mb-6">
+            <div class="space-y-2">
+              <label class="text-sm font-medium text-gray-700">Address</label>
+              <input
+                type="text"
+                formControlName="address"
+                class="w-full form-control"
+                [class.border-red-300]="isControlInvalid('address')"
+                [class.bg-red-50]="isControlInvalid('address')"
+                placeholder="Enter your full address"
+              />
+              <div
+                *ngIf="isControlInvalid('address')"
+                class="text-red-500 text-sm mt-1 flex items-center gap-1"
+              >
+                <i class="fas fa-exclamation-circle"></i>
+                {{ getControlError("address") }}
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Country -->
+            <div class="space-y-2">
+              <label class="text-sm font-medium text-gray-700">Country</label>
+              <select
+                formControlName="country"
+                (change)="onCountryChange()"
+                class="w-full form-control"
+                [class.border-red-300]="isControlInvalid('country')"
+                [class.bg-red-50]="isControlInvalid('country')"
+              >
+                <option [ngValue]="null" disabled>Select Country</option>
+                <option *ngFor="let country of countryList" [ngValue]="country">
+                  {{ country.country }}
+                </option>
+              </select>
+              <div
+                *ngIf="isControlInvalid('country')"
+                class="text-red-500 text-sm mt-1 flex items-center gap-1"
+              >
+                <i class="fas fa-exclamation-circle"></i>
+                {{ getControlError("country") }}
+              </div>
+            </div>
+
+            <!-- State -->
+            <div class="space-y-2">
+              <label class="text-sm font-medium text-gray-700">State</label>
+              <select
+                formControlName="state"
+                (change)="onStateChange()"
+                class="w-full form-control"
+                [class.border-red-300]="isControlInvalid('state')"
+                [class.bg-red-50]="isControlInvalid('state')"
+                [disabled]="!profileForm.get('country')?.value"
+              >
+                <option [ngValue]="null" disabled>Select State</option>
+                <option
+                  *ngFor="let state of states"
+                  [ngValue]="state.stateCode"
+                >
+                  {{ state.stateName }}
+                </option>
+              </select>
+              <div
+                *ngIf="isControlInvalid('state')"
+                class="text-red-500 text-sm mt-1 flex items-center gap-1"
+              >
+                <i class="fas fa-exclamation-circle"></i>
+                {{ getControlError("state") }}
+              </div>
+            </div>
+
+            <!-- City -->
+            <div class="space-y-2">
+              <label class="text-sm font-medium text-gray-700">City</label>
+              <select
+                formControlName="city"
+                (change)="onCityChange()"
+                class="w-full form-control"
+                [class.border-red-300]="isControlInvalid('city')"
+                [class.bg-red-50]="isControlInvalid('city')"
+                [disabled]="!profileForm.get('state')?.value"
+              >
+                <option [ngValue]="null" disabled>Select City</option>
+                <option *ngFor="let city of cities" [ngValue]="city.cityName">
+                  {{ city.cityName }}
+                </option>
+              </select>
+              <div
+                *ngIf="isControlInvalid('city')"
+                class="text-red-500 text-sm mt-1 flex items-center gap-1"
+              >
+                <i class="fas fa-exclamation-circle"></i>
+                {{ getControlError("city") }}
+              </div>
+            </div>
+
+            <!-- Zip Code -->
+            <div class="space-y-2">
+              <label class="text-sm font-medium text-gray-700">Zip Code</label>
+              <select
+                formControlName="countryDataId"
+                class="w-full form-control"
+                [class.border-red-300]="isControlInvalid('countryDataId')"
+                [class.bg-red-50]="isControlInvalid('countryDataId')"
+                [disabled]="!profileForm.get('city')?.value"
+              >
+                <option [ngValue]="null" disabled>Select Zip Code</option>
+                <option *ngFor="let zip of zipCodes" [ngValue]="zip.id">
+                  {{ zip.zipCode }}
+                </option>
+              </select>
+              <div
+                *ngIf="isControlInvalid('countryDataId')"
+                class="text-red-500 text-sm mt-1 flex items-center gap-1"
+              >
+                <i class="fas fa-exclamation-circle"></i>
+                {{ getControlError("countryDataId") }}
+              </div>
+            </div>
+          </div>
+
+          <!-- <div class="mt-8 p-6 bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl border border-orange-200">
+  <div class="flex items-center gap-3 mb-4">
+    <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+      <i class="fas fa-user-md text-orange-600"></i>
+    </div>
+    <div>
+      <h3 class="text-lg font-semibold text-gray-900">Practice Type</h3>
+      <p class="text-sm text-gray-600">Select your practice configuration</p>
     </div>
   </div>
 
-  <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-
-    <!-- Profile Card -->
-    <div class="col-span-1 border border-primary-border-color bg-white
-                rounded-2xl p-6 shadow-md flex flex-col items-center hover:shadow-lg transition-shadow duration-300">
-
-      <div class="relative w-28 h-28 rounded-full bg-gradient-to-br from-primary-orange to-[#4F81C7] 
-                  flex items-center justify-center text-white text-3xl font-bold uppercase mb-5
-                  ring-4 ring-[#EDF1FF] hover:scale-105 transition-transform duration-300">
-        CA
-        <span class="absolute bottom-0 right-0 bg-white text-[#3863A7] p-2 rounded-full shadow-md cursor-pointer hover:bg-gray-100">
-          <i class="fas fa-camera"></i>
-        </span>
+  <div class="space-y-4">
+    <label class="flex items-center justify-between p-4 bg-white rounded-lg border-2 border-gray-200 hover:border-orange-300 transition-all duration-200 cursor-pointer group">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center group-hover:bg-green-200 transition-colors">
+          <i class="fas fa-user text-green-600 text-sm"></i>
+        </div>
+        <div>
+          <span class="font-medium text-gray-900">Solo Provider</span>
+          <p class="text-sm text-gray-500 mt-1">Independent practice with single provider</p>
+        </div>
       </div>
-
-      <div class="space-y-2 text-center text-sm w-full">
-        <p><span class="font-semibold">Name:</span> null. Client Admin</p>
-        <p><span class="font-semibold">D.O.B:</span> NA</p>
-        <p><span class="font-semibold">Gender:</span> NA</p>
+      <input 
+        type="radio" 
+        formControlName="isSoloProvider" 
+        [value]="true"
+        class="hidden peer">
+      <div class="w-6 h-6 border-2 border-gray-300 rounded-full peer-checked:border-orange-500 peer-checked:bg-orange-500 flex items-center justify-center transition-all duration-200">
+        <div class="w-3 h-3 bg-white rounded-full peer-checked:scale-100 scale-0 transition-transform duration-200"></div>
       </div>
+    </label>
 
-      <div class="mt-6 text-center bg-white rounded-lg py-3 px-4 shadow-sm">
-        <p class="text-sm font-semibold text-gray-600">Profile Pin</p>
-        <p class="text-lg font-mono tracking-widest">
-          **** 
-          <span class="text-primary-orange cursor-pointer ml-2">
-            <i class="fas fa-edit text-lg text-[#3863A7]"></i>
-          </span>
+    <label class="flex items-center justify-between p-4 bg-white rounded-lg border-2 border-gray-200 hover:border-orange-300 transition-all duration-200 cursor-pointer group">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+          <i class="fas fa-users text-blue-600 text-sm"></i>
+        </div>
+        <div>
+          <span class="font-medium text-gray-900">Multi Provider</span>
+          <p class="text-sm text-gray-500 mt-1">Group practice with multiple providers</p>
+        </div>
+      </div>
+      <input 
+        type="radio" 
+        formControlName="isSoloProvider" 
+        [value]="false"
+        class="hidden peer">
+      <div class="w-6 h-6 border-2 border-gray-300 rounded-full peer-checked:border-orange-500 peer-checked:bg-orange-500 flex items-center justify-center transition-all duration-200">
+        <div class="w-3 h-3 bg-white rounded-full peer-checked:scale-100 scale-0 transition-transform duration-200"></div>
+      </div>
+    </label>
+  </div>
+
+  <div class="mt-4 p-3 bg-orange-50 rounded-lg border border-orange-100">
+    <div class="flex items-start gap-2">
+      <i class="fas fa-info-circle text-orange-500 mt-0.5"></i>
+      <div>
+        <p class="text-sm text-orange-800 font-medium">Practice Type Information</p>
+        <p class="text-xs text-orange-700 mt-1">
+          Solo Provider: Single practitioner practice. Multi Provider: Multiple practitioners in a group practice.
         </p>
       </div>
     </div>
-
-    <!-- Info Cards -->
-    <div class="col-span-3 space-y-6">
-
-      <!-- Contact Details -->
-      <div class="border border-primary-border-color bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300">
-        <h2 class="text-xl font-semibold text-primary-orange mb-4 flex items-center gap-2">
-          <i class="fas fa-phone-alt text-[#3863A7]"></i> Contact Details
-        </h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-          <p><span class="font-semibold">Phone Number:</span> NA</p>
-          <p><span class="font-semibold">Emergency Contact:</span> NA</p>
-          <p><span class="font-semibold">Email ID:</span> {{userEmail}}</p>
-          <p><span class="font-semibold">Flat No & Street:</span> NA</p>
-          <p><span class="font-semibold">City:</span> NA</p>
-          <p><span class="font-semibold">State:</span> NA</p>
-          <p><span class="font-semibold">PinCode:</span> NA</p>
-          <p><span class="font-semibold">Country:</span> NA</p>
+  </div>
+</div> -->
         </div>
-      </div>
 
-      <!-- Professional Details -->
-      <div class="border border-primary-border-color bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300">
-        <h2 class="text-xl font-semibold text-primary-orange mb-4 flex items-center gap-2">
-          <i class="fas fa-briefcase text-[#3863A7]"></i> Professional Details
-        </h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-          <p><span class="font-semibold">Qualification:</span> NA</p>
-          <p><span class="font-semibold">Board:</span> NA</p>
+        <!-- Two-Factor Authentication -->
+        <!-- <div class="flex items-center justify-between p-4 bg-gray-100 rounded-lg border border-gray-300">
+  <div class="space-y-1">
+    <label class="text-sm font-medium text-gray-500">Two-Factor Authentication</label>
+    <p class="text-sm text-gray-500">Add an extra layer of security to your account</p>
+  </div>
+  <label class="relative inline-flex items-center cursor-not-allowed">
+    <input 
+      type="checkbox" 
+      formControlName="isTwoFactorEnabled"
+      class="sr-only peer" 
+      [disabled]="true">
+    <div class="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-400 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gray-400"></div>
+  </label>
+</div> -->
+
+        <!-- Form Actions -->
+        <div class="flex gap-3 justify-end pt-6 border-t border-gray-200">
+          <button
+            type="button"
+            (click)="cancelEdit()"
+            class="custom-button rounded-lg btn-md btn-outline"
+          >
+            <i class="fas fa-times"></i>
+            Cancel
+          </button>
+          <button
+            type="button"
+            (click)="updateProfile()"
+            [disabled]="!profileForm.valid || isLoading || isUploading"
+            class="custom-button rounded-lg btn-md"
+          >
+            <i class="fas fa-save" *ngIf="!isLoading && !isUploading"></i>
+            <i
+              class="fas fa-spinner fa-spin"
+              *ngIf="isLoading || isUploading"
+            ></i>
+            {{ isLoading || isUploading ? "Saving..." : "Save Changes" }}
+          </button>
         </div>
-      </div>
-
-      <!-- Other Details -->
-      <div class="border border-primary-border-color bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300">
-        <h2 class="text-xl font-semibold text-primary-orange mb-4 flex items-center gap-2">
-          <i class="fas fa-language text-[#3863A7]"></i> Other Details
-        </h2>
-        <div class="text-sm">
-          <p><span class="font-semibold">Language:</span> NA</p>
-        </div>
-      </div>
-
+      </form>
     </div>
   </div>
 </div>

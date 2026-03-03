@@ -25,7 +25,7 @@ export class PatientAuth {
   
   // patients
     public getPatientDecodedToken(): any {
-    debugger
+    
     const token = localStorage.getItem('tokenPatients');
     if (token) {
       return this.jwtHelper.decodeToken(token);

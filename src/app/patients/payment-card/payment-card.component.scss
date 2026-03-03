@@ -1,0 +1,78 @@
+.payment-card {
+  @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6 cursor-pointer transition-all duration-200;
+  
+  &:hover {
+    @apply shadow-md bg-gray-50;
+    transform: translateY(-1px);
+  }
+}
+
+.card-header {
+  @apply flex justify-between items-start mb-4;
+}
+
+.invoice-info {
+  .invoice-title {
+    @apply text-lg font-semibold text-gray-900 mb-1;
+  }
+  
+  .invoice-date {
+    @apply text-sm text-gray-500;
+  }
+}
+
+.amount-grid {
+  @apply grid grid-cols-1 md:grid-cols-3 gap-4 mb-4;
+}
+
+.amount-item {
+  .amount-label {
+    @apply text-xs text-gray-500 uppercase tracking-wide mb-1;
+  }
+  
+  .amount-value {
+    @apply text-lg font-semibold;
+    
+    &.total {
+      @apply text-gray-900;
+    }
+    
+    &.paid {
+      @apply text-green-600;
+    }
+    
+    &.balance {
+      &.overdue {
+        @apply text-red-600;
+      }
+      
+      &.paid-full {
+        @apply text-green-600;
+      }
+    }
+  }
+}
+
+.card-footer {
+  @apply flex justify-between items-center;
+}
+
+.service-info {
+  @apply text-sm text-gray-600;
+}
+
+.card-actions {
+  @apply flex items-center space-x-3;
+}
+
+.btn-make-payment {
+  @apply bg-primary-orange hover:bg-primary-600 text-white font-medium px-4 py-2 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-300;
+}
+
+.view-details-icon {
+  @apply text-primary-orange hover:text-orange-500 transition-colors;
+  
+  .icon {
+    @apply w-5 h-5;
+  }
+}

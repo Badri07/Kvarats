@@ -9,6 +9,7 @@ export interface User {
   appointments: Appointment[];
   firstName?:string,
   lastName?:string
+  userName?:string
 }
 
 export interface Appointment {
@@ -42,11 +43,13 @@ export interface PatientOption {
   id: string;
   firstName: string;
   lastName: string;
+  patients:any;
 }
 
 export interface MeetingTypeOption {
   id: string;
   value: string;
+  description?:string
 }
 
 export interface SchedulerClickEvent {

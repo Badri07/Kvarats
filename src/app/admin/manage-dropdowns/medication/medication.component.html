@@ -1,10 +1,41 @@
 <div class="space-y-6">
   <!-- Header -->
-  <div class="flex justify-between items-center">
+  <div class="search-container mt-3" *ngIf="isshowTable">
+  <div class="search-box relative flex items-center w-64">
+    <input
+      type="text"
+      [(ngModel)]="searchText"
+      (input)="onSearch()"
+      placeholder="Search medications..."
+      class="search-input border border-gray-300 rounded-full px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-orange-300 pr-10 shadow-sm"
+    >
+    
+    <!-- Clear button -->
+    <button
+      *ngIf="searchText"
+      (click)="searchText=''; onSearch()"
+      type="button"
+      class="clear-btn absolute right-3 text-gray-400 hover:text-gray-600 focus:outline-none"
+    >
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+</div>
+
+  <div class="flex justify-between items-center mt-2">
     <div>
       <!-- <h2 class="text-2xl font-semibold text-gray-900">Medications</h2> -->
       <p class="text-gray-600 mt-1">Manage the list of available medications in your system.</p>
     </div>
+
+    @if(!isEditing){
+ <div class="flex">
+  <button
+      (click)="showFileUploadPopup()"
+      class="customBtn-secondary mr-2"
+    >
+      File Import
+    </button>
     <button
       (click)="showAddForm()"
       class="customBtn-secondary flex items-center"
@@ -14,6 +45,9 @@
       </svg> -->
       Add Medication
     </button>
+ </div>
+    }
+
   </div>
 
   <!-- Form -->
@@ -25,42 +59,42 @@
     <form [formGroup]="medicationForm" (ngSubmit)="onSubmit()">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Medication Name</label>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Medication Name <span class="text-danger">*</span></label>
           <input
             type="text"
             formControlName="name"
             class="form-control"
-            placeholder="Enter medication name"
+            placeholder="Enter Medication Name"
           >
           <div *ngIf="medicationForm.get('name')?.invalid && medicationForm.get('name')?.touched" class="text-red-500 text-sm mt-1">
             Medication name is required and must be less than 255 characters.
           </div>
         </div>
   <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Generic Name</label>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Generic Name <span class="text-danger">*</span></label>
           <input
             type="text"
             formControlName="genericname"
             class="form-control"
-            placeholder="Enter medication name"
+            placeholder="Enter Generic Name"
           >
           <div *ngIf="medicationForm.get('genericname')?.invalid && medicationForm.get('genericname')?.touched" class="text-red-500 text-sm mt-1">
-            generic name  is required
+            Generic Name  is required
           </div>
         </div>
           <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">DrugClass</label>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Drug Class <span class="text-danger">*</span></label>
           <input
             type="text"
             formControlName="drugClass"
             class="form-control"
-            placeholder="Enter DrugClass"
+            placeholder="Enter Drug Class"
           >
           <div *ngIf="medicationForm.get('drugClass')?.invalid && medicationForm.get('drugClass')?.touched" class="text-red-500 text-sm mt-1">
             DrugClass is required
           </div>
         </div>
-        <div class="flex items-center">
+        <!-- <div class="flex items-center">
           <label class="flex items-center">
             <input
               type="checkbox"
@@ -69,14 +103,14 @@
             >
             <span class="ml-2 text-sm text-gray-700">Active</span>
           </label>
-        </div>
+        </div> -->
       </div>
 
       <div class="flex justify-end space-x-3 mt-6 pt-6 border-t border-gray-200">
         <button
           type="button"
           (click)="cancelForm()"
-          class="btn-secondary"
+          class="custom-button btn-outline"
         >
           Cancel
         </button>
@@ -95,7 +129,7 @@
  <ag-grid-angular
   class="ag-theme-alpine ag-theme-custom"
   [gridOptions]="gridOptions"
-  [rowData]="rowData"
+  [rowData]="filteredData"
   [columnDefs]="columnDefs"
   [defaultColDef]="defaultColDef"
   [paginationPageSize]="paginationPageSize"
@@ -113,13 +147,13 @@
         <select id="pageSize"
                 [(ngModel)]="paginationPageSize"
                 (change)="onPageSizeChange()"
-                class="border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-orange-500">
+                class="border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-orange-300">
           <option *ngFor="let size of paginationPageSizeSelector" [value]="size">{{ size }}</option>
         </select>
       </div>
 
       <!-- Page Info -->
-      <div>
+      <div class="dark-mode-text">
         Showing <span class="font-semibold">{{ pageStart }}</span> to
         <span class="font-semibold">{{ pageEnd }}</span> of
         <span class="font-semibold">{{ totalCount }}</span> records
@@ -130,18 +164,18 @@
     <div class="flex items-center gap-2 ml-auto">
       <button (click)="goToPreviousPage()"
               [disabled]="currentPage === 1"
-              class="px-4 py-1.5 rounded bg-orange-500 text-white disabled:bg-gray-300 disabled:cursor-not-allowed">
+              class="px-4 py-1.5 rounded bg-orange-300 text-white disabled:bg-gray-300 disabled:cursor-not-allowed">
         Previous
       </button>
 
-      <span>
+      <span class="dark-mode-text">
         Page <span class="font-semibold">{{ currentPage }}</span> of
         <span class="font-semibold">{{ totalPages }}</span>
       </span>
 
       <button (click)="goToNextPage()"
               [disabled]="currentPage === totalPages"
-              class="px-4 py-1.5 rounded bg-orange-500 text-white disabled:bg-gray-300 disabled:cursor-not-allowed">
+              class="px-4 py-1.5 rounded bg-orange-300 text-white disabled:bg-gray-300 disabled:cursor-not-allowed">
         Next
       </button>
     </div>
@@ -208,3 +242,161 @@
   (confirm)="deleteMedication()"
   (cancel)="cancelDelete()"
 ></app-confirm-dialog>
+
+
+
+
+
+
+<!-- File Upload Popup -->
+<div *ngIf="showUploadPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-1000 p-4 mt-0">
+  <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full transform transition-all duration-300 scale-100">
+    <!-- Header -->
+    <div class="flex justify-between items-center p-6 border-b border-gray-100">
+       <h3 class="text-xl font-semibold text-gray-800">
+        {{ isUploading ? 'Uploading...' : 'Import Countries Data' }}
+      </h3>
+      <button 
+        (click)="closeFileUploadPopup()"
+        [disabled]="isUploading"
+        [class]="isUploading ? 'text-gray-300 cursor-not-allowed' : 'text-gray-400 hover:text-gray-600 transition-colors duration-200'"
+      >
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div class="p-6">
+      <!-- Upload Area -->
+      <div 
+        class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center transition-all duration-300 hover:border-orange-400 hover:bg-orange-50 cursor-pointer"
+        [class.border-orange-500]="isDragOver"
+        [class.bg-orange-50]="isDragOver"
+        (click)="fileInput.click()"
+        (drop)="onFileDrop($event)"
+        (dragover)="onDragOver($event)"
+        (dragleave)="onDragLeave($event)"
+      >
+        <div class="max-w-xs mx-auto">
+          <!-- Upload Icon -->
+          <div class="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-orange-100 mb-4">
+            <svg class="h-8 w-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+            </svg>
+          </div>
+          
+          <!-- Upload Text -->
+          <div class="mb-2">
+            <p class="text-lg font-medium text-gray-700">
+              Drop your file here
+            </p>
+            <p class="text-sm text-gray-500 mt-1">
+              or <span class="text-orange-600 font-medium">browse files</span>
+            </p>
+          </div>
+
+          <!-- File Requirements -->
+          <p class="text-xs text-orange-600 font-medium">
+            Supports: CSV files only (Max 5MB)
+          </p>
+        </div>
+
+        <!-- Hidden File Input -->
+        <input 
+          #fileInput
+          type="file" 
+          (change)="onFileSelected($event)"
+          accept=".csv,.xlsx,.xls"
+          class="hidden"
+        />
+      </div>
+
+      <!-- Selected File Info -->
+      <div *ngIf="selectedFile" class="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <div class="flex-shrink-0">
+              <svg class="h-6 w-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-900">{{ selectedFile.name }}</p>
+              <p class="text-xs text-gray-500">{{ formatFileSize(selectedFile.size) }}</p>
+            </div>
+          </div>
+          <button 
+            (click)="removeFile()"
+            class="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+          >
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+<div class="mt-4 text-sm text-gray-600">
+  <p class="font-medium mb-2">File should contain:</p>
+  <ul class="list-disc list-inside space-y-1 text-xs">
+    <li>Country name, code, and mobile prefix</li>
+    <li>States and cities information</li>
+    <li>Proper column headers</li>
+  </ul>
+</div>
+
+<!-- Sample File Download Section -->
+<div class="mt-4 text-sm text-gray-600">
+  <p class="font-medium mb-2">Sample File Download</p>
+  <div class="space-y-2">
+    <!-- Sample File Download -->
+    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 dark-mode-1">
+      <div class="flex items-center space-x-3">
+        <div class="flex-shrink-0 w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+          <svg class="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-900">Medication_sample.csv</p>
+          <p class="text-xs text-gray-500">Sample file with proper format and headers</p>
+        </div>
+      </div>
+      <button 
+        (click)="downloadSampleFile()"
+        [disabled]="isDownloading"
+        class="flex items-center space-x-1 px-3 py-2 text-xs font-medium text-white bg-orange-600 rounded-md hover:bg-orange-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <svg *ngIf="!isDownloading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        <svg *ngIf="isDownloading" class="animate-spin w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+        <span>{{ isDownloading ? 'Downloading...' : 'Download' }}</span>
+      </button>
+    </div>
+  </div>
+</div>
+    </div>
+
+    <!-- Footer -->
+    <div class="flex justify-end space-x-3 p-6 border-t border-gray-100 rounded-b-xl bg-white">
+      <button
+        (click)="closeFileUploadPopup()"
+        class="custom-button btn-outline"
+      >
+        Cancel
+      </button>
+      <button
+        (click)="uploadFile()"
+        class="custom-button"
+        [disabled]="!selectedFile"
+        >
+        Upload
+      </button>
+    </div>
+  </div>
+</div>

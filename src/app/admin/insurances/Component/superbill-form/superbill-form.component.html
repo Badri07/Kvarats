@@ -1,0 +1,388 @@
+<div class="superbill-form-container">
+
+
+  <form [formGroup]="superbillForm" (ngSubmit)="onSubmit()" class="mt-4 mx-auto bg-white rounded-2xl shadow-md overflow-hidden animate-fade-in md:p-0 sm:p-3">
+    <!-- Header -->
+    <div class="bg-secondary-lightColor px-6 md:px-8 py-3 md:py-6 text-white">
+      <h1 class="text-2xl md:text-xl font-bold mb-1 text-orange-400">
+        {{ isEditMode() ? 'Edit Superbill' : 'Create Superbill' }}
+      </h1>
+    </div>
+
+    <!-- Progress Steps / Tabs -->
+    <div class="flex items-center justify-between w-full max-w-md mx-auto mt-3">
+      <!-- Step 1: Basic Info -->
+      <div class="flex flex-col items-center relative z-10">
+        <div class="flex items-center cursor-pointer" (click)="setTab('basic-info')">
+          <div [ngClass]="selectedTab==='basic-info' ? 'w-10 h-10 rounded-full bg-primary-500 text-white flex items-center justify-center font-semibold shadow-lg' : 'w-10 h-10 rounded-full bg-secondary-200 text-secondary-500 flex items-center justify-center font-semibold hover:bg-secondary-300 transition-colors'">
+            1
+          </div>
+        </div>
+        <span class="mt-2 text-xs font-medium text-center" [ngClass]="selectedTab==='basic-info' ? 'text-primary-600' : 'text-secondary-500'">
+          Basic Info
+        </span>
+      </div>
+
+      <!-- Progress Line Container -->
+      <div class="flex-1 px-2 relative h-1">
+        <div 
+          [ngClass]="selectedTab==='basic-info' || selectedTab==='diagnosis-review' ? 'bg-primary-500' : 'bg-secondary-200'" 
+          class="w-full h-full rounded-full">
+        </div>
+      </div>
+
+      <!-- Step 2: Diagnosis & Review -->
+      <div class="flex flex-col items-center relative z-10">
+        <div class="flex items-center cursor-pointer" (click)="setTab('diagnosis-review')">
+          <div [ngClass]="selectedTab==='diagnosis-review' ? 'w-10 h-10 rounded-full bg-primary-500 text-white flex items-center justify-center font-semibold shadow-lg' : 'w-10 h-10 rounded-full bg-secondary-200 text-secondary-500 flex items-center justify-center font-semibold hover:bg-secondary-300 transition-colors'">
+            2
+          </div>
+        </div>
+        <span class="mt-2 text-xs font-medium text-center" [ngClass]="selectedTab==='diagnosis-review' ? 'text-primary-600' : 'text-secondary-500'">
+          Diagnosis & Review
+        </span>
+      </div>
+    </div>
+
+    <!-- Form Container -->
+    <div class="p-6 md:p-8">
+      <!-- BASIC INFO TAB (INCLUDES SERVICES) -->
+      <div *ngIf="selectedTab === 'basic-info'" class="space-y-8">
+        <!-- Basic Information -->
+        <div class="space-y-6">
+          <h2 class="text-xl font-bold text-secondary-800 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-primary-500" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+            </svg>
+            Basic Information
+          </h2>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="form-group">
+              <label class="block text-sm font-medium text-secondary-700 mb-1">Patient <span class="text-danger">*</span></label>
+              <select 
+                formControlName="patientId"
+                class="form-select"
+                [class.is-invalid]="isFieldInvalid('patientId')" >
+                <option value="">Select a patient...</option>
+                @for (patient of patients(); track patient.id) {
+                  <option [value]="patient.id">
+                    {{ patient.firstName }} {{ patient.lastName }}
+                  </option>
+                }
+              </select>
+              @if (isFieldInvalid('patientId')) {
+                <div class="text-sm text-red-500 mt-1">{{ getFieldError('patientId') }}</div>
+              }
+            </div>
+
+            <div class="form-group">
+              <label class="block text-sm font-medium text-secondary-700 mb-1">Service Date <span class="text-danger">*</span></label>
+              <input 
+                type="date"
+                formControlName="serviceDate"
+                class="form-select"
+                [class.is-invalid]="isFieldInvalid('serviceDate')">
+              @if (isFieldInvalid('serviceDate')) {
+                <div class="text-sm text-red-500 mt-1">{{ getFieldError('serviceDate') }}</div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Services -->
+        <div class="space-y-6">
+          <div class="flex justify-between">
+            <h2 class="text-xl font-bold text-secondary-800 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-primary-500" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M5 2a2 2 0 00-2 2v14l3.5-2 3.5 2 3.5-2 3.5 2V4a2 2 0 00-2-2H5zm2.5 3a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm6.207.293a1 1 0 00-1.414 0l-6 6a1 1 0 101.414 1.414l6-6a1 1 0 000-1.414zM12.5 10a1.5 1.5 0 100 3 1.5 1.5 0 000-3z" clip-rule="evenodd" />
+              </svg>
+              Services Provided
+            </h2>
+            <button type="button" class="custom-button p-2" (click)="addService()">
+              <i class="fa-solid fa-plus"></i>Add Service
+            </button>
+          </div>
+
+          <div class="services-list" formArrayName="services">
+            @for (service of servicesArray.controls; track $index; let i = $index) {
+              <div class="service-item" [formGroupName]="i">
+                <div class="service-header">
+                  <h4 class="service-title">Service {{ i + 1 }}</h4>
+                  @if (servicesArray.length > 1) {
+                    <button type="button" class="remove-btn" (click)="removeService(i)">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                      </svg>
+                    </button>
+                  }
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div class="form-group">
+                    <label class="block text-sm font-medium text-secondary-700 mb-1">CPT Code<span class="text-danger"> *</span></label>
+                    <select 
+                      formControlName="cptCode"
+                      class="form-select"
+                      [class.is-invalid]="isFieldInvalid('cptCode', i)"
+                      (change)="onCPTCodeChange(i, $event)">
+                      <option value="">Select CPT code...</option>
+                      @for (code of cptCodes(); track code.code) {
+                        <option [value]="code.code">
+                          {{ code.code }} - {{ code.description }}
+                        </option>
+                      }
+                    </select>
+                    @if (isFieldInvalid('cptCode', i)) {
+                      <div class="text-sm text-red-500 mt-1">{{ getFieldError('cptCode', i) }}</div>
+                    }
+                  </div>
+
+                  <div class="form-group">
+                    <label class="block text-sm font-medium text-secondary-700 mb-1">Description</label>
+                    <input 
+                      type="text"
+                      formControlName="description"
+                      class="form-select"
+                      placeholder="Service description">
+                  </div>
+
+                  <div class="form-group">
+                    <label class="block text-sm font-medium text-secondary-700 mb-1">Units <span class="text-danger">*</span></label>
+                    <input 
+                      type="number"
+                      formControlName="units"
+                      class="form-select"
+                      [class.is-invalid]="isFieldInvalid('units', i)"
+                      min="1"
+                      (input)="updateServiceAmount(i)">
+                    @if (isFieldInvalid('units', i)) {
+                      <div class="text-sm text-red-500 mt-1">{{ getFieldError('units', i) }}</div>
+                    }
+                  </div>
+
+                  <div class="form-group">
+                    <label class="block text-sm font-medium text-secondary-700 mb-1">Rate ($) <span class="text-danger">*</span></label>
+                    <input 
+                      type="number"
+                      formControlName="rate"
+                      class="form-select"
+                      [class.is-invalid]="isFieldInvalid('rate', i)"
+                      min="0"
+                      step="0.01"
+                      (input)="updateServiceAmount(i)">
+                    @if (isFieldInvalid('rate', i)) {
+                      <div class="text-sm text-red-500 mt-1">{{ getFieldError('rate', i) }}</div>
+                    }
+                  </div>
+
+                  <div class="form-group">
+                    <label class="block text-sm font-medium text-secondary-700 mb-1">Amount ($)</label>
+                    <input 
+                      type="number"
+                      formControlName="amount"
+                      class="form-select bg-gray-100"
+                      readonly>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="block text-sm font-medium text-secondary-700 mb-1">Modifiers</label>
+                    <input 
+                      type="text"
+                      formControlName="modifiers"
+                      class="form-select"
+                      placeholder="e.g., 25, 59 (comma separated)">
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- DIAGNOSIS & REVIEW TAB -->
+      <div *ngIf="selectedTab === 'diagnosis-review'" class="space-y-8">
+        <!-- Diagnosis Codes -->
+        <div class="space-y-6">
+          <div class="flex justify-between">
+            <h2 class="text-xl font-bold text-secondary-800 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-primary-500" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V5zm11 1H6v8l4-2 4 2V6z" clip-rule="evenodd" />
+              </svg>
+              Diagnosis Codes
+            </h2>
+            <button type="button" class="custom-button" (click)="addDiagnosis()">
+              <i class="fa-solid fa-plus"></i>Add Diagnosis
+            </button>
+          </div>
+
+          <div class="diagnosis-list" formArrayName="diagnosis">
+            @for (diagnosis of diagnosisArray.controls; track $index; let i = $index) {
+              <div class="diagnosis-item" [formGroupName]="i">
+                <div class="diagnosis-header">
+                  <h4 class="diagnosis-title">Diagnosis {{ i + 1 }}</h4>
+                  @if (diagnosisArray.length > 1) {
+                    <button type="button" class="remove-btn" (click)="removeDiagnosis(i)">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                      </svg>
+                    </button>
+                  }
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div class="form-group">
+                    <label class="block text-sm font-medium text-secondary-700 mb-1">ICD-10 Code <span class="text-danger">*</span></label>
+                    <select 
+                      formControlName="code"
+                      class="form-select"
+                      [class.is-invalid]="isFieldInvalid('code', i, 'diagnosis')"
+                      (change)="onICD10CodeChange(i, $event)">
+                      <option value="">Select ICD-10 code...</option>
+                      @for (code of icd10Codes(); track code.code) {
+                        <option [value]="code.code">
+                          {{ code.code }} - {{ code.description }}
+                        </option>
+                      }
+                    </select>
+                    @if (isFieldInvalid('code', i, 'diagnosis')) {
+                      <div class="text-sm text-red-500 mt-1">{{ getFieldError('code', i, 'diagnosis') }}</div>
+                    }
+                  </div>
+
+                  <div class="form-group">
+                    <label class="block text-sm font-medium text-secondary-700 mb-1">Description</label>
+                    <input 
+                      type="text"
+                      formControlName="description"
+                      class="form-select"
+                      placeholder="Diagnosis description">
+                  </div>
+
+                  <div class="form-group flex items-center">
+                    <label class="relative inline-flex items-center cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        formControlName="isPrimary"
+                        class="sr-only peer"
+                      />
+                      <div 
+                        class="w-11 h-6 bg-gray-200 rounded-full 
+                              peer peer-checked:bg-orange-300 
+                              peer-focus:ring-2 peer-focus:ring-orange-400 
+                              after:content-[''] after:absolute after:top-[2px] after:left-[2px] 
+                              after:bg-white after:border-gray-300 after:border 
+                              after:rounded-full after:h-5 after:w-5 after:transition-all 
+                              peer-checked:after:translate-x-full">
+                      </div>
+                      <span class="ml-3 text-gray-700 font-medium">Primary Diagnosis</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Payment Information -->
+        <div class="space-y-6">
+          <h2 class="text-xl font-bold text-secondary-800 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-primary-500" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" />
+              <path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd" />
+            </svg>
+            Payment Information
+          </h2>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="form-group">
+              <label class="block text-sm font-medium text-secondary-700 mb-1">Payment Method</label>
+              <select 
+                formControlName="paymentMethod"
+                class="form-select">
+                <option value="">No payment received</option>
+                <option value="cash">Cash</option>
+                <option value="check">Check</option>
+                <option value="card">Credit/Debit Card</option>
+                <option value="insurance">Insurance</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="block text-sm font-medium text-secondary-700 mb-1">Payment Amount ($)</label>
+              <input 
+                type="number"
+                formControlName="paymentAmount"
+                class="form-select"
+                min="0"
+                step="0.01"
+                placeholder="0.00">
+            </div>
+          </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="space-y-6">
+          <h2 class="text-xl font-bold text-secondary-800 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-primary-500" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+            </svg>
+            Order Summary
+          </h2>
+
+          <div class="bg-white p-4 rounded-xl border border-secondary-200">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div class="flex justify-between">
+                <span class="text-sm font-medium text-secondary-600">Total Amount:</span>
+                <span class="text-sm font-semibold text-secondary-800">{{ formatCurrency(totalAmount()) }}</span>
+              </div>
+              
+              <div class="flex justify-between">
+                <span class="text-sm font-medium text-secondary-600">Services:</span>
+                <span class="text-sm font-semibold text-secondary-800">{{ servicesArray.length }}</span>
+              </div>
+              
+              <div class="flex justify-between">
+                <span class="text-sm font-medium text-secondary-600">Diagnosis Codes:</span>
+                <span class="text-sm font-semibold text-secondary-800">{{ diagnosisArray.length }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Additional Notes -->
+        <div class="space-y-6">
+          <h2 class="text-xl font-bold text-secondary-800 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-primary-500" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+            </svg>
+            Additional Notes
+          </h2>
+
+          <textarea 
+            formControlName="notes"
+            class="form-textarea w-full"
+            rows="4"
+            placeholder="Additional notes about this superbill..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex flex-col-reverse md:flex-row justify-between px-6 md:px-8 pb-6 space-y-4 space-y-reverse md:space-y-0">
+      <button type="button" class="custom-button"
+              *ngIf="tabs.indexOf(selectedTab) > 0" (click)="onBack()">
+        Back
+      </button>
+      <button [type]="selectedTab === 'diagnosis-review' ? 'submit' : 'button'"
+              class="custom-button"
+              (click)="onNext()"
+              [disabled]="isLoading()">
+        @if (isLoading()) {
+          <div class="spinner-small"></div>
+        }
+        {{ selectedTab === 'diagnosis-review' ? (isEditMode() ? 'Update Superbill' : 'Create Superbill') : 'Next' }}
+      </button>
+    </div>
+  </form>
+</div>

@@ -219,50 +219,34 @@ toggleDay(dayId: number): void {
   const dayIndex = this.dayOfWeek.findIndex(d => d.id === dayId);
   if (dayIndex >= 0) {
     const dayGroup = this.daysArray.at(dayIndex) as FormGroup;
-    const enabled = dayGroup.get('enabled')?.value;
+    const enabled = !dayGroup.get('enabled')?.value;
     
-    // Toggle availability when enabling a day
+    dayGroup.get('enabled')?.setValue(enabled);
+    
     if (enabled) {
+      dayGroup.get('startTime')?.enable();
+      dayGroup.get('endTime')?.enable();
       dayGroup.get('isAvailable')?.setValue(true);
-    }
-    
-    // Handle time controls
-    const startControl = dayGroup.get('startTime');
-    const endControl = dayGroup.get('endTime');
-    
-    if (enabled) {
-      startControl?.enable();
-      endControl?.enable();
       
       // Set default times if empty
-      if (!startControl?.value) startControl?.setValue('09:00');
-      if (!endControl?.value) endControl?.setValue('18:00');
+      if (!dayGroup.get('startTime')?.value) {
+        dayGroup.get('startTime')?.setValue('09:00');
+      }
+      if (!dayGroup.get('endTime')?.value) {
+        dayGroup.get('endTime')?.setValue('18:00');
+      }
     } else {
-      startControl?.reset();
-      endControl?.reset();
-      startControl?.disable();
-      endControl?.disable();
+      dayGroup.get('startTime')?.disable();
+      dayGroup.get('endTime')?.disable();
+      dayGroup.get('startTime')?.reset();
+      dayGroup.get('endTime')?.reset();
     }
     
     this.updateAllDaysSelectedState();
   }
 }
 
-// Add this to handle when isAvailable changes
-onAvailabilityToggle(dayControl: AbstractControl) {
-  const dayGroup = dayControl as FormGroup;
-  const isAvailable = dayGroup.get('isAvailable')?.value;
-  const startControl = dayGroup.get('startTime');
-  const endControl = dayGroup.get('endTime');
-  
-  if (isAvailable) {
-    startControl?.enable();
-    endControl?.enable();
-  } else {
-    startControl?.disable();
-    endControl?.disable();
-  }
-}
+
 
 
   onSubmitLeave() {
@@ -320,19 +304,19 @@ convertToTimeSpan(time: string): string | null {
   }
 
   getUserLeave(): void {
-    this._service.getUserLeave().subscribe((res: LeaveRequest[]) => {
+    this._service.getUserLeave().subscribe((res: any[]) => {
       this.listLeave = res;
       console.log("this.listLeave",this.listLeave);
-      this.rowDataLeave = this.listLeave.map((user: any, index: number) => ({
-        ...user,
-        avatar: `https://randomuser.me/api/portraits/${index % 2 === 0 ? 'men' : 'women'}/${30 + index}.jpg`
-      }));
+      // this.rowDataLeave = this.listLeave.map((user: any, index: number) => ({
+      //   ...user,
+      //   avatar: `https://randomuser.me/api/portraits/${index % 2 === 0 ? 'men' : 'women'}/${30 + index}.jpg`
+      // }));
       this.cdRef.detectChanges();
     });
   }
 
   getExistingList(): void {
-    this._service.getExistingList().subscribe((res: Availability[]) => {
+    this._service.getExistingList().subscribe((res: any[]) => {
       this.ExistingList = res;
       this.rowData = this.ExistingList.map((user: any, index: number) => ({
         ...user,
@@ -405,7 +389,7 @@ onSubmit() {
 
         return {
           id: id || 0, // Use existing ID or 0 for new entries
-          dayOfWeek: dayId,
+          dayOfWeek: Number(dayId),
           isAvailable: isAvailable,
           startTime: startTime,
           endTime: endTime
@@ -459,11 +443,11 @@ private isValidTime(time: string): boolean {
 
   fetchLeavesByUser(userId: string): void {
     this._service.getLeavesByUser(userId).subscribe({
-      next: (leaves: LeaveRequest[]) => {
+      next: (leaves: any[]) => {
         this.listLeave = leaves;
         this.rowDataLeave = this.listLeave.map((user: any, index: number) => ({
-          ...user,
-          avatar: `https://randomuser.me/api/portraits/${index % 2 === 0 ? 'men' : 'women'}/${30 + index}.jpg`
+          // ...user,
+          // avatar: `https://randomuser.me/api/portraits/${index % 2 === 0 ? 'men' : 'women'}/${30 + index}.jpg`
         }));
         this.cdRef.detectChanges();
       },
@@ -868,7 +852,6 @@ editAvailability(userId: string): void {
     });
   }
 
-  // In your component.ts
 allDaysSelected = false;
 
 toggleAllDays() {
@@ -906,6 +889,16 @@ toggleAllDays() {
   this.updateAllDaysSelectedState();
 }
 
+onTherapistSelect() {
+  // Only select all days if we're not in edit mode and a therapist is selected
+  if (!this.isEditMode && this.availabilityform.get('userId')?.value) {
+    // Only toggle if not already selected
+    if (!this.allDaysSelected) {
+      this.toggleAllDays();
+    }
+  }
+}
+
 // Initialize form controls for each day
 initializeDayControls() {
   this.dayOfWeek.forEach(day => {
@@ -913,8 +906,5 @@ initializeDayControls() {
     this.availabilityform.addControl(`endTime_${day.id}`, new FormControl('', Validators.required));
   });
 }
-
-
-
 
 }

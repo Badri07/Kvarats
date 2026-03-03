@@ -1,103 +1,169 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
 import { AdminComponent } from './admin.component';
 import { DashboardComponent } from './dashboard/dashboard/dashboard.component';
 import { AuthGuard } from '../service/auth-guard/auth-guard.guard';
-import { AvailabilityComponent } from './Availability/availability/availability.component';
-import { TherapistsComponent } from './therapists/therapists.component';
-import { PatientsComponent } from './patients/patients.component';
+import { PatientsComponent } from './patients-layouts/patients/patients.component';
 import { SettingsComponent } from './settings/settings.component';
 import { ProfileComponent } from './profile/profile.component';
 import { QuicksbooksConnectionComponent } from './quicksbooks-connection/quicksbooks-connection.component';
-import { AddPatientsComponent } from './add-patients/add-patients.component';
+import { AddPatientsComponent } from './patients-layouts/add-patients/add-patients.component';
 import {ManageDropdownsComponent} from '../admin/manage-dropdowns/manage-dropdowns/manage-dropdowns.component'
 import { CalendarSchedulerComponent } from './scheduler/calendar-scheduler/calendar-scheduler.component';
 import { UsersComponent } from './users/users.component';
-import { ListPatientsComponent } from './list-patients/list-patients/list-patients.component';
+import { ListPatientsComponent } from './patients-layouts/list-patients/list-patients/list-patients.component';
 import { AddClientsComponent } from './client/add-client/add-clients.component';
-import { ListPatientAssessmentsComponent } from './patient-assessments/list-patient-assessments/list-patient-assessments.component';
-import { AssessmentVersionsComponent } from './patient-assessments/assessment-versions/assessment-versions.component';
+import { ListPatientAssessmentsComponent } from './patients-layouts/patient-assessments/list-patient-assessments/list-patient-assessments.component';
+import { AssessmentVersionsComponent } from './patients-layouts/patient-assessments/assessment-versions/assessment-versions.component';
 import { TransactionsComponent } from './transactions/transactions.component';
-import { InsuranceClaimsComponent } from './insurances/insurance-claims/insurance-claims.component';
-import { InsuranceEraeobComponent } from './insurances/insurance-eraeob/insurance-eraeob.component';
-import { PaymentsComponent } from './Billing/payments/payments.component';
 import { InvoiceComponent } from './Billing/invoice/invoice.component';
 import { InvoiceDetailsComponent } from './Billing/invoice/invoice-details/invoice-details.component';
 import { SuperbillsComponent } from './superbills/superbills.component';
 import { SlidingscaleComponent } from './slidingscale/slidingscale.component';
-import { PatientInsurancesComponent } from './patient-insurances/patient-insurances.component';
-import { MenuManagementComponent } from './menu-management/menu-management.component';
-import { MenuListComponent } from './menu-management/menu-list/menu-list.component';
+import { PatientInsurancesComponent } from './patients-layouts/patient-insurances/patient-insurances.component';
 import { ClientMenuAccessComponent } from './menu-management/client-menu-access/client-menu-access.component';
-import { MenuModalComponent } from './menu-management/menu-modal/menu-modal.component';
 import { AppointmentListComponent } from './appointment-list/appointment-list.component';
-
+import { ServiceManagementComponent } from './service-management/service-management.component';
+import { AvailabilitySettingComponent } from './schedule/availability/availability.component';
+import { LeavesComponent } from './schedule/leaves/leaves.component';
+import { ScheduleDashboardComponent } from './schedule/schedule-dashboard/schedule-dashboard.component';
+import { InsuranceDashboardComponent } from './insurances/Component/insurance-dashboard/insurance-dashboard.component';
+import { EligibilityCheckComponent } from './insurances/Component/eligibility-check/eligibility-check.component';
+import { SuperbillFormComponent } from './insurances/Component/superbill-form/superbill-form.component';
+import { InsuranceFormComponent } from './insurances/Component/insurance-form/insurance-form.component';
+import { EraUploadComponent } from './insurances/Component/era-upload/era-upload.component';
+import { EraListComponent } from './insurances/Component/era-list/era-list.component';
+import { EobListComponent } from './insurances/Component/eob-list/eob-list.component';
+import { SuperbillListComponent } from './insurances/Component/superbill-list/superbill-list.component';
+import { InsuranceListComponent } from './insurances/Component/insurance-list/insurance-list.component';
+import { ClaimsComponent } from './insurances/Component/claims/claims.component';
+import { SoapNoteComponent } from './notes/note-editor/note-editor.component';
+import { NotesDashboardComponent } from './notes/notes-dashboard/notes-dashboard.component';
+import { NotesListComponent } from './notes/notes-list/notes-list.component';
+import { NoteViewerComponent } from './notes/note-viewer/note-viewer.component';
+import { ClaimFormComponent } from './insurances/Component/claim-form/claim-form.component';
+import { EraDetailComponent } from './insurances/Component/era-detail/era-detail.component';
+import { RoleManagementComponent } from './roles-management/roles-management.component';
+import { CategoryListComponent } from './manage-dropdowns/category-list/category-list.component';
+import { DropdownValuesComponent } from './manage-dropdowns/dropdown-values/dropdown-values.component';
+import { PaymentRequestFormComponent } from './Billing/components/payment-request-form/payment-request-form.component';
+import { PaymentRequestsListComponent } from './Billing/components/payment-requests-list/payment-requests-list.component';
+import { PaymentRequestInvoiceViewComponent } from './Billing/components/payment-request-invoice-view/payment-request-invoice-view.component';
 
 const routes: Routes = [
   {
-    path: 'admin',
+    path: '',
     component: AdminComponent,
     children: [
-      { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard] ,  data: { breadcrumb: null, showBreadcrumb: false }
-},
+      {
+        path: 'dashboard',
+        component: DashboardComponent,
+        canActivate: [AuthGuard],  
+        data: { breadcrumb: null, showBreadcrumb: false }
+      },
 
-      // Users
-      { path: 'users', component: UsersComponent, canActivate: [AuthGuard] },
+      { path: 'users', component: UsersComponent, canActivate: [AuthGuard], data: { roles: ['Admin'] }},
+      { path: 'service-management', component: ServiceManagementComponent, canActivate: [AuthGuard], data: { roles: ['SuperAdmin'] }  },
+      { path: 'roles', component: RoleManagementComponent, canActivate: [AuthGuard],data: { roles: ['SuperAdmin']} },
 
-      // Patients
-      { path: 'patients/list-patients', component: ListPatientsComponent, canActivate: [AuthGuard] },
-      { path: 'patients/add-patients', component: AddPatientsComponent, canActivate: [AuthGuard] },
-      { path: 'patients/add-patients/:id', component: AddPatientsComponent, canActivate: [AuthGuard] },
-      { path: 'patients/patient-assessments', component: ListPatientAssessmentsComponent, canActivate: [AuthGuard] },
-      { path: 'patients/assessment/:patientId/:id', component: PatientsComponent,canActivate: [AuthGuard] },
-      { path: 'patients/patient-assessments/assessment-versions/:patientId', component: AssessmentVersionsComponent, canActivate: [AuthGuard] },
-      { path: 'patients/insurances', component: PatientInsurancesComponent, canActivate: [AuthGuard] },
+      {
+        path: 'patients',
+        children: [
+          { path: 'list-patients', component: ListPatientsComponent, canActivate: [AuthGuard], data: { roles: ['Admin', 'Therapist'] } },
+          { path: 'add-patients', component: AddPatientsComponent, canActivate: [AuthGuard], data: { roles: ['Admin', 'Therapist'] } },
+          { path: 'add-patients/:id', component: AddPatientsComponent, canActivate: [AuthGuard], data: { roles: ['Admin', 'Therapist'] } },
+          { path: 'patient-assessments', component: ListPatientAssessmentsComponent, canActivate: [AuthGuard] , data: { roles: ['Admin', 'Therapist'] }},
+          { path: 'assessment/:patientId/:id', component: PatientsComponent, canActivate: [AuthGuard], data: { roles: ['Admin', 'Therapist'] } },
+          { path: 'assessment', component: PatientsComponent, canActivate: [AuthGuard], data: { roles: ['Admin', 'Therapist'] } },
+          { path: 'patient-assessments/assessment-versions/:patientId', component: AssessmentVersionsComponent, canActivate: [AuthGuard], data: { roles: ['Admin', 'Therapist'] } },
+          { path: 'insurances', component: PatientInsurancesComponent, canActivate: [AuthGuard], data: { roles: ['Admin', 'Therapist'] } },
+        ]
+      },
 
-      // Appointments
-      { path: 'appointments/availability', component: AvailabilityComponent, canActivate: [AuthGuard] },
-      { path: 'appointments/add', component: CalendarSchedulerComponent, canActivate: [AuthGuard] },
-      { path: 'appointments/list', component: AppointmentListComponent, canActivate: [AuthGuard] },
+      {
+        path: 'appointments',
+        children: [
+          { path: 'availability/availabilitySetting', component: AvailabilitySettingComponent, canActivate: [AuthGuard], data: { roles: ['Admin', 'Therapist'] } },
+          { path: 'availability/leave', component: LeavesComponent, canActivate: [AuthGuard], data: { roles: ['Admin', 'Therapist'] } },
+          { path: 'availability', component: ScheduleDashboardComponent, canActivate: [AuthGuard], data: { roles: ['Admin', 'Therapist'] } },
+          { path: 'add', component: CalendarSchedulerComponent, canActivate: [AuthGuard] , data: { roles: ['Admin', 'Therapist'] }},
+          { path: 'list', component: AppointmentListComponent, canActivate: [AuthGuard], data: { roles: ['Admin', 'Therapist'] } },
+        ]
+      },
 
-      // Transactions
-      { path: 'transactions', component: TransactionsComponent, canActivate: [AuthGuard] },
+      { path: 'transactions', component: TransactionsComponent, canActivate: [AuthGuard], data: { roles: ['Admin'] } },
 
-      // Insurance & Claims
-      { path: 'insurance/claims', component: InsuranceClaimsComponent, canActivate: [AuthGuard] },
-      { path: 'insurance/eraeob', component: InsuranceEraeobComponent, canActivate: [AuthGuard] },
+      {
+        path: 'notes',
+        children: [
+          { path: 'new', component: SoapNoteComponent, canActivate: [AuthGuard] , data: { roles: ['Admin', 'Therapist'] }},
+          { path: '', component: NotesListComponent, canActivate: [AuthGuard], data: { roles: ['Admin', 'Therapist'] } },
+          { path: 'viewer', component: NoteViewerComponent, canActivate: [AuthGuard], data: { roles: ['Admin', 'Therapist'] } },
+          { path: 'noteslist', component: NotesListComponent, canActivate: [AuthGuard] , data: { roles: ['Admin', 'Therapist'] }},
+        ]
+      },
+      {
+        path: 'insurance',
+        children: [
+          { path: '', redirectTo: 'claims', pathMatch: 'full' },
+          { path: 'claims', component: InsuranceDashboardComponent, canActivate: [AuthGuard], data: { roles: ['Admin'] } },
+          { path: 'eraeob', component: EraDetailComponent, canActivate: [AuthGuard], data: { roles: ['Admin'] } },
+          { path: 'list', component: InsuranceListComponent, canActivate: [AuthGuard], data: { roles: ['Admin'] } },
+          { path: 'eligibility/check', component: EligibilityCheckComponent, canActivate: [AuthGuard], data: { roles: ['Admin'] } },
+          { path: 'superbills/new', component: SuperbillFormComponent, canActivate: [AuthGuard], data: { roles: ['Admin'] } },
+          { path: 'new', component: InsuranceFormComponent, canActivate: [AuthGuard], data: { roles: ['Admin'] } },
+          { path: 'era', component: EraListComponent, canActivate: [AuthGuard], data: { roles: ['Admin'] } },
+          { path: 'eob', component: EobListComponent, canActivate: [AuthGuard], data: { roles: ['Admin'] } },
+          { path: 'superbills', component: SuperbillListComponent, canActivate: [AuthGuard], data: { roles: ['Admin'] } },
+          { path: 'Insurance/new', component: ClaimFormComponent, canActivate: [AuthGuard], data: { roles: ['Admin'] } },
+          { path: 'newclaims', component: ClaimsComponent, canActivate: [AuthGuard] , data: { roles: ['Admin'] }},
+          { path: 'era/upload', component: EraUploadComponent, canActivate: [AuthGuard], data: { roles: ['Admin'] } },
+        ]
+      },
 
-      // Billing & Payments
-      { path: 'billing/payments', component: PaymentsComponent, canActivate: [AuthGuard] },
-      { path: 'billing/invoices', component: InvoiceComponent, canActivate: [AuthGuard] },
-      { path: 'billing/invoice-details/patient/:patientId', component: InvoiceDetailsComponent, canActivate: [AuthGuard] },
+      {
+        path: 'billing',
+        children: [
+          { path: 'payments', component: PaymentRequestsListComponent, canActivate: [AuthGuard], data: { roles: ['Admin', 'Therapist'] } },
+          { path: 'payment-requests/new', component: PaymentRequestFormComponent, canActivate: [AuthGuard], data: { roles: ['Admin', 'Therapist'] } },
+          { path: 'payment-requests/:id', component: PaymentRequestFormComponent, canActivate: [AuthGuard], data: { roles: ['Admin', 'Therapist'] } },
+          { path: 'payment-requests/:id/edit', component: PaymentRequestFormComponent, canActivate: [AuthGuard], data: { roles: ['Admin', 'Therapist'] } },
+          { path: 'invoices', component: InvoiceComponent, canActivate: [AuthGuard] , data: { roles: ['Admin'] }},
+          { path: 'invoice-details/patient/:patientId', component: InvoiceDetailsComponent, canActivate: [AuthGuard], data: { roles: ['Admin', 'Therapist'] } },
+          { path: 'payment-requests/:id/view',component: PaymentRequestInvoiceViewComponent, canActivate: [AuthGuard], data: { roles: ['Admin', 'Therapist'] }}
+        ]
+      },
 
-      // Superbills
-      { path: 'superbills', component: SuperbillsComponent, canActivate: [AuthGuard] },
+      { path: 'superbills', component: SuperbillsComponent, canActivate: [AuthGuard], data: { roles: ['Admin'] } },
 
-      // Sliding Scale
-      { path: 'slidingscale', component: SlidingscaleComponent, canActivate: [AuthGuard] },
+      { path: 'slidingscale', component: SlidingscaleComponent, canActivate: [AuthGuard], data: { roles: ['Admin', 'Therapist'] } },
 
-      // Settings
-      { path: 'settings', component: SettingsComponent, canActivate: [AuthGuard] },
-      { path: 'settings/dropdowns', component: ManageDropdownsComponent, canActivate: [AuthGuard] },
+      {
+        path: 'settings',
+        children: [
+          { path: '', component: SettingsComponent, canActivate: [AuthGuard],data: { roles: ['SuperAdmin'] }  },
+          { path: 'dropdowns', component: ManageDropdownsComponent, canActivate: [AuthGuard] ,data: { roles: ['SuperAdmin'] } },
+          { path: 'dropdowns/categoryList', component: CategoryListComponent, canActivate: [AuthGuard] ,data: { roles: ['SuperAdmin'] } },
+          { path: 'dropdowns/dropdownsValues', component: DropdownValuesComponent, canActivate: [AuthGuard] ,data: { roles: ['SuperAdmin'] } },
+        ]
+      },
 
-      // Misc
-      { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] },
-      { path: 'quicks-books', component: QuicksbooksConnectionComponent, canActivate: [AuthGuard] },
-      { path: 'clients/add', component: AddClientsComponent, canActivate: [AuthGuard] },
-
-      //Menu-management
-      {path:'menu-management',component:MenuManagementComponent,canActivate:[AuthGuard]},
-      {path:'menu-management/menu-list',component:MenuListComponent, canActivate:[AuthGuard]},
-      {path:'menu-management/client-menu-access',component:ClientMenuAccessComponent, canActivate:[AuthGuard]},
-      {path:'menu-management/menu-modal',component:MenuModalComponent,canActivate:[AuthGuard]},
+      { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard], data: { roles: ['Admin', 'Therapist','SuperAdmin'] } },
+      { path: 'quicks-books', component: QuicksbooksConnectionComponent, canActivate: [AuthGuard], data: { roles: ['Admin','Therapist'] } },
+      { path: 'clients', component: AddClientsComponent, canActivate: [AuthGuard],data: { roles: ['SuperAdmin'] } },
+      {
+        path: 'menu-management',
+        children: [
+          { path: 'client-menu-access', component: ClientMenuAccessComponent, canActivate: [AuthGuard],data: { roles: ['SuperAdmin'] }  }
+        ]
+      },
     ]
   },
 ];
-
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule]
 })
+
 export class AdminRoutingModule { }

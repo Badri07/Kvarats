@@ -2,3 +2,575 @@
   height: 100vh;
   overflow: hidden;
 }
+.calendar-container {
+  @apply flex h-screen bg-gray-50;
+}
+
+// Sidebar
+.calendar-sidebar {
+  @apply w-80 bg-gray-900 text-white p-6 space-y-6;
+  min-width: 320px;
+}
+
+.mini-calendar {
+  @apply space-y-4;
+}
+
+.mini-calendar-header {
+  @apply flex items-center justify-between;
+}
+
+.nav-btn {
+  @apply p-2 hover:bg-gray-800 rounded-lg transition-colors;
+}
+
+.month-title {
+  @apply text-lg font-semibold;
+}
+
+.mini-calendar-grid {
+  @apply space-y-2;
+}
+
+.weekday-headers {
+  @apply grid grid-cols-7 gap-1;
+}
+
+.weekday-header {
+  @apply text-xs text-gray-400 text-center py-2;
+}
+
+.calendar-days {
+  @apply grid grid-cols-7 gap-1;
+}
+
+.calendar-day {
+  @apply relative w-8 h-8 text-sm rounded-lg hover:bg-gray-800 transition-colors flex items-center justify-center;
+  
+  &.today {
+    @apply bg-primary-500 text-white font-semibold;
+  }
+  
+  &.selected {
+    @apply bg-primary-600 text-white;
+  }
+  
+  &.other-month {
+    @apply text-gray-600;
+  }
+  
+  &.has-appointments {
+    @apply font-semibold;
+  }
+  
+  &.holiday {
+    @apply bg-red-500 text-white;
+    
+    &:hover {
+      @apply bg-red-600;
+    }
+  }
+  
+  &:hover .holiday-tooltip {
+    @apply opacity-100 visible;
+  }
+}
+
+.appointment-indicator {
+  @apply absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-primary-400 rounded-full;
+}
+
+.holiday-indicator {
+  @apply absolute top-0 right-0 w-2 h-2 bg-red-400 rounded-full;
+}
+
+.holiday-tooltip {
+  @apply absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 invisible transition-all duration-200 whitespace-nowrap z-50;
+}
+
+.holiday-tooltip-name {
+  @apply font-semibold;
+}
+
+.holiday-tooltip-type {
+  @apply text-red-300;
+}
+
+.my-calendars {
+  @apply space-y-3;
+}
+
+.section-title {
+  @apply text-sm font-medium text-gray-300;
+}
+
+.calendar-item {
+  @apply flex items-center gap-3;
+  
+  &.active {
+    @apply opacity-100;
+  }
+  
+  &:not(.active) {
+    @apply opacity-60;
+  }
+}
+
+.calendar-color {
+  @apply w-3 h-3 bg-primary-500 rounded-full;
+  
+  &.holiday-color {
+    @apply bg-red-500;
+  }
+}
+
+.calendar-info {
+  @apply flex-1 space-y-2;
+}
+
+.calendar-name {
+  @apply text-sm font-medium;
+}
+
+.holiday-details {
+  @apply space-y-1;
+}
+
+.holiday-item {
+  @apply flex flex-col;
+}
+
+.holiday-name {
+  @apply text-xs text-gray-300;
+}
+
+.holiday-type {
+  @apply text-xs text-red-400 font-medium;
+}
+
+.holiday-more {
+  @apply text-xs text-gray-400 italic;
+}
+
+.calendar-toggle {
+  @apply ml-auto p-1 text-gray-400 hover:text-white transition-colors;
+}
+
+// Main Calendar
+.main-calendar {
+  @apply flex-1 flex flex-col bg-white;
+}
+
+.calendar-header {
+  @apply flex items-center justify-between p-6 border-b border-gray-200 bg-white;
+}
+
+.header-left {
+  @apply flex items-center gap-6;
+}
+
+.calendar-title {
+  @apply text-2xl font-semibold text-gray-900;
+}
+
+.view-controls {
+  @apply flex items-center gap-2;
+}
+
+.view-dropdown {
+  @apply relative;
+}
+
+.view-dropdown-btn {
+  @apply flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors;
+}
+
+.view-dropdown-menu {
+  @apply absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-20 py-2 min-w-[200px];
+}
+
+.dropdown-item-with-submenu {
+  @apply relative;
+}
+
+.dropdown-option {
+  @apply w-full flex items-center gap-3 px-4 py-3 text-sm text-left hover:bg-gray-100 transition-colors;
+  
+  &.active {
+    @apply bg-primary-100 text-primary-700 font-medium;
+  }
+  
+  &.with-submenu {
+    @apply justify-between;
+  }
+}
+
+.submenu {
+  @apply absolute left-full top-0 ml-1 bg-white border border-gray-200 rounded-lg shadow-lg py-2 min-w-[120px] z-30;
+}
+
+.submenu-option {
+  @apply w-full px-4 py-2 text-sm text-left hover:bg-gray-100 transition-colors;
+  
+  &.active {
+    @apply bg-primary-100 text-primary-700 font-medium;
+  }
+}
+
+.filter-btn {
+  @apply flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors;
+}
+
+.header-center {
+  @apply flex items-center gap-4;
+}
+
+.week-range {
+  @apply text-xl font-semibold text-gray-900 min-w-0;
+}
+
+.header-right {
+  @apply flex items-center gap-3;
+}
+
+.today-btn {
+  @apply px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors;
+}
+
+.new-event-btn {
+  @apply flex items-center gap-2 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white text-sm font-medium rounded-lg transition-colors;
+}
+
+// Calendar Grid
+.calendar-grid {
+  @apply flex-1 overflow-auto;
+}
+
+// Month View Styles
+.month-view {
+  @apply h-full flex flex-col;
+}
+
+.month-headers {
+  @apply grid grid-cols-7 bg-gray-50 border-b border-gray-200;
+}
+
+.month-day-header {
+  @apply p-4 text-center text-sm font-semibold text-gray-700 border-r border-gray-200 last:border-r-0;
+}
+
+.month-grid {
+  @apply grid grid-cols-7 flex-1;
+  grid-auto-rows: minmax(120px, 1fr);
+}
+
+.month-day-cell {
+  @apply border-r border-b border-gray-200 last:border-r-0 p-2 cursor-pointer hover:bg-gray-50 transition-colors relative;
+  min-height: 120px;
+  
+  &.today {
+    @apply bg-blue-50 border-blue-200;
+  }
+  
+  &.other-month {
+    @apply bg-gray-50 text-gray-400;
+  }
+  
+  &.holiday {
+    @apply bg-red-50 border-red-200;
+  }
+  
+  &.clickable {
+    @apply cursor-pointer;
+    
+    &:hover {
+      @apply bg-blue-50;
+    }
+  }
+}
+
+.month-day-header-content {
+  @apply flex items-center justify-between mb-2;
+}
+
+.month-day-number {
+  @apply text-sm font-semibold text-gray-900;
+  
+  &.today-number {
+    @apply w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs;
+  }
+}
+
+.month-holiday-badge {
+  @apply text-xs bg-red-500 text-white px-1 py-0.5 rounded truncate max-w-16;
+}
+
+.month-appointments {
+  @apply space-y-1 max-h-20 overflow-y-auto;
+}
+
+.month-appointment {
+  @apply flex items-center gap-1 p-1 rounded text-xs cursor-pointer hover:opacity-80 transition-opacity;
+  
+  &.status-scheduled {
+    @apply bg-blue-100 text-blue-800;
+  }
+  
+  &.status-confirmed {
+    @apply bg-green-100 text-green-800;
+  }
+  
+  &.status-completed {
+    @apply bg-gray-100 text-gray-800;
+  }
+  
+  &.status-cancelled {
+    @apply bg-red-100 text-red-800;
+  }
+}
+
+.appointment-dot {
+  @apply w-2 h-2 rounded-full flex-shrink-0;
+  background-color: currentColor;
+}
+
+.appointment-patient {
+  @apply flex-1 truncate font-medium;
+}
+
+.appointment-time {
+  @apply text-xs opacity-75 flex-shrink-0;
+}
+
+.month-leave-indicator {
+  @apply flex items-center gap-1 p-1 bg-red-100 text-red-700 rounded text-xs;
+}
+
+// Week/Day View Styles
+.day-headers {
+  @apply sticky top-0 z-10 bg-white border-b border-gray-200 grid gap-0;
+  grid-template-columns: 80px repeat(auto-fit, minmax(120px, 1fr));
+}
+
+.time-column-header {
+  @apply w-20 border-r border-gray-200;
+}
+
+.day-header {
+  @apply p-4 text-center border-r border-gray-200 last:border-r-0;
+  min-width: 120px;
+  
+  &.today {
+    @apply bg-primary-50;
+  }
+  
+  &.holiday {
+    @apply bg-red-50 border-red-200;
+  }
+}
+
+.day-name {
+  @apply text-xs font-medium text-gray-500 uppercase tracking-wide;
+}
+
+.day-number {
+  @apply text-2xl font-semibold text-gray-900 mt-1;
+  
+  &.today-number {
+    @apply text-primary-600;
+  }
+}
+
+.holiday-badge {
+  @apply text-xs bg-red-500 text-white px-2 py-1 rounded-full mt-1 truncate max-w-full;
+}
+
+.time-grid {
+  @apply relative;
+}
+
+.time-row {
+  @apply grid gap-0 border-b border-gray-100;
+  grid-template-columns: 80px repeat(auto-fit, minmax(120px, 1fr));
+  height: 60px;
+}
+
+.time-label {
+  @apply w-20 p-2 text-xs text-gray-500 text-right border-r border-gray-200;
+  line-height: 1;
+}
+
+.time-slot {
+  @apply relative border-r border-gray-200 last:border-r-0 cursor-pointer hover:bg-gray-50 transition-colors;
+  min-width: 120px;
+  
+  &.slot-past {
+    @apply bg-gray-50 cursor-not-allowed;
+  }
+  
+  &.slot-occupied {
+    @apply cursor-default;
+  }
+  
+  &.slot-on-leave {
+    @apply bg-red-50 cursor-not-allowed;
+  }
+  
+  &.slot-unavailable {
+    @apply bg-gray-100 cursor-not-allowed;
+  }
+  
+  &.slot-available {
+    @apply hover:bg-blue-50;
+  }
+  
+  &.today {
+    @apply bg-blue-50;
+  }
+  
+  &.holiday {
+    @apply bg-red-50;
+  }
+}
+
+.current-time-indicator {
+  @apply absolute left-0 right-0 z-20 flex items-center pointer-events-none;
+}
+
+.time-dot {
+  @apply w-3 h-3 bg-red-500 rounded-full ml-16 -translate-x-1/2;
+}
+
+.time-line {
+  @apply flex-1 h-0.5 bg-red-500;
+}
+
+.appointment-block {
+  @apply absolute inset-1 rounded-lg p-2 text-xs font-medium shadow-sm;
+  
+  &.status-scheduled {
+    @apply bg-blue-100 text-blue-800 border border-blue-200;
+  }
+  
+  &.status-confirmed {
+    @apply bg-green-100 text-green-800 border border-green-200;
+  }
+  
+  &.status-completed {
+    @apply bg-gray-100 text-gray-800 border border-gray-200;
+  }
+  
+  &.status-cancelled {
+    @apply bg-red-100 text-red-800 border border-red-200;
+  }
+}
+
+.appointment-title {
+  @apply font-semibold truncate;
+}
+
+.appointment-time {
+  @apply text-xs opacity-75 mt-1;
+}
+
+.leave-indicator {
+  @apply absolute inset-1 rounded-lg p-2 text-xs font-medium bg-red-100 text-red-700 border border-red-200 flex items-center justify-center gap-1;
+}
+
+.leave-text {
+  @apply text-xs font-semibold;
+}
+
+.unavailable-indicator {
+  @apply absolute inset-1 rounded-lg p-2 text-xs font-medium bg-gray-200 text-gray-600 flex items-center justify-center;
+}
+
+.unavailable-text {
+  @apply text-xs;
+}
+
+// Modal Styles
+.booking-form {
+  @apply space-y-6;
+}
+
+.appointment-summary {
+  @apply flex items-center gap-4 p-6 bg-gradient-to-r from-primary-50 to-cream-100 rounded-xl mb-6;
+}
+
+.summary-icon {
+  @apply w-12 h-12 bg-primary-500 rounded-xl flex items-center justify-center text-white;
+}
+
+.summary-details {
+  @apply flex-1;
+}
+
+.summary-date {
+  @apply text-lg font-bold text-gray-900;
+}
+
+.summary-time {
+  @apply text-primary-600 font-semibold mt-1;
+}
+
+.summary-duration {
+  @apply inline-block px-3 py-1 bg-primary-100 text-primary-700 text-sm font-medium rounded-full mt-2;
+}
+
+.form-group {
+  @apply space-y-2;
+}
+
+.form-label {
+  @apply block text-sm font-medium text-gray-700;
+}
+
+.form-input, .form-select {
+  @apply block w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-primary-500 focus:border-primary-500 transition-all duration-300;
+  
+  &.error {
+    @apply border-red-300 focus:ring-red-500 focus:border-red-500;
+  }
+}
+
+.form-textarea {
+  @apply block w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-primary-500 focus:border-primary-500 resize-none transition-all duration-300;
+}
+
+.form-error {
+  @apply text-sm text-red-600;
+}
+
+.form-info {
+  @apply text-sm text-blue-600;
+}
+
+.form-actions {
+  @apply flex gap-4 justify-end pt-4 border-t border-gray-200;
+}
+
+// Responsive Design
+@media (max-width: 1024px) {
+  .calendar-sidebar {
+    @apply w-64;
+  }
+}
+
+@media (max-width: 768px) {
+  .calendar-container {
+    @apply flex-col;
+  }
+  
+  .calendar-sidebar {
+    @apply w-full h-auto;
+  }
+  
+  .calendar-header {
+    @apply flex-col gap-4;
+  }
+  
+  .header-left, .header-center, .header-right {
+    @apply justify-center;
+  }
+}

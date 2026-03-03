@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { environment } from '../../../environments/environments';
-import { map } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 
 export interface Menu {
   id: string;
@@ -12,6 +12,8 @@ export interface Menu {
   parentMenuId?: string | null;
   parentMenu?: Menu | null;
   submenus?: Menu[];
+  isActive:boolean;
+  activeUrls?: string[];
 }
 
 
@@ -21,7 +23,7 @@ export interface Menu {
 
 export class MenuService {
 
-  private apiUrl = `${environment.apidev}/Menus/GetMenus`;
+  private apiUrl = `${environment.apidev}/Menus/my-menus`;
 
   constructor(private http: HttpClient) { }
 
@@ -32,4 +34,23 @@ export class MenuService {
     );
 }
 
+  //  getUserMenu(): Observable<any> {
+  //   return this.http.get(`${environment.apidev}/Menus/GetUserMenus`).pipe(
+  //     map((response: any) => response?.data || response),
+  //     catchError((error) => {
+  //       console.error('Error during getting menus:', error);
+  //       return throwError(() => error);
+  //     })
+  //   );
+  // } 
+
+    getSuperAdminMenus(): Observable<any> {
+    return this.http.get(`${environment.apidev}/Menus/superadmin-menus`).pipe(
+      map((response: any) => response?.data || response),
+      catchError((error) => {
+        console.error('Error during getting menus:', error);
+        return throwError(() => error);
+      })
+    );
+  }
 }

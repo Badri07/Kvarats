@@ -1,0 +1,558 @@
+<div class="min-h-screen bg-gradient-to-br from-#F9F4F1 to-#F9F4F1 py-8 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-6xl mx-auto">
+
+    <!-- Back Button -->
+    <button (click)="goBack()"
+            class="group mb-8 flex items-center gap-2 text-gray-700 hover:text-gray-900 transition-colors">
+      <div class="p-2 bg-white rounded-lg shadow-sm group-hover:bg-orange-50 transition-colors">
+        <svg class="h-5 w-5 group-hover:-translate-x-1 transition-transform"
+             fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M15 19l-7-7 7-7"/>
+        </svg>
+      </div>
+      <span class="font-medium text-lg">Back to Payment Requests</span>
+    </button>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="flex flex-col items-center justify-center py-20">
+      <div class="w-16 h-16 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin"></div>
+      <p class="mt-4 text-gray-600">Loading payment details…</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error && !loading"
+         class="bg-white border border-red-200 rounded-xl p-6 shadow-sm">
+      <div class="flex items-center gap-3">
+        <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <p class="text-red-700 font-medium">{{ error }}</p>
+      </div>
+    </div>
+
+    <!-- SHOW PAYMENT FORM INLINE -->
+<div *ngIf="showPaymentForm && !loading && !error" class="space-y-6">
+  
+  <!-- Header -->
+  <div class="bg-gradient-to-r from-orange-500 to-orange-400 rounded-xl p-6 text-white shadow-lg">
+    <div class="flex items-center justify-between">
+      <div>
+        <h2 class="text-xl font-bold">Make Payment</h2>
+        <p class="opacity-90 text-sm mt-1">Complete your payment  
+          <span class="font-semibold">#{{ paymentRequest?.id }}</span>
+        </p>
+      </div>
+      <button (click)="closePaymentForm()"
+              class="p-2 hover:bg-white/20 rounded-lg transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Success Message -->
+  <div *ngIf="paymentSuccess" class="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
+    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+      <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+      </svg>
+    </div>
+    <h4 class="text-lg font-bold text-green-900 mb-2">Payment Successful!</h4>
+    <p class="text-green-700">Your payment has been processed successfully.</p>
+    <p class="text-green-600 text-sm mt-2">Redirecting back to billing in 2 seconds...</p>
+  </div>
+
+  <!-- Payment Form Content -->
+  <div *ngIf="!paymentSuccess" class="flex flex-col lg:flex-row gap-6">
+    <!-- Left Panel - Invoice Summary -->
+    <div class="lg:w-2/5">
+      <div class="sticky top-8 space-y-4">
+        <!-- Invoice Summary Card -->
+        <div class="bg-white rounded-xl border shadow-sm p-5">
+          <h4 class="font-semibold text-gray-900 mb-4">Billing Summary</h4>
+          
+          <div class="space-y-3">
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <p class="text-xs text-gray-500">Billing Number</p>
+                <p class="font-bold text-gray-900">
+                  #{{ paymentRequest?.id }}
+                </p>
+              </div>
+              <span class="px-2 py-1 rounded-full text-xs font-semibold"
+                    [ngClass]="{
+                      'bg-green-100 text-green-800': paymentRequest?.status === 'paid',
+                      'bg-yellow-100 text-yellow-800': paymentRequest?.status === 'partially_paid',
+                      'bg-blue-100 text-blue-800': paymentRequest?.status === 'pending',
+                      'bg-red-100 text-red-800': paymentRequest?.status === 'cancelled'
+                    }">
+                {{ getStatusText(paymentRequest?.status || '') }}
+              </span>
+            </div>
+
+            <div class="space-y-2">
+              <div class="flex justify-between items-center py-2 border-b">
+                <span class="text-sm text-gray-600">Total Amount:</span>
+                <span class="font-semibold">${{ paymentRequest?.totalAmount?.toFixed(2) }}</span>
+              </div>
+              <div class="flex justify-between items-center py-2 border-b">
+                <span class="text-sm text-gray-600">Discount:</span>
+                <span class="font-semibold text-green-600">-${{ paymentRequest?.discountAmount?.toFixed(2) }}</span>
+              </div>
+              <div class="flex justify-between items-center py-2 border-b">
+                <span class="text-sm text-gray-600">Final Amount:</span>
+                <span class="font-semibold text-orange-600">${{ paymentRequest?.finalAmount?.toFixed(2) }}</span>
+              </div>
+              <div class="flex justify-between items-center py-3 bg-orange-50 rounded-lg px-3 mt-3">
+                <span class="text-gray-900 font-semibold">Remaining Due:</span>
+                <span class="text-lg font-bold text-orange-600">${{ getRemainingBalance().toFixed(2) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Service Information -->
+        <div class="bg-white rounded-xl border shadow-sm p-5">
+          <h5 class="font-semibold text-gray-900 mb-3">Service Information</h5>
+          <div class="space-y-3">
+            <div>
+              <p class="text-xs text-gray-500">Service</p>
+              <p class="font-medium text-sm">
+                {{ getServiceDescription() }}
+              </p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500">Meeting Type</p>
+              <p class="font-medium text-sm">
+                {{ getMeetingType() }}
+              </p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500">Service Date</p>
+              <p class="font-medium text-sm">
+                {{ (getServiceDate() | date:'MMM dd, yyyy') || '—' }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Methods Info -->
+        <div class="bg-white rounded-xl border shadow-sm p-5">
+          <h5 class="font-semibold text-gray-900 mb-3">Payment Methods</h5>
+          <div class="grid grid-cols-2 gap-2">
+            <div class="flex items-center gap-2 p-2 bg-blue-50 rounded-lg">
+              <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+              </svg>
+              <span class="text-xs font-medium">Card</span>
+            </div>
+            <div class="flex items-center gap-2 p-2 bg-green-50 rounded-lg">
+              <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2z"/>
+              </svg>
+              <span class="text-xs font-medium">Cash</span>
+            </div>
+            <div class="flex items-center gap-2 p-2 bg-purple-50 rounded-lg">
+              <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+              <span class="text-xs font-medium">Check</span>
+            </div>
+            <div class="flex items-center gap-2 p-2 bg-orange-50 rounded-lg">
+              <svg class="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
+              </svg>
+              <span class="text-xs font-medium">Online</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Panel - Payment Form -->
+    <div class="lg:w-3/5">
+      <!-- Error Message -->
+      <div *ngIf="paymentError" class="mb-4 bg-red-50 border border-red-200 rounded-lg p-3">
+        <div class="flex items-center gap-2">
+          <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <p class="text-red-700 text-sm font-medium">{{ paymentError }}</p>
+        </div>
+      </div>
+
+      <!-- Processing State -->
+      <div *ngIf="processingPayment" class="flex flex-col items-center justify-center py-8">
+        <div class="w-12 h-12 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin"></div>
+        <p class="mt-4 text-gray-700 font-medium">Processing your payment...</p>
+        <p class="text-gray-500 text-sm mt-1">Please don't close or refresh this page</p>
+      </div>
+
+      <!-- Payment Form -->
+      <form *ngIf="!processingPayment" (ngSubmit)="submitPayment()" class="space-y-6" #paymentFormRef="ngForm">
+        <!-- Amount Section -->
+        <div class="bg-white rounded-xl border shadow-sm p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h4 class="font-semibold text-gray-900">Payment Amount <span class="text-red-500">*</span></h4>
+            <div class="text-right">
+              <p class="text-xs text-gray-500">Remaining balance</p>
+              <p class="text-lg font-bold text-orange-600">${{ getRemainingBalance().toFixed(2) }}</p>
+            </div>
+          </div>
+          
+          <div class="flex items-center border-2 border-gray-300 rounded-lg overflow-hidden focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-500 transition mb-4">
+            <div class="pl-3 pr-2 py-2 bg-gray-50">
+              <span class="text-gray-500 font-bold">$</span>
+            </div>
+            <input type="number"
+                  [(ngModel)]="paymentForm.amount"
+                  name="amount"
+                  [max]="getRemainingBalance()"
+                  min="0.01"
+                  step="0.01"
+                  required
+                  (input)="paymentError = null"
+                  class="flex-1 py-2 px-3 font-bold outline-none"
+                  placeholder="0.00">
+          </div>
+          
+          <!-- Add error message for amount -->
+          <div *ngIf="paymentFormRef.submitted && !paymentForm.amount" class="text-red-500 text-sm mt-1">
+            Payment amount is required.
+          </div>
+          <div *ngIf="paymentForm.amount && paymentForm.amount > getRemainingBalance()" class="text-red-500 text-sm mt-1">
+            Amount cannot exceed remaining balance of ${{ getRemainingBalance().toFixed(2) }}.
+          </div>
+          
+          <div class="space-y-2">
+            <p class="text-xs text-gray-500">Quick Select:</p>
+            <div class="flex flex-wrap gap-2">
+              <button type="button"
+                      (click)="paymentForm.amount = getRemainingBalance()"
+                      class="px-4 py-2 bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition-colors text-sm font-medium">
+                Full Amount
+              </button>
+              <button type="button"
+                      (click)="paymentForm.amount = getRemainingBalance() / 2"
+                      class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium">
+                Half (${{ (getRemainingBalance() / 2).toFixed(2) }})
+              </button>
+              <button type="button"
+                      (click)="paymentForm.amount = getRemainingBalance() / 4"
+                      class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium">
+                Quarter (${{ (getRemainingBalance() / 4).toFixed(2) }})
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Method -->
+        <div class="bg-white rounded-xl border shadow-sm p-6">
+          <h4 class="font-semibold text-gray-900 mb-4">Payment Method <span class="text-red-500">*</span></h4>
+          
+          <!-- Add error message for payment method -->
+          <div *ngIf="paymentFormRef.submitted && !paymentForm.paymentMethod" class="text-red-500 text-sm mb-3">
+            Please select a payment method.
+          </div>
+          
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <label *ngFor="let method of paymentMethods"
+                  class="relative cursor-pointer group">
+              <input type="radio"
+                    [(ngModel)]="paymentForm.paymentMethod"
+                    name="paymentMethod"
+                    [value]="method.value"
+                    required
+                    class="sr-only peer">
+              <div class="p-3 border-2 border-gray-200 rounded-lg text-center group-hover:border-orange-300 peer-checked:border-orange-500 peer-checked:bg-orange-50 transition-all h-full">
+                <div class="flex flex-col items-center gap-2">
+                  <div class="p-2 bg-white rounded-lg group-hover:bg-orange-50 transition-colors">
+                    <svg class="w-6 h-6 text-gray-600 group-hover:text-orange-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path *ngIf="method.value === 'card'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                      <path *ngIf="method.value === 'cash'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2z"/>
+                      <path *ngIf="method.value === 'check'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                      <path *ngIf="method.value === 'online'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
+                    </svg>
+                  </div>
+                  <span class="text-sm font-medium text-gray-900 group-hover:text-orange-700 transition-colors">{{ method.label }}</span>
+                </div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- File Upload -->
+        <div class="bg-white rounded-xl border shadow-sm p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h4 class="font-semibold text-gray-900">Receipt Upload <span class="text-red-500">*</span></h4>
+            <span class="text-xs text-red-500">Required</span>
+          </div>
+          
+          <div class="space-y-4">
+            <!-- File Input Area -->
+            <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-orange-400 transition-colors cursor-pointer"
+                (click)="fileInput.click()">
+              <input #fileInput
+                    type="file"
+                    (change)="onFileSelected($event)"
+                    class="hidden"
+                    accept="image/*,.pdf,.doc,.docx"
+                    required>
+              <div class="flex flex-col items-center gap-3">
+                <div class="p-3 bg-gray-100 rounded-full">
+                  <svg class="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="font-medium text-gray-900">Click to upload receipt</p>
+                  <p class="text-xs text-gray-500 mt-1">PNG, JPG, PDF, DOC up to 5MB</p>
+                </div>
+                <button type="button"
+                        class="px-4 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium">
+                  Browse Files
+                </button>
+              </div>
+            </div>
+
+            <!-- File Error -->
+            <div *ngIf="fileError" class="bg-red-50 border border-red-200 rounded-lg p-3">
+              <div class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span class="text-red-700 text-sm">{{ fileError }}</span>
+              </div>
+            </div>
+
+            <!-- Add error message for file upload -->
+            <div *ngIf="paymentFormRef.submitted && !paymentForm.file" class="bg-red-50 border border-red-200 rounded-lg p-3">
+              <div class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span class="text-red-700 text-sm">Receipt upload is required.</span>
+              </div>
+            </div>
+
+            <!-- File Preview -->
+            <div *ngIf="paymentForm.file" class="bg-gray-50 border rounded-lg p-3">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="p-2 bg-orange-50 rounded-lg">
+                    <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <p class="font-medium text-gray-900 text-sm">{{ paymentForm.file.name }}</p>
+                    <div class="flex items-center gap-3 mt-0.5">
+                      <span class="text-xs text-gray-500">
+                        {{ (paymentForm.file.size / 1024 / 1024).toFixed(2) }} MB
+                      </span>
+                      <span class="text-xs px-1.5 py-0.5 bg-gray-200 text-gray-700 rounded">
+                        {{ paymentForm.file.type.split('/')[1] | uppercase }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <button type="button"
+                        (click)="removeFile()"
+                        class="p-1.5 hover:bg-white rounded-lg transition-colors">
+                  <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="bg-white rounded-xl border shadow-sm p-6">
+          <h4 class="font-semibold text-gray-900 mb-4">Additional Notes</h4>
+          <textarea [(ngModel)]="paymentForm.notes"
+                    name="notes"
+                    rows="3"
+                    placeholder="Add any notes about this payment (optional)..."
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition resize-none text-sm"></textarea>
+          <p class="text-xs text-gray-500 mt-2">This information will be included with your payment record.</p>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="flex flex-col sm:flex-row gap-3 pt-2">
+          <button type="button"
+                  (click)="closePaymentForm()"
+                  class="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors">
+            Cancel Payment
+          </button>
+          <button type="submit"
+                  [disabled]="processingPayment || !paymentFormRef.valid"
+                  class="flex-1 px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg font-semibold hover:from-orange-600 hover:to-orange-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg">
+            <span *ngIf="!processingPayment">Submit Payment of ${{ paymentForm.amount?.toFixed(2) || '0.00' }}</span>
+            <span *ngIf="processingPayment" class="flex items-center justify-center gap-2">
+              <svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+              </svg>
+              Processing...
+            </span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+    <!-- REGULAR INVOICE VIEW -->
+<div
+  *ngIf="!showPaymentForm && !loading && !error && paymentRequest"
+  class="max-w-5xl mx-auto mt-12 bg-white rounded-2xl shadow-lg border"
+>
+
+  <!-- PDF CONTENT START -->
+  <div id="invoice-content">
+
+    <!-- Invoice Header -->
+    <div class="px-10 py-8 border-b flex flex-col md:flex-row justify-between gap-6">
+      <div class="flex flex-col gap-3">
+        <img [src]="logo" alt="Company Logo" class="h-12 w-auto object-contain" />
+
+        <div>
+          <!-- <h1 class="text-2xl font-semibold text-gray-900">Invoice</h1> -->
+          <p class="text-sm text-gray-700 font-medium">
+            Billing No #{{ paymentRequest.id.substring(0,8).toUpperCase() }}
+          </p>
+          <p class="text-xs text-gray-500">
+            Date: {{ paymentRequest.invoiceDate | date:'MMM dd, yyyy' }}
+          </p>
+        </div>
+      </div>
+
+      <div class="text-right">
+        <span
+          class="inline-flex px-4 py-1 rounded-full text-sm font-semibold"
+          [ngClass]="{
+            'bg-green-100 text-green-700': paymentRequest.status === 'paid',
+            'bg-yellow-100 text-yellow-700': paymentRequest.status === 'partially_paid',
+            'bg-blue-100 text-blue-700': paymentRequest.status === 'pending'
+          }">
+          {{ getStatusText(paymentRequest.status) }}
+        </span>
+
+        <!-- <p class="mt-4 text-sm text-gray-500">Amount Due</p>
+        <p class="text-2xl font-bold text-gray-900">
+          ${{ getRemainingBalance().toFixed(2) }}
+        </p> -->
+      </div>
+    </div>
+
+    <!-- Patient Info -->
+    <div class="px-10 py-6 border-b">
+      <p class="text-sm text-gray-500">Billed To</p>
+      <p class="font-semibold text-gray-900">{{ paymentRequest.patientName }}</p>
+    </div>
+
+    <!-- Services -->
+    <div class="px-10 py-6">
+      <table class="w-full border-collapse">
+        <thead>
+          <tr class="border-b text-sm text-gray-500 text-left">
+            <th class="py-3">Service</th>
+            <th class="py-3">CPT</th>
+            <th class="py-3 text-center">Units</th>
+            <th class="py-3 text-right">Amount</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y">
+          <tr *ngFor="let service of paymentRequest.services">
+            <td class="py-4">
+              <p class="font-medium">{{ service.serviceName }}</p>
+              <p class="text-xs text-gray-500">{{ service.description }}</p>
+            </td>
+            <td class="py-4 font-mono text-sm">{{ service.cptCode }}</td>
+            <td class="py-4 text-center">{{ service.units }}</td>
+            <td class="py-4 text-right font-medium">
+              ${{ service.chargedAmount.toFixed(2) }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Totals -->
+    <div class="px-10 py-6 border-t flex justify-end">
+      <div class="w-full max-w-sm space-y-3 text-sm">
+        <div class="flex justify-between">
+          <span>Total</span>
+          <span>${{ paymentRequest.totalAmount.toFixed(2) }}</span>
+        </div>
+
+        <div *ngIf="paymentRequest.discountAmount > 0"
+             class="flex justify-between text-green-600">
+          <span>Discount</span>
+          <span>- ${{ paymentRequest.discountAmount.toFixed(2) }}</span>
+        </div>
+
+        <div class="flex justify-between font-semibold border-t pt-3">
+          <span>Final Amount</span>
+          <span>${{ paymentRequest.finalAmount.toFixed(2) }}</span>
+        </div>
+
+        <div class="flex justify-between font-bold text-lg">
+          <span>Amount Due</span>
+          <span>${{ getRemainingBalance().toFixed(2) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment History -->
+    <div *ngIf="paymentRequest.transactions.length"
+         class="px-10 py-6 border-t">
+      <h3 class="font-semibold mb-4">Payment History</h3>
+
+      <div class="space-y-3">
+        <div *ngFor="let t of paymentRequest.transactions"
+             class="flex justify-between text-sm bg-gray-50 p-4 rounded-lg">
+          <div>
+            <p class="font-medium">{{ t.transactionReference }}</p>
+            <p class="text-gray-500">{{ t.paymentDate | date:'MMM dd, yyyy' }}</p>
+          </div>
+          <div class="text-right">
+            <p class="font-semibold">${{ t.amountPaid.toFixed(2) }}</p>
+            <p class="text-gray-500 capitalize">{{ t.paymentMethod }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <!-- PDF CONTENT END -->
+
+  <!-- ACTIONS (NOT INCLUDED IN PDF) -->
+  <div class="px-10 py-6 border-t flex justify-end gap-4">
+    <button
+      (click)="downloadPdf()"
+      class="px-6 py-2 rounded-lg bg-orange-400 hover:bg-orange-500 text-white">
+      Download PDF
+    </button>
+
+    <button
+      (click)="goBack()"
+      class="px-6 py-2 rounded-lg bg-orange-400 hover:bg-orange-500 text-white">
+      Back
+    </button>
+
+    <button *ngIf="canMakePayment()"
+            (click)="openPaymentForm()"
+            class="px-6 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-semibold">
+      Pay Now
+    </button>
+  </div>
+
+</div>
+
+
+  </div>
+</div>

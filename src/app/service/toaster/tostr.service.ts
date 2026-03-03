@@ -41,7 +41,7 @@ success(message: string) {
  
   warning(message: string) {
     this.toastr.warning(message, '', {
-      toastClass: 'ngx-toastr custom-toastr',
+      toastClass: 'ngx-toastr custom-toastr-warning',
       closeButton: false,
       progressBar: true,
       timeOut: 3000,

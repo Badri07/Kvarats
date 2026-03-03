@@ -34,36 +34,28 @@
       </div>
 
       <div class="flex justify-end items-center space-x-2">
-  <!-- Filter Icon -->
-  <button class="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all duration-200">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46"></polygon>
-        </svg>
-        <span class="text-sm font-medium">Filter</span>
-      </button>
+        <!-- Filter Icon -->
+        <button class="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all duration-200">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46"></polygon>
+          </svg>
+          <span class="text-sm font-medium">Filter</span>
+        </button>
 
-  <!-- Add Event Button -->
-  <button
-    class="px-4 py-2 text-white font-medium rounded-md transition-colors duration-200 hover:opacity-90"
-    style="background-color: #FFA157"
-    (click)="onAddEventClick()"
-  >
-    + Add Event
-  </button>
-</div>
-
-        
+        <!-- Add Event Button -->
+        <button
+          class="px-4 py-2 text-white font-medium rounded-md transition-colors duration-200 hover:opacity-90"
+          style="background-color: #FFA157"
+          (click)="onAddEventClick()"
+        >
+          + Add Event
+        </button>
+      </div>
     </div>
   </div>
 
-  <!-- Loading State -->
-
-
   <!-- Scheduler Grid -->
-  <div
- 
-    class="scheduler-grid bg-white flex overflow-x-auto relative"
-  >
+  <div class="scheduler-grid bg-white flex overflow-x-auto relative">
     <!-- Time Column -->
     <div class="w-24 flex-shrink-0 sticky left-0 z-10 bg-white">
       <!-- Time Header (same height as user headers) -->
@@ -125,23 +117,22 @@
       <!-- Time Slot Rows -->
       <div class="relative">
         <!-- Current Time Line -->
-<div
-  *ngIf="isCurrentTimeVisible()"
-  class="current-time-line absolute w-100% left-0 right-0 z-20 pointer-events-none"
-  [style.top.px]="currentTimePosition"
->
-  <div class="flex items-center">
-    <!-- Time column part -->
-    <div class="w-24 flex-shrink-0 flex items-center justify-center">
-      <div class="current-time-label bg-amber-500 text-white text-xs px-2 py-1 rounded-md shadow-md">
-        {{ getCurrentTimeString() }}
-      </div>
-    </div>
-    <!-- Line across user columns -->
-    <div class="current-time-line-bar flex-1 h-px bg-amber-500"></div>
-  </div>
-</div>
-        
+        <div
+          *ngIf="isCurrentTimeVisible()"
+          class="current-time-line absolute w-100% left-0 right-0 z-20 pointer-events-none"
+          [style.top.px]="currentTimePosition"
+        >
+          <div class="flex items-center">
+            <!-- Time column part -->
+            <div class="w-24 flex-shrink-0 flex items-center justify-center">
+              <div class="current-time-label bg-amber-500 text-white text-xs px-2 py-1 rounded-md shadow-md">
+                {{ getCurrentTimeString() }}
+              </div>
+            </div>
+            <!-- Line across user columns -->
+            <div class="current-time-line-bar flex-1 h-px bg-amber-500"></div>
+          </div>
+        </div>
 
         <div
           *ngFor="let timeSlot of timeSlots"
@@ -154,14 +145,16 @@
           >
             <ng-container
               *ngIf="
-                getAppointmentForSlot(user, timeSlot.id) as appointment;
+                getAppointmentForSlot(user, timeSlot) as appointment;
                 else availableSlot
               "
             >
               <div
-                class="appointment-block w-full h-full flex items-center px-2"
-                [ngStyle]="getAppointmentStyle(appointment)"
-              >
+              class="appointment-block w-full h-full flex items-center px-2 cursor-pointer"
+              [ngStyle]="getAppointmentStyle(appointment)"
+              (click)="onAppointmentClick(user, appointment)"
+            >
+
                 <div class="truncate">
                   <div class="font-medium text-xs">{{ appointment.title }}</div>
                   <div class="text-xs opacity-90">{{ appointment.type }}</div>
@@ -169,26 +162,22 @@
               </div>
             </ng-container>
 
-           <div class="group relative w-full h-full">
-  <ng-template #availableSlot>
-    <ng-container
-      *ngIf="
-        isSlotWithinAvailability(user, timeSlot.time) &&
-          !isPastTimeSlot(timeSlot.time);
-        else unavailableSlot
-      "
-    >
-      <div class="slot-button" (click)="onSlotClick(user, timeSlot)">
-        <i class="fas fa-plus"></i>
-      </div>
-    </ng-container>
-  </ng-template>
-  
-  <ng-template #unavailableSlot>
-  <div class="unavailable-overlay"></div>
-</ng-template>
-</div>
-
+            <ng-template #availableSlot>
+              <!-- FIXED: Only show clickable slot if it's within availability, not past, and not a past day -->
+              <div
+                *ngIf="!isPastDay(selectedDate) && isSlotWithinAvailability(user, timeSlot.time) && !isPastTimeSlot(timeSlot.time)"
+                class="slot-button w-full h-full flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors"
+                (click)="onSlotClick(user, timeSlot)"
+              >
+                <i class="fas fa-plus text-gray-400 hover:text-gray-600"></i>
+              </div>
+              
+              <!-- Show unavailable overlay for all other cases -->
+              <div
+                *ngIf="isPastDay(selectedDate) || !isSlotWithinAvailability(user, timeSlot.time) || isPastTimeSlot(timeSlot.time)"
+                class="unavailable-overlay w-full h-full bg-gray-100"
+              ></div>
+            </ng-template>
           </div>
         </div>
       </div>

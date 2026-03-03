@@ -11,7 +11,8 @@ import { ForgotpasswordComponent } from './forgotpassword/forgotpassword.compone
 @NgModule({
   declarations: [
 
-    ForgotpasswordComponent
+    ForgotpasswordComponent,
+    
   ],
   imports: [
     CommonModule,

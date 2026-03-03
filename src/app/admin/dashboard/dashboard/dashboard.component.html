@@ -1,134 +1,488 @@
-<div class="flex flex-col gap-3 px-5 rounded-common-border-radius">
-<div class="px-6">
-  <div class="flex justify-between items-center bg-[#f7f5f3] rounded-2xl shadow-sm px-6 py-5 mt-4 mb-2">
-  <!-- Left side -->
+<!-- Therapist View -->
+@if (userRole === 'Therapist') {
+<div class="flex flex-col gap-4 px-4 md:px-5 rounded-common-border-radius">
+  <!-- Welcome Banner -->
   <div>
-    <h1 class="text-2xl font-bold text-gray-900 flex items-center gap-2">
-      Welcome back, {{ userName }}! <span class="text-2xl">👋</span>
-    </h1>
-    <p class="text-gray-500 mt-1">
-      Here's what's happening with your business today
-    </p>
+    <div class="flex flex-col md:flex-row justify-between items-center bg-custom-orange rounded-2xl shadow-sm px-4 md:px-6 py-4 md:py-5 mt-4 mb-2">
+      <!-- Left side -->
+      <div class="text-center md:text-left mb-4 md:mb-0">
+       <h1 class="text-lg md:text-2xl font-bold text-gray-900 flex items-center justify-center md:justify-start gap-2">
+  Welcome back, {{ userName }}! <span class="text-lg md:text-2xl">👋</span>
+</h1>
+<p class="text-gray-500 mt-1 text-xs md:text-base">
+  Here's what's happening with your business today
+</p>
+
+      </div>
+
+      <!-- Right side -->
+      <div class="text-center md:text-right">
+        <p class="text-xs md:text-sm text-gray-500">Today's Date</p>
+        <p class="text-base md:text-lg font-semibold text-gray-900">
+          {{ currentDate | date: 'fullDate' }}
+        </p>
+      </div>
+    </div>
   </div>
 
-  <!-- Right side -->
-  <div class="text-right">
-    <p class="text-sm text-gray-500">Today's Date</p>
-    <p class="text-lg font-semibold text-gray-900">
-      {{ currentDate | date: 'fullDate' }}
-    </p>
-  </div>
-</div>
-
-</div>
-
-
-
-<div class="container-fluid">
-  <div class="row justify-content-center mb-4">
-    <div *ngFor="let chart of chartConfigs; let i = index" class="col-12 col-sm-6 col-lg-3 mb-3">
-      <div class="bg-white rounded-xl shadow-md p-4 h-100">
-        <div class="d-flex align-items-center gap-2">
-          <div [ngClass]="[
-            i === 0 ? 'bg-purple-600' :
-            i === 1 ? 'bg-orange-500' :
-            i === 2 ? 'bg-green-500' :
-            'bg-blue-500'
-          ]" class="p-3 rounded-xl text-white text-xl shadow-sm">
-            <i [ngClass]="[
-              i === 0 ? 'fas fa-user-md' :
-              i === 1 ? 'fas fa-cut' :
-              i === 2 ? 'fas fa-user-plus' :
-              'fas fa-ticket-alt'
-            ]"></i>
+  <!-- Stats Cards -->
+  <div class="container-fluid px-0">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div *ngFor="let chart of chartConfigs; let i = index" class="w-full">
+        <div class="bg-white rounded-xl shadow-md p-4 h-full">
+          <div class="flex items-center gap-3">
+            <div [ngClass]="[
+              i === 0 ? 'bg-purple-600' :
+              i === 1 ? 'bg-orange-300' :
+              i === 2 ? 'bg-green-500' :
+              'bg-orange-500'
+            ]" class="p-3 rounded-xl text-white text-lg md:text-xl shadow-sm flex-shrink-0">
+              <i [ngClass]="[
+                i === 0 ? 'fas fa-user-md' :
+                i === 1 ? 'fas fa-cut' :
+                i === 2 ? 'fas fa-user-plus' :
+                'fas fa-ticket-alt'
+              ]"></i>
+            </div>
+            <div class="ml-auto text-right">
+              <p class="text-xs md:text-sm text-gray-500">{{ chart.data.datasets[0].label }}</p>
+              <p class="text-lg md:text-xl font-bold">
+                {{ i === 0 ? '650' : i === 1 ? '54' : i === 2 ? '129' : '$20,125' }}
+              </p>
+            </div>
           </div>
-          <div class="ms-auto text-end">
-            <p class="text-sm text-muted">{{ chart.data.datasets[0].label }}</p>
-            <p class="fs-5 fw-bold">
-              {{ i === 0 ? '650' : i === 1 ? '54' : i === 2 ? '129' : '$20,125' }}
-            </p>
+          <div class="mt-4" style="height: 48px;">
+            <canvas
+              baseChart
+              [type]="chart.type"
+              [data]="chart.data"
+              [options]="chart.options">
+            </canvas>
           </div>
         </div>
-        <div class="mt-4" style="height: 48px;">
-          <canvas
-            baseChart
-            [type]="chart.type"
-            [data]="chart.data"
-            [options]="chart.options">
-          </canvas>
+      </div>
+    </div>
+
+    <!-- Appointments Table -->
+    <div class="w-full">
+      <div class="bg-white rounded-xl shadow-md p-4 md:p-6">
+        <!-- Header -->
+        <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-2">
+          <h2 class="text-lg md:text-xl font-semibold text-gray-800">All Appointments</h2>
+          <button class="text-sm text-orange-500 hover:underline whitespace-nowrap">View All</button>
+        </div>
+
+        <!-- Table -->
+        <div class="overflow-x-auto shadow-md rounded-lg">
+          <app-common-ag-grid
+            [rowData]="users"
+            [columnDefs]="columnDefs"
+            [IsshowPagination]="IsshowPagination"
+            [tableHeight]="tableHeight"
+            [paginationPageSize]="10"
+            [paginationPageSizeSelector]="[10, 20, 50, 100]"
+            (edit)="editUser($event)"
+            (delete)="onDelete($event)">
+          </app-common-ag-grid>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Admin View -->
+@if (userRole === 'Admin') {
+<div class="flex flex-col gap-4 px-4 md:px-5 rounded-common-border-radius">
+  <div>
+    <div class="flex flex-col md:flex-row justify-between items-center bg-custom-orange rounded-2xl shadow-sm px-4 md:px-6 py-4 md:py-5 mt-4 mb-2">
+      <!-- Left side -->
+      <div class="text-center md:text-left mb-4 md:mb-0">
+        <h1 class="text-xl md:text-2xl font-bold text-gray-900 flex items-center justify-center md:justify-start gap-2">
+          Welcome back, {{ userName }}! <span class="text-xl md:text-2xl">👋</span>
+        </h1>
+        <p class="text-gray-500 mt-1 text-sm md:text-base">
+          Here's what's happening with your business today
+        </p>
+      </div>
+
+      <!-- Right side -->
+      <div class="text-center md:text-right">
+        <p class="text-xs md:text-sm text-gray-500">Today's Date</p>
+        <p class="text-base md:text-lg font-semibold text-gray-900">
+          {{ currentDate | date: 'fullDate' }}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Enhanced Stats Cards -->
+  <div class="container-fluid px-0">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div *ngFor="let card of adminCards; let i = index" class="w-full">
+        <div class="bg-white rounded-lg shadow-md p-4 h-full hover:shadow-lg transition-shadow duration-300">
+          <div class="flex items-center gap-3">
+            <div [ngClass]="card.bg" class="p-3 rounded-xl text-white text-lg md:text-xl shadow-sm flex-shrink-0">
+              <i [ngClass]="card.icon"></i>
+            </div>
+            <div class="ml-auto text-right">
+              <p class="text-xs md:text-sm text-gray-500">{{ card.title }}</p>
+              <p class="text-lg md:text-xl font-bold">{{ card.value }}</p>
+              <p *ngIf="card.subText" class="text-xs text-green-600 font-medium">{{ card.subText }}</p>
+            </div>
+          </div>
+          <div class="mt-4" style="height: 48px;">
+            <canvas
+              *ngIf="card.chart"
+              baseChart
+              [type]="card.chart.type"
+              [data]="card.chart.data"
+              [options]="card.chart.options">
+            </canvas>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="row">
-   
-<div class="col-12">
-  <div class="">
-  <div class="bg-white rounded-xl shadow-md p-6">
+  <!-- Recent Activity Section -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+     <div class="bg-white rounded-lg shadow-md p-6">
+    <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+      <button *ngFor="let action of quickActions" 
+              (click)="handleQuickAction(action)"
+              class="flex flex-col items-center justify-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+        <i [ngClass]="action.icon" class="text-orange-500 text-xl mb-2"></i>
+        <span class="text-sm font-medium text-gray-700">{{ action.label }}</span>
+      </button>
+    </div>
+  </div>
+    <!-- Upcoming Appointments -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold text-gray-900">Upcoming Appointments</h3>
+        <button (click)="refreshClientDashboard()" 
+                class="text-orange-600 hover:text-orange-800 text-sm font-medium">
+          <i class="fas fa-sync-alt mr-1"></i> Refresh
+        </button>
+      </div>
+      <div class="space-y-3">
+        <div *ngFor="let appointment of upcomingAppointments" 
+             class="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+              <i class="fas fa-calendar-check text-green-600"></i>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-900">{{ appointment.patientName }}</p>
+              <p class="text-xs text-gray-500">With {{ appointment.therapistName }}</p>
+              <p class="text-xs text-gray-400">{{ appointment.type }}</p>
+            </div>
+          </div>
+          <div class="text-right">
+            <p class="text-sm font-medium text-gray-900">{{ appointment.time }}</p>
+            <p class="text-xs text-gray-500">{{ appointment.date }}</p>
+            <span class="inline-block mt-1 px-2 py-1 bg-orange-100 text-orange-800 rounded-full text-xs">
+              {{ appointment.status }}
+            </span>
+          </div>
+        </div>
+        <div *ngIf="upcomingAppointments.length === 0" class="text-center py-4">
+          <p class="text-gray-500">No upcoming appointments</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+   <div class="bg-white rounded-lg shadow-md p-6">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold text-gray-900">System Performance (Client Side)</h3>
+        <button (click)="refreshSystemStats()" 
+                class="text-orange-600 hover:text-orange-800 text-sm font-medium">
+          <i class="fas fa-sync-alt mr-1"></i> Refresh
+        </button>
+      </div>
+      
+      <!-- Performance Metrics Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        <!-- Memory Usage -->
+        <div class="bg-gray-50 rounded-lg p-4">
+          <div class="flex justify-between items-start mb-2">
+            <div>
+              <p class="text-sm font-medium text-gray-600">Memory Usage</p>
+              <p class="text-2xl font-bold text-gray-900">{{ systemStats.memoryUsage }}%</p>
+            </div>
+            <i class="fas fa-memory text-purple-500 text-lg"></i>
+          </div>
+          <div class="w-full bg-gray-200 rounded-full h-2">
+            <div class="bg-purple-500 h-2 rounded-full transition-all duration-500"
+                 [style.width]="systemStats.memoryUsage + '%'"
+                 [ngClass]="{
+                   'bg-green-500': systemStats.memoryUsage < 70,
+                   'bg-yellow-500': systemStats.memoryUsage >= 70 && systemStats.memoryUsage < 85,
+                   'bg-red-500': systemStats.memoryUsage >= 85
+                 }"></div>
+          </div>
+          <p class="text-xs text-gray-500 mt-1">
+            {{ systemStats.usedMemory }} MB / {{ systemStats.totalMemory }} MB
+          </p>
+        </div>
+
+        <!-- CPU Cores -->
+        <div class="bg-gray-50 rounded-lg p-4">
+          <div class="flex justify-between items-start mb-2">
+            <div>
+              <p class="text-sm font-medium text-gray-600">CPU Cores</p>
+              <p class="text-2xl font-bold text-gray-900">{{ systemStats.cpuCores }}</p>
+            </div>
+            <i class="fas fa-microchip text-orange-500 text-lg"></i>
+          </div>
+          <p class="text-xs text-gray-500 mt-1">
+            Threads: {{ systemStats.cpuThreads }}
+          </p>
+        </div>
+
+        <!-- Browser Performance -->
+        <div class="bg-gray-50 rounded-lg p-4">
+          <div class="flex justify-between items-start mb-2">
+            <div>
+              <p class="text-sm font-medium text-gray-600">Browser Performance</p>
+              <p class="text-2xl font-bold text-gray-900" 
+                 [ngClass]="{
+                   'text-green-600': systemStats.performanceScore > 80,
+                   'text-yellow-600': systemStats.performanceScore > 60,
+                   'text-red-600': systemStats.performanceScore <= 60
+                 }">
+                {{ systemStats.performanceScore }}/100
+              </p>
+            </div>
+            <i class="fas fa-gauge-high text-green-500 text-lg"></i>
+          </div>
+          <div class="w-full bg-gray-200 rounded-full h-2">
+            <div class="bg-green-500 h-2 rounded-full"
+                 [style.width]="systemStats.performanceScore + '%'"></div>
+          </div>
+        </div>
+
+        <!-- Network Connection -->
+        <div class="bg-gray-50 rounded-lg p-4">
+          <div class="flex justify-between items-start mb-2">
+            <div>
+              <p class="text-sm font-medium text-gray-600">Network</p>
+              <p class="text-xl font-bold text-gray-900">{{ systemStats.connectionType }}</p>
+            </div>
+            <i class="fas fa-wifi text-orange-500 text-lg"></i>
+          </div>
+          <p class="text-xs text-gray-500">
+            Downlink: {{ systemStats.downlink }} Mbps
+          </p>
+        </div>
+
+        <!-- Device Info -->
+        <div class="bg-gray-50 rounded-lg p-4">
+          <div class="flex justify-between items-start mb-2">
+            <div>
+              <p class="text-sm font-medium text-gray-600">Device</p>
+              <p class="text-lg font-bold text-gray-900">{{ systemStats.deviceType }}</p>
+            </div>
+            <i class="fas fa-mobile-screen text-indigo-500 text-lg"></i>
+          </div>
+          <p class="text-xs text-gray-500">
+            {{ systemStats.browserName }} {{ systemStats.browserVersion }}
+          </p>
+        </div>
+
+        <!-- Page Load Time -->
+        <div class="bg-gray-50 rounded-lg p-4">
+          <div class="flex justify-between items-start mb-2">
+            <div>
+              <p class="text-sm font-medium text-gray-600">Page Load</p>
+              <p class="text-2xl font-bold text-gray-900">{{ systemStats.pageLoadTime }}ms</p>
+            </div>
+            <i class="fas fa-stopwatch text-yellow-500 text-lg"></i>
+          </div>
+          <p class="text-xs text-gray-500">
+            DOM Ready: {{ systemStats.domReadyTime }}ms
+          </p>
+        </div>
+      </div>
+    </div>
+
+</div>
+
+<!-- QuickBooks Sync Popup -->
+@if (showQuickBooksPopup) {
+<div class="quickbooks-popup-overlay" (click)="onCloseQuickBooksPopup()">
+  <div class="quickbooks-popup-container" (click)="$event.stopPropagation()">
     <!-- Header -->
-    <div class="flex justify-between items-center mb-4">
-      <h2 class="text-xl font-semibold text-gray-800">All Appointments</h2>
-      <button class="text-sm text-blue-600 hover:underline">View All</button>
+    <div class="popup-header">
+      <div class="popup-icon">
+        <i class="fas fa-sync-alt"></i>
+      </div>
+      <button class="close-btn" (click)="onCloseQuickBooksPopup()">
+        <i class="fas fa-times"></i>
+      </button>
     </div>
 
-    <!-- Table -->
-    <div class="overflow-x-auto shadow-md">
-  
-  <app-common-ag-grid
-  [rowData]="users"
-  [columnDefs]="columnDefs"
-  [IsshowPagination]="IsshowPagination"
-  [tableHeight]="tableHeight"
-  [paginationPageSize]="10"
-  [paginationPageSizeSelector]="[10, 20, 50, 100]"
-  (edit)="editUser($event)"
-  (delete)="onDelete($event)">
-</app-common-ag-grid>
-</div>
-</div>
-</div>
-</div>
-
-    <!-- <div class="col-12 col-lg-6">
-      <div class="bg-white rounded-xl p-4 shadow-sm h-100">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h3 class="fs-5 fw-semibold">Doctor List</h3>
-          <span class="text-sm text-secondary-grey-100">Today</span>
+    <!-- Content -->
+    <div class="popup-content">
+      <h3 class="popup-title">Sync smarter with QuickBooks</h3>
+      <p class="popup-description">
+        Connect your QuickBooks account to automatically sync customers and services 
+        and manage your billing more efficiently.
+      </p>
+      
+      <div class="features-list">
+        <div class="feature-item">
+          <i class="fas fa-check-circle"></i>
+          <span>Automatically sync customer data</span>
         </div>
-        <hr class="my-2" />
-        <div *ngFor="let doctor of therapists" class="d-flex align-items-center mb-3">
-          <img src="icons/image 1.png" class="me-3 rounded-md" style="width: 40px; height: 40px;" />
-          <div>
-            <div class="text-primary-orange fw-medium">{{ doctor.name }}</div>
-            <div class="text-muted small">{{ doctor.specialty }}</div>
-          </div>
+        <!-- <div class="feature-item">
+          <i class="fas fa-check-circle"></i>
+          <span>Streamline billing processes</span>
+        </div> -->
+        <div class="feature-item">
+          <i class="fas fa-check-circle"></i>
+          <span>Reduce manual data entry</span>
         </div>
       </div>
-    </div> -->
+    </div>
 
-    <!-- <div class="col-12 col-lg-6">
-      <div class="bg-white rounded-xl p-4 shadow-sm h-100">
-        <h3 class="fs-5 fw-semibold mb-3">Recovery Rate</h3>
-        <hr class="my-2" />
-        <div *ngFor="let item of recoveryRates" class="mb-4">
-          <div class="d-flex justify-content-between small mb-1">
-            <span>{{ item.condition }}</span>
-            <span>{{ item.percentage }}%</span>
-          </div>
-          <div class="w-100 bg-secondary-table rounded" style="height: 6px;">
-            <div class="bg-primary-orange rounded" [style.width.%]="item.percentage" style="height: 6px;"></div>
-          </div>
-        </div>
-      </div>
-    </div> -->
-
+    <!-- Actions -->
+    <div class="popup-actions">
+      <button class="btn-connect" (click)="onConnectQuickBooks()">
+        <i class="fas fa-plug"></i>
+        Go to QB Connection
+      </button>
+      <button class="btn-remind" (click)="onRemindLater()">
+        Remind Me Later
+      </button>
+    </div>
   </div>
 </div>
+}
+}
 
+
+
+
+<!-- SuperAdmin View -->
+@if (userRole === 'SuperAdmin') {
+<div class="flex flex-col gap-4 px-4 md:px-5 rounded-common-border-radius">
+  <!-- Welcome Banner -->
+  <div>
+    <div class="flex flex-col md:flex-row justify-between items-center bg-custom-orange rounded-2xl shadow-sm px-4 md:px-6 py-4 md:py-5 mt-4 mb-2">
+      <!-- Left side -->
+      <div class="text-center md:text-left mb-4 md:mb-0">
+        <h1 class="text-xl md:text-2xl font-bold text-gray-900 flex items-center justify-center md:justify-start gap-2">
+          Welcome back, {{ userName }}! <span class="text-xl md:text-2xl">👋</span>
+        </h1>
+        <p class="text-gray-500 mt-1 text-sm md:text-base">
+          Here's what's happening with your business today
+        </p>
+      </div>
+
+      <!-- Right side -->
+      <div class="text-center md:text-right">
+        <p class="text-xs md:text-sm text-gray-500">Today's Date</p>
+        <p class="text-base md:text-lg font-semibold text-gray-900">
+          {{ currentDate | date: 'fullDate' }}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="container-fluid px-0">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div *ngFor="let card of superAdminCards; let i = index" class="w-full">
+        <div class="bg-white rounded-md shadow-md p-4 h-full">
+          <div class="flex items-center gap-3">
+            <!-- Icon background -->
+            <div [ngClass]="card.bg" class="p-3 rounded-xl text-white text-lg md:text-xl shadow-sm flex-shrink-0">
+              <i [ngClass]="card.icon"></i>
+            </div>
+            <!-- Card text -->
+            <div class="ml-auto text-right">
+              <p class="text-lg md:text-xl font-bold">{{ card.value }}</p>
+              <p class="text-xs md:text-sm text-gray-500">{{ card.title }}</p>
+              <p *ngIf="card.subText" class="text-xs font-medium text-green-600 mt-1">
+                {{ card.subText }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Clients -->
+  <div>
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row justify-between items-center mb-3 gap-2">
+      <h2 class="text-lg md:text-xl font-semibold text-gray-800">Recent Clients</h2>
+      <!-- <button class="text-sm text-purple-600 hover:underline whitespace-nowrap">View All Clients</button> -->
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoadingDashboard" class="bg-white rounded-xl p-6 shadow-md text-center">
+      <div class="animate-pulse">
+        <div class="flex justify-center mb-4">
+          <div class="bg-gray-300 rounded-full w-12 h-12"></div>
+        </div>
+        <div class="space-y-2">
+          <div class="bg-gray-300 h-4 rounded w-3/4 mx-auto"></div>
+          <div class="bg-gray-300 h-4 rounded w-1/2 mx-auto"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cards Grid -->
+    <div *ngIf="!isLoadingDashboard" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+      <div *ngFor="let client of recentClients" class="bg-white rounded-xl p-4 md:p-5 shadow-md">
+        <!-- Header Row -->
+        <div class="flex justify-between items-center mb-3">
+          <div class="flex items-center gap-3">
+            <div class="bg-purple-500 text-white font-semibold w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-lg text-sm md:text-base">
+              {{ client.initial }}
+            </div>
+            <div>
+              <h3 class="text-gray-900 font-semibold text-sm  md:text-base">{{ client.name }}</h3>
+              <p class="text-xs md:text-sm text-gray-500">{{ client.type }}</p>
+            </div>
+          </div>
+          <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full whitespace-nowrap">
+            {{ client.status }}
+          </span>
+        </div>
+
+        <!-- Details -->
+        <div class="text-xs md:text-sm text-gray-700 space-y-2 mt-4">
+          <p class="flex justify-between">
+            <span class="font-medium">Country:</span>
+            <span class="font-bold ml-2">{{ client.country }}</span>
+          </p>
+          <p class="flex justify-between">
+            <span class="font-medium">Phone:</span>
+            <span class="font-bold ml-2">{{ client.phoneNumber }}</span>
+          </p>
+          <p class="flex justify-between">
+            <span class="font-medium">Created:</span>
+            <span class="font-bold ml-2">{{ client.created | date:'MMM d, y' }}</span>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoadingDashboard && recentClients.length === 0" class="bg-white rounded-xl p-8 text-center shadow-md">
+      <div class="text-gray-400 mb-4">
+        <i class="fas fa-users text-4xl"></i>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-700 mb-2">No Clients Found</h3>
+      <p class="text-gray-500">There are no recent clients to display.</p>
+    </div>
+  </div>
 </div>
- 
-
-
-
- 
+}

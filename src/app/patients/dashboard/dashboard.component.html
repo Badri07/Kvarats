@@ -1,174 +1,522 @@
-
-
-<div class="flex min-h-screen bg-[#F9F4F1]">
-  <div class="flex-1 p-6 space-y-6">
-  <div class="">
-  <div class="flex justify-between items-center bg-[#f7f5f3] rounded-2xl shadow-sm px-6 py-5 mb-2">
-  <div>
-    <h1 class="text-2xl font-bold text-gray-900 flex items-center gap-2">
-      Welcome back, {{ userName }}! <span class="text-2xl">👋</span>
-    </h1>
-    <p class="text-gray-500 mt-1">
-      Here's what's happening with your business today
-    </p>
-  </div>
-
-  <div class="text-right">
-    <p class="text-sm text-gray-500">Today's Date</p>
-    <p class="text-lg font-semibold text-gray-900">
-      {{ currentDate | date: 'fullDate' }}
-    </p>
-  </div>
-</div>
-
-</div>
-
-    <!-- Top Stats -->
-    <div class="grid grid-cols-4 gap-6">
-      <!-- Heart Rate -->
-      <div class="bg-[#FFA157] text-white p-4 rounded-xl">
-        <p class="text-sm">Heartrate</p>
-        <h2 class="text-2xl font-bold">70/120</h2>
-        <div class="h-20">
-          <canvas
-            baseChart
-            [type]="'line'"
-            [data]="heartRateChart.data"
-            [options]="heartRateChart.options">
-          </canvas>
+<div class="healthcare-dashboard flex flex-col lg:flex-row min-h-screen bg-[#F9F4F1]">
+  <!-- Main Content -->
+  <div class="flex-1 pr-4 md:pr-6 space-y-4 md:space-y-6">
+    <!-- Header -->
+    <div class="bg-white rounded-2xl shadow-sm px-4 md:px-6 py-4 md:py-5">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+        <div>
+          <h1 class="text-xl md:text-2xl font-bold text-gray-900 flex items-center gap-2">
+            Welcome back, {{ userName }}! <span class="text-xl md:text-2xl">👋</span>
+          </h1>
+          <p class="text-gray-500 mt-1 text-sm md:text-base">
+            Your health at a glance
+          </p>
         </div>
-      </div>
-      <!-- Fever -->
-      <div class="bg-white p-4 rounded-xl">
-        <p class="text-sm text-gray-500">Fever</p>
-        <h2 class="text-2xl font-bold">98°F</h2>
-        <div class="h-20">
-          <canvas
-            baseChart
-            [type]="'line'"
-            [data]="feverChart.data"
-            [options]="feverChart.options">
-          </canvas>
-        </div>
-      </div>
-      <!-- Blood Pressure -->
-      <div class="bg-white p-4 rounded-xl">
-    <i class="fas fa-heart text-pink-500 text-2xl mb-2"></i>
 
-        <p class="text-sm text-gray-500">Blood Pressure</p>
-        <h2 class="text-2xl font-bold">70 / 120</h2>
-        <p class="text-sm text-gray-500 mt-2">Patient Bill Due</p>
-        <h3 class="text-xl font-bold">$9358.20</h3>
-      </div>
-      <!-- Fever History -->
-      <div class="bg-white p-4 rounded-xl">
-        <p class="text-sm text-gray-500">Fever History</p>
-        <h2 class="text-4xl font-bold">99</h2>
-        <p class="text-green-500 font-semibold">+12%</p>
-        <p class="text-sm text-gray-400">Yesterday</p>
+        <div class="text-left md:text-right mt-4 md:mt-0">
+          <p class="text-sm text-gray-500">Today's Date</p>
+          <p class="text-lg font-semibold text-gray-900">
+            {{ currentDate | date: 'fullDate' }}
+          </p>
+        </div>
       </div>
     </div>
 
-    <!-- ECG + Profile -->
-    <div class="grid grid-cols-3 gap-6">
-      <!-- ECG Chart -->
-      <div class="bg-white p-4 rounded-xl col-span-2">
-        <p class="text-sm text-gray-500">Heart ECG</p>
-        <div class="flex justify-between items-center">
-          <span class="text-sm text-gray-500">1 - 7 December 2020</span>
-          <span class="bg-[#FFA157] text-white px-3 py-1 rounded-full text-sm">72 bpm Avg</span>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-white rounded-2xl shadow-sm px-4 md:px-6 py-4 md:py-5 hover:scale-105 transition-transform duration-300">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-500 font-medium">Medications</p>
+            <!-- <h2 class="text-2xl font-bold text-gray-800 mt-1">5</h2> -->
+          </div>
+          <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+            <span class="text-xl">💊</span>
+          </div>
         </div>
-        <div class="h-40">
-          <canvas
-            baseChart
-            [type]="'line'"
-            [data]="ecgChart.data"
-            [options]="ecgChart.options">
-          </canvas>
-        </div>
+        <p class="text-xs text-green-600 font-medium mt-2 flex items-center">
+          <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+          All taken
+        </p>
       </div>
-      <!-- Profile -->
-      <div class="bg-white p-4 rounded-xl flex flex-col items-center">
-         <div class="w-16 h-16 rounded-full overflow-hidden">
-    <img src="https://randomuser.me/api/portraits/women/31.jpg" alt="User" class="w-auto h-full object-cover" />
-  </div>
-        <h3 class="mt-3 font-semibold">Linh Nguyen</h3>
-        <p class="text-sm text-gray-500">Sales Manager</p>
-        <h4 class="mt-4 text-xl font-bold">852</h4>
-        <p class="text-sm text-gray-400">Closed Deals</p>
-        <button class="mt-3 bg-[#FFA157] text-white px-4 py-1 rounded-lg">Message</button>
+
+      <div class="bg-white rounded-2xl shadow-sm px-4 md:px-6 py-4 md:py-5 hover:scale-105 transition-transform duration-300">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-500 font-medium">Appointments</p>
+            <!-- <h2 class="text-2xl font-bold text-gray-800 mt-1">3</h2> -->
+          </div>
+          <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+            <span class="text-xl">📅</span>
+          </div>
+        </div>
+        <p class="text-xs text-blue-600 font-medium mt-2 flex items-center">
+          <span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+          This week
+        </p>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-sm px-4 md:px-6 py-4 md:py-5 hover:scale-105 transition-transform duration-300">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-500 font-medium">Tests</p>
+            <!-- <h2 class="text-2xl font-bold text-gray-800 mt-1">2</h2> -->
+          </div>
+          <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+            <span class="text-xl">🔬</span>
+          </div>
+        </div>
+        <p class="text-xs text-yellow-600 font-medium mt-2 flex items-center">
+          <span class="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
+          Pending
+        </p>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-sm px-4 md:px-6 py-4 md:py-5 hover:scale-105 transition-transform duration-300">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-500 font-medium">Messages</p>
+            <!-- <h2 class="text-2xl font-bold text-gray-800 mt-1">7</h2> -->
+          </div>
+          <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
+            <span class="text-xl">💬</span>
+          </div>
+        </div>
+        <p class="text-xs text-red-600 font-medium mt-2 flex items-center">
+          <span class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
+          Unread
+        </p>
       </div>
     </div>
 
-    <!-- Bottom Stats -->
-  <div class="grid grid-cols-4 gap-6">
-  <div class="bg-white p-4 rounded-xl text-center shadow">
-    <i class="fas fa-heartbeat text-red-500 text-2xl mb-2"></i>
-    <p class="text-sm text-gray-500">Blood Pressure</p>
-    <h3 class="text-lg font-bold">110/70</h3>
+    <!-- Vitals Dashboard Section -->
+    <div class="bg-gray-50 p-4 md:p-6 rounded-2xl shadow-sm">
+      <div class="max-w-7xl mx-auto">
+        <!-- Vitals Header -->
+        <!-- <div>
+          <div class="flex items-start justify-between">
+            <div>
+              <div class="flex items-center space-x-3 mb-3">
+              </div>
+            </div>
+            <div class="hidden md:flex items-center space-x-2 bg-green-50 px-4 py-2 rounded-lg border border-green-200">
+              <div class="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse"></div>
+              <span class="text-sm font-semibold text-green-700">System Active</span>
+            </div>
+          </div>
+        </div> -->
+
+        <!-- Loading State -->
+        <div *ngIf="loading" class="flex flex-col justify-center items-center h-64 bg-white rounded-2xl shadow-sm border border-gray-100">
+          <div class="relative">
+            <div class="animate-spin rounded-full h-16 w-16 border-4 border-gray-200 border-t-primary"></div>
+            <div class="absolute inset-0 flex items-center justify-center">
+              <div class="w-8 h-8 bg-primary rounded-full opacity-20"></div>
+            </div>
+          </div>
+          <p class="mt-4 text-gray-600 font-medium">Loading vital signs...</p>
+        </div>
+
+        <!-- Error State -->
+        <div *ngIf="error" class="bg-white border-l-4 border-red-500 rounded-xl shadow-sm p-6 mb-6">
+          <div class="flex items-start">
+            <div class="flex-shrink-0">
+              <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+            <div class="ml-4 flex-1">
+              <h3 class="text-sm font-semibold text-red-800 mb-1">Error Loading Vitals</h3>
+              <p class="text-sm text-red-700">{{ error }}</p>
+              <button
+                (click)="loadLatestVitals()"
+                class="mt-3 px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors shadow-sm">
+                Retry Connection
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vitals Grid -->
+        <div *ngIf="!loading && !error">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Vital Card -->
+            <div 
+              *ngFor="let vital of vitalCards"
+              (click)="openVitalModal(vital)"
+              class="bg-custom-orange rounded-2xl border-2 border-gray-100 hover:border-primary transition-all duration-300 overflow-hidden group relative shadow-sm hover:shadow-xl cursor-pointer transform transition-all duration-300 hover:-translate-y-1">
+              
+              <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br {{ vital.color }} opacity-5 rounded-full -mr-16 -mt-16"></div>
+
+              <div class="p-6 relative">
+                <div class="flex items-start justify-between mb-4">
+                  <div class="flex items-center space-x-3">
+                    <div class="w-14 h-14 rounded-xl bg-gradient-to-br {{ vital.color }} flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
+                      <span class="text-3xl">{{ vital.icon }}</span>
+                    </div>
+                    <div>
+                      <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">{{ vital.title }}</h3>
+                      <div class="flex items-center text-xs text-gray-400">
+                        <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span>{{ vital.normalRange }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                  </div>
+                </div>
+
+                <div class="mt-6">
+                  <div class="flex items-end justify-between">
+                    <div>
+                      <div class="flex items-baseline space-x-2">
+                        <span class="text-4xl font-bold text-gray-900 tracking-tight">{{ getVitalValue(vital.field) }}</span>
+                        <span class="text-lg font-medium text-gray-500">{{ vital.unit }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mt-6 pt-4 border-t border-gray-100">
+                  <div class="flex items-center justify-between text-xs">
+                    <span class="text-gray-400 font-medium">Click to manage</span>
+                    <div class="flex items-center text-green-600">
+                      <div class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+                      <span class="font-medium">Active</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            </div>
+          </div>
+
+          <!-- Latest Reading Summary -->
+          <div *ngIf="latestVitals" class="mt-6 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
+                  <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                </div>
+                <div>
+                  <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wide">Latest Reading</h2>
+                  <p class="text-sm text-gray-500 mt-0.5">{{ latestVitals.createdAt | date: 'medium' }}</p>
+                </div>
+              </div>
+              <div class="text-right">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                  <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                  </svg>
+                  Recorded
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  
   </div>
 
-  <div class="bg-white p-4 rounded-xl text-center shadow">
-    <i class="fas fa-heart text-pink-500 text-2xl mb-2"></i>
-    <p class="text-sm text-gray-500">Heart Rate</p>
-    <h3 class="text-lg font-bold">85 bpm</h3>
-  </div>
+  <!-- Mobile Menu Button -->
+  <button (click)="toggleSidebar()" class="lg:hidden fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-[#FFA157] text-white shadow-lg flex items-center justify-center">
+    <i class="fas fa-bars text-xl"></i>
+  </button>
 
-  <div class="bg-white p-4 rounded-xl text-center shadow">
-    <i class="fas fa-tint text-blue-500 text-2xl mb-2"></i>
-    <p class="text-sm text-gray-500">Glucose Level</p>
-    <h3 class="text-lg font-bold">75-90</h3>
-  </div>
-
-  <div class="bg-white p-4 rounded-xl text-center shadow">
-    <i class="fas fa-vials text-green-500 text-2xl mb-2"></i>
-    <p class="text-sm text-gray-500">Blood Count</p>
-    <h3 class="text-lg font-bold">9,456/ml</h3>
-  </div>
-</div>
-
-
-  </div>
+  <!-- Overlay for mobile -->
+  <div (click)="toggleSidebar()" [class.hidden]="!sidebarOpen" class="overlay lg:hidden"></div>
 
   <!-- Right Sidebar -->
-  <div class="w-80 p-6 space-y-6 bg-white border-l">
-    <!-- Doctor Info -->
-    <div class="flex items-center space-x-4">
-   <div class="w-12 h-12 rounded-full overflow-hidden">
-    <img src="https://randomuser.me/api/portraits/women/31.jpg" alt="User" class="w-auto h-full object-cover" />
-  </div>      <div>
-        <h4 class="font-semibold">Dr. Mike Taylor</h4>
-        <p class="text-sm text-gray-500">Heart Specialist</p>
-      </div>
+  <div [class.open]="sidebarOpen" class="sidebar rounded-2xl shadow-sm lg:w-80 p-4 md:p-6 space-y-6 bg-white lg:static lg:z-0">
+    <!-- Close button for mobile -->
+    <button (click)="toggleSidebar()" class="lg:hidden absolute top-4 right-4 text-gray-500">
+      <i class="fas fa-times text-xl"></i>
+    </button>
+    
+    <!-- Upcoming Appointments -->
+    <div>
+      <h3 class="font-semibold mb-3">Upcoming Appointments</h3>
+      <div class="space-y-3">
+        <div class="flex items-center justify-between p-3 bg-[#F9F4F1] rounded-lg">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-full overflow-hidden">
+              <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Patient" class="w-full h-full object-cover" />
+            </div>
+            <div>
+              <p class="text-sm font-medium">Sarah Johnson</p>
+              <p class="text-xs text-gray-500">11:30 AM</p>
+            </div>
+          </div>
+          <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Check-up</span>
+        </div>
+        
+        <div class="flex items-center justify-between p-3 bg-[#F9F4F1] rounded-lg">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-full overflow-hidden">
+              <img src="https://randomuser.me/api/portraits/men/22.jpg" alt="Patient" class="w-full h-full object-cover" />
+            </div>
+            <div>
+              <p class="text-sm font-medium">Robert Davis</p>
+              <p class="text-xs text-gray-500">1:15 PM</p>
+            </div>
+          </div>
+          <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">Follow-up</span>
+        </div>
+
+           <!-- Health Tips -->
+    <div class="bg-orange-400 rounded-2xl p-5 text-white">
+      <h4 class="font-semibold mb-3 flex items-center">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+        </svg>
+        Health Tip
+      </h4>
+      <p class="text-sm text-orange-100">
+        Remember to stay hydrated! Drink at least 8 glasses of water daily for optimal health.
+      </p>
     </div>
-
-    <!-- Appointments -->
-    <div class="space-y-4">
-      <div class="bg-[#F9F4F1] p-4 rounded-xl">
-        <p class="text-xs uppercase text-gray-500">Routine Checkup</p>
-        <h4 class="font-semibold">Damian Lewis - Standard Consult</h4>
-        <p class="text-xs text-gray-400">10:30am - 11:00am • Starts in 25m</p>
-        <div class="flex items-center space-x-2 mt-2">
-        <div class="w-8 h-8 rounded-full overflow-hidden">
-            <img src="https://randomuser.me/api/portraits/women/31.jpg" alt="User" class="w-auto h-full object-cover" />
-        </div>
-  <span class="text-sm">Damian Lewis</span>
-        </div>
-        <button class="mt-3 text-[#FFA157] border border-[#FFA157] px-3 py-1 rounded-lg">Edit Consult</button>
-      </div>
-
-      <div class="bg-[#F9F4F1] p-4 rounded-xl">
-        <p class="text-xs uppercase text-red-500">Emergency</p>
-        <h4 class="font-semibold">Mike Taylor - Premium Consult</h4>
-        <p class="text-xs text-gray-400">10:30am - 11:00am • Starts in 25m</p>
-        <div class="flex items-center space-x-2 mt-2">
-<div class="w-8 h-8 rounded-full overflow-hidden">
-    <img src="https://randomuser.me/api/portraits/women/31.jpg" alt="User" class="w-auto h-full object-cover" />
-  </div>           <span class="text-sm">Damian Lewis</span>
-        </div>
-        <button class="mt-3 text-[#FFA157] border border-[#FFA157] px-3 py-1 rounded-lg">Edit Consult</button>
       </div>
     </div>
   </div>
+</div>
 
+<!-- Modal -->
+<div 
+  *ngIf="showModal && selectedVital"
+  class="fixed inset-0 bg-gray-900 bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4" 
+  (click)="closeModal()">
+  
+  <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden border border-gray-200" (click)="$event.stopPropagation()">
+    <!-- Modal Header -->
+    <div class="bg-gradient-to-r {{ selectedVital.color }} p-6 md:p-8 text-white relative overflow-hidden">
+      <div class="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -mr-32 -mt-32"></div>
+      <div class="flex items-center justify-between relative">
+        <div class="flex items-center space-x-4">
+          <div class="w-16 h-16 bg-white bg-opacity-20 rounded-xl flex items-center justify-center backdrop-blur-sm shadow-lg">
+            <span class="text-4xl">{{ selectedVital.icon }}</span>
+          </div>
+          <div>
+            <h2 class="text-2xl md:text-3xl font-bold mb-1">{{ selectedVital.title }}</h2>
+            <div class="flex items-center space-x-2 text-white text-opacity-90">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <span class="text-sm font-medium">Normal Range: {{ selectedVital.normalRange }} {{ selectedVital.unit }}</span>
+            </div>
+          </div>
+        </div>
+        <button
+          (click)="closeModal()"
+          class="text-white hover:bg-white hover:bg-opacity-20 rounded-xl p-2.5 transition-all shadow-sm">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal Content -->
+    <div class="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
+      <!-- Error Display -->
+      <div *ngIf="modalError" class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+        <p class="text-red-800">{{ modalError }}</p>
+      </div>
+
+      <!-- Add New Reading Button -->
+      <div class="mb-6">
+        <button
+          (click)="toggleAddForm()"
+          class="w-full custom-button flex items-center justify-center space-x-2 border-2 border-transparent hover:border-primary-dark shadow-md">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+          <span>{{ showAddForm ? 'Cancel' : 'Add New Reading' }}</span>
+        </button>
+      </div>
+
+      <!-- Add Form -->
+      <div *ngIf="showAddForm" class="bg-gradient-to-br from-gray-50 to-white rounded-xl p-6 mb-6 border-2 border-primary shadow-sm">
+        <div class="flex items-center space-x-2 mb-4">
+          <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+            </svg>
+          </div>
+          <h3 class="text-lg font-bold text-gray-800">New Reading</h3>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Blood Pressure Fields -->
+          <div *ngIf="selectedVital.id === 'blood-pressure'">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Systolic</label>
+            <input
+              type="number"
+              [(ngModel)]="newVital.systolic"
+              class="w-full form-control"
+              placeholder="120">
+          </div>
+          <div *ngIf="selectedVital.id === 'blood-pressure'">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Diastolic</label>
+            <input
+              type="number"
+              [(ngModel)]="newVital.diastolic"
+              class="w-full form-control"
+              placeholder="80">
+          </div>
+
+          <!-- Other Vital Fields -->
+          <div *ngIf="selectedVital.id === 'heart-rate'">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Heart Rate (bpm)</label>
+            <input
+              type="number"
+              [(ngModel)]="newVital.heartRate"
+              class="w-full form-control"
+              placeholder="72">
+          </div>
+
+          <div *ngIf="selectedVital.id === 'temperature'">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Temperature (°F)</label>
+            <input
+              type="number"
+              step="0.1"
+              [(ngModel)]="newVital.temperature"
+              class="w-full form-control"
+              placeholder="98.6">
+          </div>
+
+          <div *ngIf="selectedVital.id === 'oxygen'">
+            <label class="block text-sm font-medium text-gray-700 mb-2">SpO2 (%)</label>
+            <input
+              type="number"
+              [(ngModel)]="newVital.spO2"
+              class="w-full form-control"
+              placeholder="98">
+          </div>
+
+          <div *ngIf="selectedVital.id === 'blood-sugar'">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Blood Sugar (mg/dL)</label>
+            <input
+              type="number"
+              [(ngModel)]="newVital.bloodSugar"
+              class="w-full form-control"
+              placeholder="90">
+          </div>
+
+          <div *ngIf="selectedVital.id === 'weight'">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Weight (kg)</label>
+            <input
+              type="number"
+              step="0.1"
+              [(ngModel)]="newVital.weight"
+              class="w-full form-control"
+              placeholder="70">
+          </div>
+
+          <div *ngIf="selectedVital.id === 'respiratory'">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Respiratory Rate</label>
+            <input
+              type="number"
+              [(ngModel)]="newVital.respiratoryRate"
+              class="w-full form-control"
+              placeholder="16">
+          </div>
+
+          <div *ngIf="selectedVital.id === 'bmi'">
+            <label class="block text-sm font-medium text-gray-700 mb-2">BMI</label>
+            <input
+              type="number"
+              step="0.1"
+              [(ngModel)]="newVital.bmi"
+              class="w-full form-control"
+              placeholder="22.5">
+          </div>
+        </div>
+
+        <button
+          (click)="saveVital()"
+          [disabled]="saving"
+          class="mt-6 w-full bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold py-3.5 px-6 rounded-xl hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-md flex items-center justify-center space-x-2">
+          <svg *ngIf="!saving" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+          </svg>
+          <div *ngIf="saving" class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+          <span>{{ saving ? 'Saving Reading...' : 'Save Reading' }}</span>
+        </button>
+      </div>
+
+      <!-- History Section -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center space-x-2">
+            <div class="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
+              <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+            <h3 class="text-lg font-bold text-gray-800">History</h3>
+          </div>
+          <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">{{ vitalHistory.length }} Records</span>
+        </div>
+
+        <!-- Loading State -->
+        <div *ngIf="modalLoading" class="flex flex-col justify-center items-center py-12 bg-gray-50 rounded-xl border border-gray-200">
+          <div class="relative">
+            <div class="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-primary"></div>
+          </div>
+          <p class="mt-3 text-gray-600 text-sm font-medium">Loading history...</p>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="!modalLoading && vitalHistory.length === 0" class="text-center py-12 bg-gray-50 rounded-xl border border-gray-200">
+          <div class="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+          </div>
+          <p class="text-gray-600 font-medium">No history available</p>
+          <p class="text-gray-500 text-sm mt-1">Add a new reading to get started</p>
+        </div>
+
+        <!-- History Records -->
+        <div *ngFor="let record of vitalHistory; let i = index" class="bg-white border-2 border-gray-100 rounded-xl p-5 hover:border-primary hover:shadow-md transition-all">
+          <div class="flex items-center justify-between">
+            <div class="flex-1">
+              <div class="flex items-center space-x-3 mb-2">
+                <div class="w-10 h-10 bg-gradient-to-br {{ selectedVital.color }} rounded-lg flex items-center justify-center shadow-sm">
+                  <span class="text-lg">{{ selectedVital.icon }}</span>
+                </div>
+                <div>
+                  <div class="flex items-baseline space-x-2">
+                    <span class="text-2xl font-bold text-gray-900">{{ getModalVitalValue(record) }}</span>
+                    <span class="text-base font-medium text-gray-500">{{ selectedVital.unit }}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="flex items-center text-xs text-gray-500 mt-2 ml-13">
+                <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                <span class="font-medium">{{ record.createdAt | date: 'medium' }}</span>
+              </div>
+            </div>
+            <button
+              (click)="deleteVital(record.id)"
+              class="ml-4 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-xl p-2.5 transition-all border border-transparent hover:border-red-200">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

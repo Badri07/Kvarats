@@ -1,0 +1,58 @@
+
+
+
+<div class="dashboard-container">
+<div class="container mx-auto p-1">
+  <h4 class="text-2xl font-semibold  text-primary-border-color">Patients List</h4>
+  <div class="mt-4 rounded-xl bg-white">
+     <div class="flex gap-2 justify-between mb-3">
+      <div class="relative flex items-center">
+      <input
+        type="text"
+        id="searchInput"
+        class="w-full px-4 m-2 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-primary-border-color focus:border-transparent"
+        [(ngModel)]="searchValue"
+        (input)="onQuickFilterChanged()"
+        placeholder="Search patients...">
+      <button
+        class="px-4 py-2 bg-gray-100 text-gray-600 border border-l-0 border-gray-300 rounded-r-lg hover:bg-primary-border-color hover:text-white transition-colors"
+        *ngIf="searchValue"
+        (click)="searchValue=''; onQuickFilterChanged()">
+        Clear
+      </button>
+    </div>
+
+
+</div>
+
+  
+
+<ag-grid-angular
+  class="ag-theme-alpine ag-theme-custom"
+  [gridOptions]="gridOptions"
+  [rowData]="rowData"
+  [columnDefs]="columnDefs"
+  [defaultColDef]="defaultColDef"
+  [pagination]="true"
+  [paginationPageSize]="paginationPageSize"
+    (cellClicked)="onCellClicked($event)"
+  style="width: 100%; height: 500px;">
+</ag-grid-angular>
+
+<!-- <app-common-ag-grid
+  [rowData]="users"
+  [columnDefs]="columnDefs"
+  [paginationPageSize]="10"
+  [paginationPageSizeSelector]="[10, 20, 50, 100]"
+  (edit)="onEditAction($event)"
+  (delete)="onDeleteAction($event)">
+</app-common-ag-grid> -->
+
+
+</div>
+</div>
+</div>
+
+
+
+

@@ -45,13 +45,18 @@ export class DropdownDataService {
   ]);
 
   constructor(private http:HttpClient) { }
-  getCountries(page: number = 1, pageSize: number = 100): Observable<any> {
-    const params = new HttpParams()
-      .set('page', page)
-      .set('pageSize', pageSize);
+getCountries(page: number = 1, pageSize: number = 100, searchTerm: string = ''): Observable<any> {
+  let params = new HttpParams()
+    .set('pageNumber', page)
+    .set('pageSize', pageSize);
 
-    return this.http.get<any>(`${environment.apidev}/Dropdowns/GetAllCountriesData`, { params });
+  if (searchTerm) {
+    params = params.set('searchTerm', searchTerm);
   }
+
+  return this.http.get<any>(`${environment.apidev}/CountriesData`, { params });
+}
+
 
   // createCountry(country: CountriesData): Observable<CountriesData> {
   //   const countries = this.countriesSubject.value;
@@ -61,7 +66,7 @@ export class DropdownDataService {
   // }
 
      createCountry(country: CountriesData) {
-       return this.http.post(`${environment.apidev}/Dropdowns/AddOrUpdateCountriesData`,country).pipe(
+       return this.http.post(`${environment.apidev}/CountriesData`,country).pipe(
         map((response: any) => {
           return response?.data || response;
         }),
@@ -72,21 +77,23 @@ export class DropdownDataService {
       )
     }
 
- updateCountry(country: CountriesData): Observable<CountriesData> {
- const url = `${environment.apidev}/Dropdowns/AddOrUpdateCountriesData`;
-  return this.http.post<Medication>(url, country).pipe(
+updateCountry(country: CountriesData, id: number): Observable<CountriesData> {
+  const url = `${environment.apidev}/CountriesData/${id}`;
+  return this.http.put<CountriesData>(url, country).pipe(
     map((response: any) => response?.data || response),
     catchError((error) => {
-      console.error('Error updating medication:', error);
+      console.error('Error updating country:', error);
       return throwError(() => error);
     })
   );
 }
 
 
+
+
  deleteCountry(id: number): Observable<any> {
-  const params = new HttpParams().set('id', id.toString());
-  return this.http.delete<any>(`${environment.apidev}/Dropdowns/DeleteCountriesDataById`, { params });
+  // const params = new HttpParams().set('id', id.toString());
+  return this.http.delete<any>(`${environment.apidev}/CountriesData/${id}`);
 }
 
 
@@ -143,15 +150,46 @@ getParentLookupData(): Observable<LookupData[]> {
   }
 
   // Medication Methods
-  getMedications(page: number = 1, pageSize: number = 100): Observable<Medication[]> {
-     const params = new HttpParams()
+  getMedications(page: number = 1, pageSize: number = 100, searchTerm: string = ''): Observable<Medication[]> {
+    let params = new HttpParams()
       .set('page', page)
       .set('pageSize', pageSize);
-    return this.http.get<any>(`${environment.apidev}/Dropdowns/GetAllMedications`, { params });
+    if (searchTerm) {
+    params = params.set('searchTerm', searchTerm);
   }
-
+    return this.http.get<any>(`${environment.apidev}/Medications`, { params });
+  }
+  getdiagnosis(page: number = 1, pageSize: number = 100, searchTerm: string = ''): Observable<Medication[]> {
+    let params = new HttpParams()
+      .set('page', page)
+      .set('pageSize', pageSize);
+    if (searchTerm) {
+    params = params.set('searchTerm', searchTerm);
+  }
+    return this.http.get<any>(`${environment.apidev}/Dropdowns/diagnosis`, { params });
+  }
+  getCheifComplaints(page: number = 1, pageSize: number = 100, searchTerm: string = ''): Observable<Medication[]> {
+    let params = new HttpParams()
+      .set('page', page)
+      .set('pageSize', pageSize);
+    if (searchTerm) {
+    params = params.set('searchTerm', searchTerm);
+  }
+    return this.http.get<any>(`${environment.apidev}/ChiefComplaints`, { params });
+  }
   createMedication(medication: Medication): Observable<Medication> {
-    return this.http.post(`${environment.apidev}/Dropdowns/AddOrUpdateMedication`,medication).pipe(
+    return this.http.post(`${environment.apidev}/Medications`,medication).pipe(
+        map((response: any) => {
+          return response?.data || response;
+        }),
+        catchError(error => {
+          console.error('Error during sign in:', error);
+          return throwError(() => error);
+        })
+      )
+  }
+   createCheifComplaints(medication: any): Observable<Medication> {
+    return this.http.post(`${environment.apidev}/ChiefComplaints`,medication).pipe(
         map((response: any) => {
           return response?.data || response;
         }),
@@ -162,9 +200,43 @@ getParentLookupData(): Observable<LookupData[]> {
       )
   }
 
- updateMedication(medication: Medication): Observable<Medication> {
-  const url = `${environment.apidev}/Dropdowns/AddOrUpdateMedication`;
-  return this.http.post<Medication>(url, medication).pipe(
+   createDiagnosis(medication: Medication): Observable<Medication> {
+    return this.http.post(`${environment.apidev}/Dropdowns/diagnosis`,medication).pipe(
+        map((response: any) => {
+          return response?.data || response;
+        }),
+        catchError(error => {
+          console.error('Error during sign in:', error);
+          return throwError(() => error);
+        })
+      )
+  }
+
+updateMedication(medication: Medication): Observable<Medication> {
+  const url = `${environment.apidev}/Medications/${medication.id}`;
+  return this.http.put<Medication>(url, medication).pipe(
+    map((response: any) => response?.data || response),
+    catchError((error) => {
+      console.error('Error updating medication:', error);
+      return throwError(() => error);
+    })
+  );
+}
+
+updateDiagnosis(medication: any): Observable<Medication> {
+  const url = `${environment.apidev}/Dropdowns/diagnosis/${medication.id}`;
+  return this.http.put<Medication>(url, medication).pipe(
+    map((response: any) => response?.data || response),
+    catchError((error) => {
+      console.error('Error updating medication:', error);
+      return throwError(() => error);
+    })
+  );
+}
+
+updatecheifComplaints(medication: any): Observable<Medication> {
+  const url = `${environment.apidev}/ChiefComplaints/${medication.id}`;
+  return this.http.put<Medication>(url, medication).pipe(
     map((response: any) => response?.data || response),
     catchError((error) => {
       console.error('Error updating medication:', error);
@@ -175,8 +247,18 @@ getParentLookupData(): Observable<LookupData[]> {
 
 
   deleteMedication(id: number): Observable<boolean> {
-    const params = new HttpParams().set('id', id.toString());
-  return this.http.delete<any>(`${environment.apidev}/Dropdowns/DeleteMedicationById`, { params });
+    // const params = new HttpParams().set('id', id.toString());
+  return this.http.delete<any>(`${environment.apidev}/Medications/${id}`,);
+  }
+
+   deleteDiagnosis(id: number): Observable<boolean> {
+    // const params = new HttpParams().set('id', id.toString());
+  return this.http.delete<any>(`${environment.apidev}/Dropdowns/diagnosis/${id}`,);
+  }
+
+   deleteCheficomplaints(id: number): Observable<boolean> {
+    // const params = new HttpParams().set('id', id.toString());
+  return this.http.delete<any>(`${environment.apidev}/ChiefComplaints/${id}`,);
   }
 
   private getNextId(items: any[]): number {

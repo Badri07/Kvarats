@@ -12,6 +12,8 @@ import { DropdownDataService } from '../../service/dropdown/dropdown-data-servic
 import { AllCommunityModule, ModuleRegistry } from 'ag-grid-community';
 ModuleRegistry.registerModules([AllCommunityModule]);
 import { AgGridModule } from 'ag-grid-angular';
+import { DiagnosisComponent } from '../../admin/manage-dropdowns/diagnosis/diagnosis.component';
+import { CheifComplaintComponent } from '../../admin/manage-dropdowns/cheif-complaint/cheif-complaint.component';
 
 @NgModule({
   declarations: [
@@ -20,7 +22,9 @@ import { AgGridModule } from 'ag-grid-angular';
     CountriesDataComponent,
     LookupDataComponent,
     MedicationComponent,
-    ConfirmDialogComponent
+    ConfirmDialogComponent,
+    DiagnosisComponent,
+    CheifComplaintComponent
   ],
   imports: [
     CommonModule,
@@ -38,7 +42,9 @@ import { AgGridModule } from 'ag-grid-angular';
     CountriesDataComponent,
     LookupDataComponent,
     MedicationComponent,
-    ConfirmDialogComponent
+    ConfirmDialogComponent,
+    DiagnosisComponent,
+    CheifComplaintComponent
   ]
 })
 export class SettingModule { }

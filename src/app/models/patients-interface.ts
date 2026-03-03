@@ -26,16 +26,42 @@ export interface Payment {
 }
 
 export interface PatientInsurance {
-  patientId: string;
-  id: string;
-  policyHolderName: string;
-  relationship: string;
-  policyHolderDob: string; 
-  memberId: string;
-  groupNumber: string;
-  insuranceCarrierId: number;
-  coPay: number;
-  insuranceCarrierName: string;
-  effectiveDate: string; 
-  expiryDate: string;    
+  PatientId?: string;
+  Id?: string;
+  PolicyHolderName?: string;
+  Relationship?: string;
+  PolicyHolderDob?: Date | null;
+  MemberId?: string;
+  GroupNumber?: string;
+  InsuranceCarrierId?: number;
+  CoPay?: number;
+  InsuranceCarrierName?: string;
+  EffectiveDate?: Date | null;
+  ExpiryDate?: Date | null;    
+}
+
+
+export interface Patient {
+  id?: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  dateOfBirth?: Date;
+  clientId?: string;
+  therapistId?: string;
+  quickBookSync?:boolean;
+  status?: 'active' | 'inactive' | 'discharged';
+  emergencyContact?: {
+    name?: string;
+    phone?: string;
+    relationship?: string;
+  };
+  insuranceInfo?: {
+    provider: string;
+    policyNumber: string;
+    groupNumber?: string;
+  };
+  createdAt?: Date;
+  updatedAt?: Date;
 }

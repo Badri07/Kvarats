@@ -1,0 +1,118 @@
+<div class="mx-auto">
+  <div class="mb-3">
+    <h1 class="text-2xl dashboard-title">Therapy Notes & EHR</h1>
+    <p class="dashboard-subtitle text-sm">
+      Manage SOAP notes, progress notes, and treatment plans
+    </p>
+  </div>
+
+  <!-- Show tabs only when a patient is selected -->
+  <div class="mb-3">
+    <!-- Fixed Animated Tabs -->
+    <div class="animated-tabs mb-0">
+      <!-- <div
+        class="slider"
+        [style.left]="sliderLeft"
+        [style.width]="sliderWidth"
+      ></div> -->
+
+      <div
+        class="tab"
+        [class.active]="activeTab === 'soap'"
+        (click)="setActiveTab('soap', 0)"
+      >
+        <i class="fas fa-file-medical mt-[3px]"></i>
+        <span>SOAP Notes</span>
+      </div>
+
+      <div
+        class="tab"
+        [class.active]="activeTab === 'dap'"
+        (click)="setActiveTab('dap', 1)"
+      >
+        <i class="fas fa-file-alt mt-[3px]"></i>
+        <span>DAP Notes</span>
+      </div>
+
+      <div
+        class="tab"
+        [class.active]="activeTab === 'assessment'"
+        (click)="setActiveTab('assessment', 2)"
+      >
+        <i class="fas fa-clipboard-list mt-[3px]"></i>
+        <span>Initial Assessment</span>
+      </div>
+
+      <!-- Additional Tabs -->
+      <div
+        class="tab"
+        [class.active]="activeTab === 'crisis'"
+        (click)="setActiveTab('crisis', 3)"
+      >
+        <i class="fas fa-exclamation-triangle mt-[3px]"></i>
+        <span>Crisis Notes</span>
+      </div>
+
+      <div
+        class="tab"
+        [class.active]="activeTab === 'treatment'"
+        (click)="setActiveTab('treatment', 4)"
+      >
+        <i class="fas fa-map-marked-alt mt-[3px]"></i>
+        <span>Treatment Plans</span>
+      </div>
+
+      <div
+        class="tab"
+        [class.active]="activeTab === 'progress'"
+        (click)="setActiveTab('progress', 5)"
+      >
+        <i class="fas fa-chart-line mt-[3px]"></i>
+        <span>Progress Notes</span>
+      </div>
+
+      <div
+        class="tab"
+        [class.active]="activeTab === 'discharge'"
+        (click)="setActiveTab('discharge', 6)"
+      >
+        <i class="fas fa-sign-out-alt mt-[3px]"></i>
+        <span>Discharge Summary</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="space-y-6">
+    <!-- Show note components when patient is selected -->
+    <app-soap-notes
+      *ngIf="activeTab === 'soap'"
+    >
+    </app-soap-notes>
+
+    <app-dap-notes *ngIf="activeTab === 'dap'" >
+    </app-dap-notes>
+
+    <app-patients-notes *ngIf="activeTab === 'assessment'">
+    </app-patients-notes>
+
+    <app-crisis-notes
+      *ngIf="activeTab === 'crisis'"
+    >
+    </app-crisis-notes>
+
+    <app-treatment-plans
+      *ngIf="activeTab === 'treatment'"
+    >
+    </app-treatment-plans>
+
+    <app-progress-notes
+      *ngIf="activeTab === 'progress'"
+    >
+    </app-progress-notes>
+
+    <app-discharge-summary
+      *ngIf="activeTab === 'discharge'"
+    >
+    </app-discharge-summary>
+  </div>
+</div>

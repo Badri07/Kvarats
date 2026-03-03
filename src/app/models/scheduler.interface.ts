@@ -16,6 +16,7 @@ export interface Appointment {
   duration: number; // in minutes
   type: string;
   color: string;
+  startTime:Date
 }
 
 export interface TimeSlot {
@@ -53,4 +54,12 @@ export interface SchedulerClickEvent {
   date: string;
   timeSlot: TimeSlot;
   isAddEvent: boolean;
+  startTime?:string;
+  endTime?:string;
+  appointmentId?: string;
+}
+
+export interface AppointmentEditEvent {
+  appointmentId: string;
+  isAddEvent: false;
 }

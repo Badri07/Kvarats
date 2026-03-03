@@ -1,0 +1,250 @@
+.insurance-dashboard {
+  @apply p-6 space-y-6 min-h-full;
+}
+
+.dashboard-header {
+  @apply flex items-start justify-between mb-8;
+}
+
+.header-content {
+  @apply space-y-2;
+}
+
+.dashboard-title {
+  @apply text-3xl font-bold text-gray-900;
+}
+
+.dashboard-subtitle {
+  @apply text-gray-600;
+}
+
+.header-actions {
+  @apply flex items-center gap-3;
+}
+
+.loading-state {
+  @apply flex flex-col items-center justify-center py-16 space-y-4;
+}
+
+.loading-spinner {
+  @apply w-8 h-8 border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin;
+}
+
+.stats-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6;
+}
+
+.stat-card {
+  @apply bg-white rounded-2xl shadow-lg border border-primary-100 p-6 hover:shadow-xl transition-all duration-300;
+  box-shadow: 0 8px 24px rgba(255, 161, 87, 0.08);
+}
+
+.stat-icon {
+  @apply flex items-center justify-center w-12 h-12 rounded-xl mb-4 w-full md:w-1/4;
+}
+
+.stat-icon-blue {
+  @apply bg-blue-100 text-blue-600;
+}
+
+.stat-icon-green {
+  @apply bg-green-100 text-green-600;
+}
+
+.stat-icon-yellow {
+  @apply bg-yellow-100 text-yellow-600;
+}
+
+.stat-icon-purple {
+  @apply bg-purple-100 text-purple-600;
+}
+
+.stat-content {
+  @apply space-y-1 text-center;
+}
+
+.stat-value {
+  @apply text-2xl font-bold text-gray-900;
+}
+
+.stat-label {
+  @apply text-sm text-gray-600;
+}
+
+.stat-change {
+  @apply text-xs font-medium;
+}
+
+.stat-change.positive {
+  @apply text-green-600;
+}
+
+.stat-change.negative {
+  @apply text-red-600;
+}
+
+.stat-change.neutral {
+  @apply text-gray-600;
+}
+
+.content-grid {
+  @apply grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 gap-6;
+}
+
+.card {
+  @apply bg-white rounded-2xl shadow-lg border border-primary-100;
+  box-shadow: 0 8px 24px rgba(255, 161, 87, 0.08);
+}
+
+.card-header {
+  @apply flex items-center justify-between p-6 border-b border-gray-200;
+}
+
+.card-title {
+  @apply text-lg font-semibold text-gray-900;
+}
+
+.card-action {
+  @apply text-sm text-primary-600 hover:text-primary-700 font-medium transition-colors;
+}
+
+.card-content {
+  @apply p-6;
+}
+
+.quick-actions {
+  @apply grid grid-cols-1 sm:grid-cols-2 gap-4;
+}
+
+.quick-action {
+  @apply flex items-center gap-4 p-4 text-left bg-gray-50 hover:bg-primary-50 rounded-xl transition-all duration-300 cursor-pointer;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 161, 87, 0.1);
+    
+    .action-icon {
+      @apply bg-primary-100 text-primary-600;
+    }
+  }
+}
+
+.action-icon {
+  @apply w-10 h-10 bg-gray-200 text-gray-600 rounded-lg flex items-center justify-center transition-all duration-300;
+}
+
+.action-content {
+  @apply flex-1;
+}
+
+.action-title {
+  @apply block text-sm font-semibold text-gray-900;
+}
+
+.action-description {
+  @apply block text-xs text-gray-600 mt-1;
+}
+
+.claims-list, .superbills-list, .insurance-list, .eligibility-list {
+  @apply space-y-4;
+}
+
+.claim-item, .superbill-item, .insurance-item, .eligibility-item {
+  @apply flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer;
+  
+  &:hover {
+    transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.claim-info, .superbill-info, .insurance-info, .eligibility-info {
+  @apply space-y-1;
+}
+
+.claim-number, .superbill-patient, .insurance-provider, .eligibility-patient {
+  @apply text-sm font-semibold text-gray-900;
+}
+
+.claim-patient, .superbill-date, .insurance-patient, .eligibility-date {
+  @apply text-sm text-gray-600;
+}
+
+.claim-date, .superbill-services, .insurance-plan-details, .eligibility-benefits {
+  @apply text-xs text-gray-500;
+}
+
+.claim-details, .superbill-details, .insurance-details, .eligibility-details {
+  @apply text-right space-y-1;
+}
+
+.claim-amount, .superbill-amount, .insurance-network, .eligibility-copay {
+  @apply text-sm font-semibold text-gray-900;
+}
+
+.claim-status, .superbill-status, .insurance-status, .eligibility-status {
+  @apply text-xs font-medium px-2 py-1 rounded-full;
+}
+
+.primary-badge {
+  @apply inline-block px-2 py-1 bg-primary-500 text-white text-xs font-medium rounded-full;
+}
+
+.empty-state {
+  @apply text-center py-8;
+}
+
+.empty-title {
+  @apply text-lg font-semibold text-gray-900 mt-4 mb-2;
+}
+
+.empty-description {
+  @apply text-gray-600;
+}
+
+.performance-stats {
+  @apply space-y-6;
+}
+
+.performance-item {
+  @apply space-y-2;
+}
+
+.performance-label {
+  @apply text-sm font-medium text-gray-700;
+}
+
+.performance-value {
+  @apply text-lg font-bold text-gray-900;
+}
+
+.performance-bar {
+  @apply w-full h-2 bg-gray-200 rounded-full overflow-hidden;
+}
+
+.performance-fill {
+  @apply h-full bg-gradient-to-r from-primary-500 to-primary-600 transition-all duration-500;
+}
+
+// Status Colors
+// Status colors are applied directly in templates using Tailwind classes
+
+// Responsive Design
+@media (max-width: 768px) {
+  .dashboard-header {
+    @apply flex-col gap-4;
+  }
+  
+  .header-actions {
+    @apply w-full;
+  }
+  
+
+  .content-grid {
+    @apply grid-cols-1;
+  }
+  
+  .quick-actions {
+    @apply grid-cols-1;
+  }
+}

@@ -1,0 +1,309 @@
+.eob-list-container {
+  @apply p-6 space-y-6;
+}
+
+.eob-header {
+  @apply flex items-start justify-between mb-8;
+}
+
+.header-content {
+  @apply space-y-2;
+}
+
+.eob-title {
+  @apply text-3xl font-bold text-gray-900;
+}
+
+.eob-subtitle {
+  @apply text-gray-600;
+}
+
+.header-actions {
+  @apply flex items-center gap-3;
+}
+
+.loading-state {
+  @apply flex flex-col items-center justify-center py-16 space-y-4;
+}
+
+.loading-spinner {
+  @apply w-8 h-8 border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin;
+}
+
+.stats-grid {
+  @apply grid grid-cols-1 md:grid-cols-3 gap-6;
+}
+
+.stat-card {
+  @apply bg-white rounded-2xl shadow-lg border border-primary-100 p-6 hover:shadow-xl transition-all duration-300;
+  box-shadow: 0 8px 24px rgba(255, 161, 87, 0.08);
+}
+
+.stat-icon {
+  @apply flex items-center justify-center w-12 h-12 rounded-xl mb-4;
+}
+
+.stat-icon-blue {
+  @apply bg-blue-100 text-blue-600;
+}
+
+.stat-icon-green {
+  @apply bg-green-100 text-green-600;
+}
+
+.stat-icon-yellow {
+  @apply bg-yellow-100 text-yellow-600;
+}
+
+.stat-content {
+  @apply space-y-1;
+}
+
+.stat-value {
+  @apply text-2xl font-bold text-gray-900;
+}
+
+.stat-label {
+  @apply text-sm text-gray-600;
+}
+
+.stat-change {
+  @apply text-xs font-medium;
+}
+
+.stat-change.positive {
+  @apply text-green-600;
+}
+
+.stat-change.neutral {
+  @apply text-gray-600;
+}
+
+.filters-card {
+  @apply bg-white rounded-2xl shadow-lg border border-primary-100 p-6;
+  box-shadow: 0 8px 24px rgba(255, 161, 87, 0.08);
+}
+
+.filters-form {
+  @apply space-y-4;
+}
+
+.filters-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4;
+}
+
+.filter-group {
+  @apply space-y-2;
+}
+
+.filter-label {
+  @apply block text-sm font-medium text-gray-700;
+}
+
+.filter-input, .filter-select {
+  @apply block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500 transition-all duration-300;
+}
+
+.eob-content {
+  @apply space-y-6;
+}
+
+.eob-grid {
+  @apply grid grid-cols-1 lg:grid-cols-2 gap-6;
+}
+
+.eob-card {
+  @apply bg-white rounded-2xl shadow-lg border border-primary-100 overflow-hidden hover:shadow-xl transition-all duration-300;
+  box-shadow: 0 8px 24px rgba(255, 161, 87, 0.08);
+  
+  &:hover {
+    transform: translateY(-4px);
+  }
+}
+
+.eob-header {
+  @apply flex items-start justify-between p-6 border-b border-gray-100 bg-gray-50;
+}
+
+.eob-info {
+  @apply space-y-1;
+}
+
+.eob-payer {
+  @apply text-lg font-bold text-gray-900;
+}
+
+.eob-patient {
+  @apply text-sm text-gray-600;
+}
+
+.eob-claim {
+  @apply text-sm text-gray-500;
+}
+
+.eob-status-section {
+  @apply text-right space-y-2;
+}
+
+.eob-status {
+  @apply px-3 py-1 text-xs font-medium rounded-full;
+}
+
+.eob-type {
+  @apply px-2 py-1 text-xs font-medium rounded-full;
+  
+  &.electronic {
+    @apply bg-green-100 text-green-700;
+  }
+  
+  &.paper {
+    @apply bg-gray-100 text-gray-700;
+  }
+}
+
+.eob-details {
+  @apply p-6 cursor-pointer hover:bg-gray-50 transition-colors space-y-4;
+}
+
+.detail-grid {
+  @apply grid grid-cols-2 gap-4;
+}
+
+.detail-item {
+  @apply flex flex-col space-y-1;
+}
+
+.detail-label {
+  @apply text-xs font-medium text-gray-500;
+}
+
+.detail-value {
+  @apply text-sm font-semibold text-gray-900;
+  
+  &.paid {
+    @apply text-green-600;
+  }
+  
+  &.responsibility {
+    @apply text-orange-400;
+  }
+}
+
+.breakdown-section {
+  @apply space-y-3;
+}
+
+.breakdown-title {
+  @apply text-sm font-medium text-gray-700;
+}
+
+.breakdown-grid {
+  @apply grid grid-cols-1 md:grid-cols-3 gap-2;
+}
+
+.breakdown-item {
+  @apply flex justify-between items-center text-xs;
+}
+
+.breakdown-label {
+  @apply text-gray-600;
+}
+
+.breakdown-value {
+  @apply font-semibold text-gray-900;
+}
+
+.services-summary {
+  @apply space-y-3;
+}
+
+.services-title {
+  @apply text-sm font-medium text-gray-700;
+}
+
+.services-preview {
+  @apply space-y-2;
+}
+
+.service-preview {
+  @apply flex items-center justify-between text-xs;
+}
+
+.service-code {
+  @apply font-mono font-semibold text-blue-600;
+}
+
+.service-desc {
+  @apply flex-1 mx-2 truncate text-gray-600;
+}
+
+.service-amount {
+  @apply font-semibold text-gray-900;
+}
+
+.service-more {
+  @apply text-xs text-gray-500 italic;
+}
+
+.eob-actions {
+  @apply flex items-center gap-2 p-4 border-t border-gray-100 bg-gray-50;
+}
+
+.action-btn {
+  @apply flex items-center gap-1 px-3 py-2 text-xs font-medium rounded-lg transition-all duration-300;
+}
+
+.view-btn {
+  @apply text-gray-600 hover:text-gray-800 hover:bg-gray-200;
+}
+
+.download-btn {
+  @apply text-blue-600 hover:text-blue-700 hover:bg-blue-50;
+}
+
+.empty-state {
+  @apply col-span-full flex flex-col items-center justify-center py-16 text-center;
+}
+
+.empty-icon {
+  @apply mb-4;
+}
+
+.empty-title {
+  @apply text-xl font-semibold text-gray-900 mb-2;
+}
+
+.empty-description {
+  @apply text-gray-500 max-w-md;
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .eob-header {
+    @apply flex-col gap-4;
+  }
+  
+  .header-actions {
+    @apply w-full justify-end;
+  }
+  
+  .stats-grid {
+    @apply grid-cols-1;
+  }
+  
+  .filters-grid {
+    @apply grid-cols-1;
+  }
+  
+  .eob-grid {
+    @apply grid-cols-1;
+  }
+  
+  .detail-grid {
+    @apply grid-cols-1;
+  }
+  
+  .breakdown-grid {
+    @apply grid-cols-1;
+  }
+}

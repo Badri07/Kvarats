@@ -10,50 +10,51 @@ import { PatientService } from '../service/patient/patients-service';
 })
 export class PatientsComponent {
 
-menuOpen: boolean = false;
+  menuOpen: boolean = false;
 
   public patientService = inject(PatientService);
   public authService = inject(AuthService);
 
-  logo:string ='/images/LogoLatest.png';
+  logo: string = '/images/LogoLatest.png';
 
-   public authservice = inject(AuthService);
+  public authservice = inject(AuthService);
 
-
-    ngOnInit(): void {
+  ngOnInit(): void {
     this.getUserDetails();
   }
 
-toggleMenu(event: Event) {
-  event.stopPropagation();
-  this.menuOpen = !this.menuOpen;
-}
+  toggleMenu(event: Event) {
+    event.stopPropagation();
+    this.menuOpen = !this.menuOpen;
+  }
 
-goToProfile() {
-  this.menuOpen = false;
-  // this.router.navigate(['/profile']);
-}
-
-goToSettings() {
-  this.menuOpen = false;
-  // this.router.navigate(['/settings']);
-}
-
-logout(){
+  logout() {
+    this.menuOpen = false;
     this.authservice.Patientslogout();
   }
 
-@HostListener('document:click', ['$event'])
-onClickOutside(event: Event) {
-  this.menuOpen = false;
-}
+  @HostListener('document:click', ['$event'])
+  onClickOutside(event: Event) {
+    this.menuOpen = false;
+  }
 
+  userName!: string;
+  email!: string;
 
-userName!:string;
-email!:string;
-getUserDetails(){
-  debugger
-  this.userName = this.authService.getPatientUsername();
-  this.email = this.authService.getPatientEmail();
-}
+  getUserDetails() {
+    this.userName = this.authService.getPatientUsername();
+    this.email = this.authService.getPatientEmail();
+  }
+
+  getUserInitials(): string {
+    if (!this.userName) return 'US';
+
+    const names = this.userName.split(' ');
+    if (names.length >= 2) {
+      return (names[0].charAt(0) + names[1].charAt(0)).toUpperCase();
+    } else if (this.userName.length >= 2) {
+      return this.userName.substring(0, 2).toUpperCase();
+    }
+    return 'US';
+  }
 }

@@ -1,0 +1,563 @@
+.services-management {
+  @apply space-y-6 min-h-full;
+}
+
+.management-header {
+  @apply flex items-start justify-between mb-8;
+}
+
+.header-content {
+  @apply space-y-2;
+}
+
+.management-title {
+  @apply text-2xl font-semibold text-gray-900;
+}
+
+.management-subtitle {
+  @apply text-gray-600;
+}
+
+.header-actions {
+  @apply flex items-center gap-3;
+}
+
+.loading-state {
+  @apply flex flex-col items-center justify-center py-16 space-y-4;
+}
+
+.loading-spinner {
+  @apply w-8 h-8 border-4 border-purple-200 border-t-purple-500 rounded-full animate-spin;
+}
+
+.stats-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6;
+}
+.stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            // max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e2e8f0;
+            display: flex;
+            align-items: flex-start;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .stat-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+        
+        .stat-icon-blue {
+            background-color: #dbeafe;
+            color: #2563eb;
+        }
+        
+        .stat-icon-green {
+            background-color: #dcfce7;
+            color: #16a34a;
+        }
+        
+        .stat-icon-purple {
+            background-color: #f3e8ff;
+            color: #9333ea;
+        }
+        
+        .stat-icon-yellow {
+            background-color: #fef9c3;
+            color: #ca8a04;
+        }
+        
+        .stat-icon svg {
+            width: 28px;
+            height: 28px;
+        }
+        
+        .stat-content {
+            flex: 1;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 0.25rem;
+            color: #1e293b;
+        }
+        
+        .stat-label {
+            font-size: 0.95rem;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .stat-trend {
+            display: flex;
+            align-items: center;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .stat-trend.positive {
+            color: #16a34a;
+        }
+        
+        .stat-trend.negative {
+            color: #dc2626;
+        }
+        
+        .stat-trend.neutral {
+            color: #64748b;
+        }
+        
+        .stat-trend i {
+            margin-right: 0.25rem;
+            font-size: 0.75rem;
+        }
+
+.stat-value {
+  @apply text-2xl font-bold text-gray-900;
+}
+
+.stat-label {
+  @apply text-sm text-gray-600;
+}
+
+.stat-change {
+  @apply text-xs font-medium;
+}
+
+.stat-change.positive {
+  @apply text-green-600;
+}
+
+.stat-change.negative {
+  @apply text-red-600;
+}
+
+.stat-change.neutral {
+  @apply text-gray-600;
+}
+
+.services-content {
+  @apply space-y-6;
+}
+
+.services-grid {
+  @apply grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6;
+}
+
+.service-card {
+  @apply bg-white rounded-2xl shadow-lg border border-purple-100 p-6 hover:shadow-xl transition-all duration-300;
+  box-shadow: 0 8px 24px rgba(139, 92, 246, 0.08);
+  
+  &:hover {
+    transform: translateY(-4px);
+  }
+  
+  &.inactive {
+    @apply opacity-60 bg-gray-50;
+  }
+}
+
+.service-header {
+  @apply flex items-start justify-between mb-4;
+}
+
+.service-info {
+  @apply flex-1 space-y-2;
+}
+
+.service-name {
+  @apply text-lg font-semibold text-gray-900;
+}
+
+.service-description {
+  @apply text-sm text-gray-600;
+}
+
+.service-meta {
+  @apply flex items-center gap-2 flex-wrap;
+}
+
+.meta-item {
+  @apply px-2 py-1 text-xs font-medium rounded-full;
+  
+  &.duration {
+    @apply bg-purple-100 text-purple-700;
+  }
+  
+  &.cpt-code {
+    @apply bg-blue-100 text-blue-700 font-mono;
+  }
+}
+
+.service-pricing {
+  @apply text-right space-y-2;
+}
+
+.price-amount {
+  @apply text-xl font-bold text-gray-900;
+}
+
+.service-status {
+  @apply inline-block px-3 py-1 text-xs font-medium rounded-full;
+  
+  &.active {
+    @apply text-green-700;
+  }
+  
+  &.inactive {
+    @apply text-red-700;
+  }
+}
+
+.service-actions {
+  @apply flex items-center gap-2 pt-4 border-t border-gray-200;
+}
+
+.empty-state {
+  @apply col-span-full flex flex-col items-center justify-center py-16 text-center;
+}
+
+.empty-icon {
+  @apply mb-4;
+}
+
+.empty-title {
+  @apply text-xl font-semibold text-gray-900 mb-2;
+}
+
+.empty-description {
+  @apply text-gray-500 max-w-md;
+}
+
+// Form Styles
+.service-form {
+  @apply space-y-6;
+}
+
+.form-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 gap-6;
+}
+
+.form-group {
+  @apply space-y-2;
+  
+  &.full-width {
+    @apply md:col-span-2;
+  }
+}
+
+.form-label {
+  @apply block text-sm font-medium text-gray-700;
+}
+
+// .form-input {
+//   @apply block w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-purple-500 focus:border-purple-500 transition-all duration-300;
+  
+//   &.error {
+//     @apply border-red-300 focus:ring-red-500 focus:border-red-500;
+//   }
+// }
+
+.form-textarea {
+  @apply block w-full px-4 py-3 border border-gray-300 rounded-xl  resize-none transition-all duration-300;
+}
+
+.form-error {
+  @apply text-sm text-red-600;
+}
+
+.checkbox-label {
+  @apply flex items-center cursor-pointer;
+}
+
+.checkbox-input {
+  @apply sr-only;
+  
+  &:checked + .checkbox-custom {
+    @apply bg-purple-500 border-purple-500;
+    
+    &::after {
+      @apply opacity-100;
+    }
+  }
+}
+
+.checkbox-custom {
+  @apply w-4 h-4 border border-gray-300 rounded mr-3 flex items-center justify-center relative transition-all;
+  
+  &::after {
+    content: '';
+    @apply w-2 h-2 bg-white rounded-sm opacity-0 transition-opacity;
+  }
+}
+
+.checkbox-text {
+  @apply text-sm text-gray-700;
+}
+
+.form-actions {
+  @apply flex gap-4 justify-end pt-6 border-t border-gray-200;
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .management-header {
+    @apply flex-col gap-4;
+  }
+  
+  .header-actions {
+    @apply w-full justify-end;
+  }
+  
+  .stats-grid {
+    @apply grid-cols-1 md:grid-cols-2;
+  }
+  
+  .services-grid {
+    @apply grid-cols-1;
+  }
+  
+  .service-header {
+    @apply flex-col gap-4;
+  }
+  
+  .service-actions {
+    @apply flex-wrap;
+  }
+  
+  .form-grid {
+    @apply grid-cols-1;
+  }
+}
+
+.stat-card{
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  padding: 24px;
+  align-items: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  &:hover {
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+// .stat-card-service{
+//     background: white;
+//   border-radius: 16px;
+//   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+//   padding: 24px;
+//   align-items: center;
+//   transition: transform 0.3s ease, box-shadow 0.3s ease;
+//   position: relative;
+//   overflow: hidden; 
+//   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+//   &:hover {
+//     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+//   }
+// }
+// .stat-card-service::before{
+//    content: '';
+//   position: absolute;
+//   top: 0;
+//   left: 0;
+//   right: 0;
+//   height: 4px;
+// background: linear-gradient(135deg, #f59e0b, #d97706);
+// }
+
+.stat-card:nth-child(2)::before {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.stat-card:nth-child(3)::before {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+}
+
+.management-subtitle{
+  font-size: 14px;
+  color: #64748b;
+}
+
+.service-actions app-button{
+  flex: 1 1 0%;
+}
+// Tabs Navigation
+.tabs-container {
+  @apply mb-8 ;
+}
+
+.tabs-navigation {
+  @apply flex gap-1;
+}
+
+.tab-button {
+  @apply px-6 py-3 bg-transparent border-none border-b-2 border-transparent text-gray-500 font-medium cursor-pointer text-sm;
+  transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  
+  &:hover {
+    @apply text-gray-700;
+  }
+  
+  &.active {
+    background: #fb923c;
+    color: aliceblue;
+    border-bottom-color: #fb923c;
+  }
+}
+
+.tab-content {
+  @apply min-h-96;
+}
+
+// Subscriptions Tab
+// Subscriptions Tab
+// Subscriptions Tab
+.subscriptions-tab {
+  @apply min-h-96 space-y-6;
+}
+
+.subscriptions-header {
+  @apply flex items-start mb-2;
+}
+
+.select-wrapper {
+  @apply relative inline-block;
+}
+
+// .form-control {
+//   @apply pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 bg-white text-gray-700 appearance-none;
+//   min-width: 200px;
+// }
+
+.select-arrow {
+  @apply pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500;
+}
+
+// Services List View
+.services-list-container {
+  @apply bg-white rounded-lg border border-gray-200;
+}
+
+.services-list {
+  @apply divide-y divide-gray-200;
+}
+
+.service-list-item {
+  @apply p-6 transition-colors duration-200;
+  
+  &:hover {
+    @apply bg-gray-50;
+  }
+  
+  &.inactive {
+    @apply opacity-60 bg-gray-50;
+  }
+}
+
+.service-list-content {
+  @apply flex items-center justify-between;
+}
+
+.service-list-info {
+  @apply flex-1;
+}
+
+.service-name {
+  @apply text-lg font-semibold text-gray-900 mb-2;
+}
+
+.service-description {
+  @apply text-sm text-gray-600 mb-3;
+}
+
+.service-meta {
+  @apply flex items-center gap-3 flex-wrap;
+}
+
+.meta-item {
+  @apply px-3 py-1 text-xs font-medium rounded-full;
+  
+  &.duration {
+    @apply bg-purple-100 text-purple-700;
+  }
+  
+  &.cpt-code {
+    @apply bg-blue-100 text-blue-700 font-mono;
+  }
+  
+  &.price {
+    @apply bg-green-100 text-green-700;
+  }
+}
+
+.service-list-actions {
+  @apply flex items-center gap-2;
+}
+
+// Button Styles
+.subscribe-btn {
+  @apply  text-white border-green-600;
+}
+
+.unsubscribe-btn {
+  @apply  text-white  border-red-600;
+}
+
+.empty-state {
+  @apply flex flex-col items-center justify-center py-16 text-center;
+}
+
+.empty-icon {
+  @apply mb-4;
+}
+
+.empty-title {
+  @apply text-xl font-semibold text-gray-900 mb-2;
+}
+
+.subscriptions-empty-state{
+@apply flex flex-col items-center justify-center; 
+}
+
+.empty-description {
+  @apply text-gray-500 max-w-md;
+}
